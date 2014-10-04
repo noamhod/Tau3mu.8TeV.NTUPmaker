@@ -1,0 +1,30 @@
+Build/Run the vertexing singularily:
+	./execute.sh
+and follow the instructions
+
+
+
+Run skim2 in bsub:
+	ruby bsub.rb
+and follow the instructions
+
+
+
+Finalize the skim2 run:
+	ruby bfin.rb
+and follow the instructions
+
+
+
+Run the cutflows:
+	root -b -l -q cutflow.C++(\"0cal\"); root -b -l -q cutflow.C++(\"1cal\")
+make sure that AFS is on, go to /Users/hod/tmp/new/tex (mac), and just run `make`
+
+
+
+Run the m3mu fit:
+	root -b -l -q m3muFit.C++(\"0cal\"); root -b -l -q m3muFit.C++(\"1cal\");
+
+
+To run HistFitter:
+	

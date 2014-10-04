@@ -1,0 +1,53 @@
+#ifndef TauLFVCommonTools_rawROOT_H
+#define TauLFVCommonTools_rawROOT_H
+
+#include <TROOT.h>
+#include <TSystem.h>
+#include <TColor.h>
+#include <TPRegexp.h>
+#include <TExec.h>
+#include <TPython.h>
+#include <TBox.h>
+#include <TMatrix.h>
+#include <TVector.h>
+#include <TLorentzVector.h>
+#include <TVector3.h>
+#include <TCut.h>
+#include <TChain.h>
+#include <TGraph.h>
+#include <TH1.h>
+#include <TH2.h>
+#include <TStyle.h>
+#include <TPaveStats.h>
+#include <TCanvas.h>
+#include <TFile.h>
+#include <TDirectory.h>
+#include <TLegend.h>
+#include <TMinuit.h>
+#include <TApplication.h>
+#include <TF1.h>
+#include <TF2.h>
+#include <TF12.h>
+#include <TAxis.h>
+#include <TGaxis.h>
+#include <TLine.h>
+#include <TPaveText.h>
+#include <TThread.h>
+#include <TList.h>
+#include <Riostream.h>
+#include <TDOMParser.h>
+#include <TXMLNode.h>
+#include <TXMLAttr.h>
+#include <TEventList.h>
+#include <TObjArray.h>
+#include <TClonesArray.h>
+#include <TCollection.h>
+#include <THStack.h>
+#include <TLatex.h>
+#include <TGraphAsymmErrors.h>
+#include <TRandom.h>
+#include <TArrow.h>
+#include <TFileCollection.h>
+
+#endif
+
