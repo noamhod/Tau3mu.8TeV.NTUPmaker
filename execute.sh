@@ -11,7 +11,7 @@ if [ -z "$8" ] ; then
 	echo "  [8] split to N cores (OPTIONAL)"
 	echo "e.g.:"
 	echo "./execute.sh  build/buildrun/loadrun \ "
-	echo "              FONLL/vtxing/L1Topo \ "
+	echo "              NTUPmaker/[...] \ "
 	echo "              analysis / skim \ "
 	echo "              \$HOME/data/bout/ \ "
 	echo "              period[A,B,C,D,E,G,H,I,J,L/all/[+MC]]/bbTomu15/Wtaunu_3mu... \ "
