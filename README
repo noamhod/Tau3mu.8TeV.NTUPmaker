@@ -1,3 +1,5 @@
+* to get the trunk:
+	svn co svn+ssh://svn.cern.ch/reps/atlasphys/Physics/Exotic/Analysis/TauToMuX/ThreeMu/NTUPmaker/trunk NTUPmaker
 * to tag a version in svn:
         svn cp svn+ssh://svn.cern.ch/reps/atlasphys/Physics/Exotic/Analysis/TauToMuX/ThreeMu/NTUPmaker/{trunk,tags/NTUPmaker-XX-YY-ZZ} -m "tagname"
 
