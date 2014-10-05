@@ -1,5 +1,5 @@
-#ifndef TauLFVCommonTools_colors_H
-#define TauLFVCommonTools_colors_H
+#ifndef colors_H
+#define colors_H
 
 namespace
 {

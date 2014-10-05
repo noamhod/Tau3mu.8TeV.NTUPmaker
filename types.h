@@ -1,5 +1,5 @@
-#ifndef TauLFVCommonTools_types_H
-#define TauLFVCommonTools_types_H
+#ifndef types_H
+#define types_H
 
 namespace
 {
@@ -79,6 +79,7 @@ typedef map<double, int>        TMapdi;
 typedef map<float, int>         TMapfi;
 typedef map<float, unsigned int> TMapfui;
 typedef map<unsigned int, vector<float> >  TMapuivf;
+typedef map<unsigned int, vector<int> >  TMapuivi;
 typedef map<TString, vector<float> >  TMapTSvf;
 typedef map<string, vector<double> >  TMapsvd;
 typedef map<string, vector<double>* > TMapsP2vd;

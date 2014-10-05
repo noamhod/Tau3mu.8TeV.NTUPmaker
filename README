@@ -4,6 +4,9 @@
         svn cp svn+ssh://svn.cern.ch/reps/atlasphys/Physics/Exotic/Analysis/TauToMuX/ThreeMu/NTUPmaker/{trunk,tags/NTUPmaker-XX-YY-ZZ} -m "tagname"
 
 
+* source init.sh (will start screen sessions) or source setup.sh
+
+
 Build/Run the vertexing singularily:
 	./execute.sh
 and follow the instructions

@@ -1,5 +1,5 @@
-#ifndef TauLFVCommonTools_kinematics_H
-#define TauLFVCommonTools_kinematics_H
+#ifndef kinematics_H
+#define kinematics_H
 
 namespace
 {

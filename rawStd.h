@@ -1,5 +1,5 @@
-#ifndef TauLFVCommonTools_rawStd_H
-#define TauLFVCommonTools_rawStd_H
+#ifndef rawStd_H
+#define rawStd_H
 
 #include <iostream>
 #include <stdlib.h>

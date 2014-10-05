@@ -8,12 +8,12 @@
 		6. get the output via: isTruthMatchedTriplet
 */
 
-#include "TauLFVCommonTools/rawStd.h"
-#include "TauLFVCommonTools/rawROOT.h"
-#include "TauLFVCommonTools/types.h"
-#include "TauLFVCommonTools/enums.h"
-#include "TauLFVCommonTools/constants.h"
-#include "TauLFVCommonTools/logs.h"
+#include "rawStd.h"
+#include "rawROOT.h"
+#include "types.h"
+#include "enums.h"
+#include "constants.h"
+#include "logs.h"
 
 namespace
 {

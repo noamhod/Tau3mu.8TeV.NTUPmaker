@@ -6,11 +6,11 @@
 	4. call flatout_finit on finalization
 */
 
-#include "TauLFVCommonTools/rawStd.h"
-#include "TauLFVCommonTools/rawROOT.h"
-#include "TauLFVCommonTools/types.h"
-#include "TauLFVCommonTools/enums.h"
-#include "TauLFVCommonTools/logs.h"
+#include "rawStd.h"
+#include "rawROOT.h"
+#include "types.h"
+#include "enums.h"
+#include "logs.h"
 
 namespace
 {
@@ -182,6 +182,62 @@ void flatout_book(TDirectory* olddir)
 	addBranch("met_reffinal_dPhi3mu", order, VFLT);
 	
 	// Muons
+	for(int i=1 ; i<=6 ; ++i)
+	{
+		TString x = _s((float)i,0);
+		addBranch("mu_order"+x,          order, VINT);
+		addBranch("mu_type"+x,           order, VINT);
+		addBranch("mu_pt"+x,             order, VFLT);
+		addBranch("mu_eta"+x,            order, VFLT);
+		addBranch("mu_phi"+x,            order, VFLT);
+		addBranch("mu_sctangsig"+x,      order, VFLT);
+		addBranch("mu_sctngbsig"+x,      order, VFLT);
+		addBranch("mu_pbalsig"+x,        order, VFLT);
+		addBranch("mu_chi2trkfit"+x,     order, VFLT);
+		addBranch("mu_ndftrkfit"+x,      order, VFLT);
+		addBranch("mu_chi2ndftrkfit"+x,  order, VFLT);
+		addBranch("mu_pvaltrkfit"+x,     order, VFLT);
+		addBranch("mu_srcqoverp"+x,      order, VFLT);
+		addBranch("mu_trkqoverp"+x,      order, VFLT);
+		addBranch("mu_ptfrac"+x,         order, VFLT);
+		addBranch("mu_pixeldEdx"+x,      order, VFLT);
+		addBranch("mu_isMedium"+x,       order, VINT);
+		addBranch("mu_nPIXhits"+x,       order, VINT);
+		addBranch("mu_nDeadPIX"+x,       order, VINT);
+		addBranch("mu_nPIXholes"+x,      order, VINT);  
+		addBranch("mu_nSCThits"+x,       order, VINT);
+		addBranch("mu_nDeadSCT"+x,       order, VINT);
+		addBranch("mu_nSCTholes"+x,      order, VINT);
+		addBranch("mu_nTRThits"+x,       order, VINT);
+		addBranch("mu_nTRToutliers"+x,   order, VINT);
+		addBranch("mu_htTRThits"+x,      order, VINT);
+		addBranch("mu_nUsedHitsdEdx"+x,  order, VINT);
+		addBranch("mu_nMDThits"+x,                   order, VINT);
+		addBranch("mu_nTGCPhiHits"+x,                order, VINT);
+		addBranch("mu_nTGCEtaHits"+x,                order, VINT);
+		addBranch("mu_nCSCPhiHits"+x,                order, VINT);
+		addBranch("mu_nCSCEtaHits"+x,                order, VINT);
+		addBranch("mu_nRPCPhiHits"+x,                order, VINT);
+		addBranch("mu_nRPCEtaHits"+x,                order, VINT);
+		addBranch("mu_nCSCEtaHoles"+x,               order, VINT);
+		addBranch("mu_nCSCPhiHoles"+x,               order, VINT);
+		addBranch("mu_nRPCEtaHoles"+x,               order, VINT);
+		addBranch("mu_nRPCPhiHoles"+x,               order, VINT);
+		addBranch("mu_nMDTHoles"+x,                  order, VINT);
+		addBranch("mu_nTGCEtaHoles"+x,               order, VINT);
+		addBranch("mu_nTGCPhiHoles"+x,               order, VINT);
+		addBranch("mu_nOutliersOnTrack"+x,           order, VINT);
+		addBranch("mu_standardDeviationOfChi2OS"+x,  order, VINT);
+		addBranch("mu_nPrecisionHits"+x,         order, VINT);
+		addBranch("mu_nPhiLayers"+x,             order, VINT);
+		addBranch("mu_nEtaPhiLayers"+x,          order, VINT);
+		addBranch("mu_nPrecisionHoles"+x,        order, VINT);
+		addBranch("mu_nEtaTriggerHoleLayers"+x,  order, VINT);
+		addBranch("mu_nPhiHoleLayers"+x,         order, VINT);
+		addBranch("mu_nPrecisionOutliers"+x,     order, VINT);
+	}
+	
+	/*
 	addBranch("mu_order1",          order, VINT);
 	addBranch("mu_order2",          order, VINT);
 	addBranch("mu_order3",          order, VINT);
@@ -312,33 +368,6 @@ void flatout_book(TDirectory* olddir)
 	addBranch("mu_standardDeviationOfChi2OS1",  order, VINT);
 	addBranch("mu_standardDeviationOfChi2OS2",  order, VINT);
 	addBranch("mu_standardDeviationOfChi2OS3",  order, VINT);
-	/*	
-	// Reference code
-	for( std::set<int>::const_iterator it=sectors.begin();it!=sectors.end();++it )
-	{
-	        unsigned int x = (m_sectors->size()==0) ? 0 : m_sectors->size()-1; // protection
-	        m_sectors->at(x).push_back(*it);
-	}
-	for( std::map<Muon::IMuonHitSummaryTool::StIndex,Muon::IMuonHitSummaryTool::HitSummary>::const_iterator it=stationLayers.begin();it!=stationLayers.end();++it )
-	{
-	        unsigned int x = (m_stationName->size()==0) ? 0 : m_stationName->size()-1; // protection
-	        m_stationName->at(x).push_back(m_muonHitSummaryTool->stName(it->first));
-	        m_nprecisionHits->at(x).push_back(it->second.nprecisionHits);
-	        m_netaTriggerLayers->at(x).push_back(it->second.netaTriggerLayers);
-	        m_nphiLayers->at(x).push_back(it->second.nphiLayers);
-	        m_netaPhiLayers->at(x).push_back(it->second.netaPhiLayers);
-	        m_nprecisionHoles->at(x).push_back(it->second.nprecisionHoles);
-	        m_netaTriggerHoleLayers->at(x).push_back(it->second.netaTriggerHoleLayers);
-	        m_nphiHoleLayers->at(x).push_back(it->second.nphiHoleLayers);
-	        m_nprecisionOutliers->at(x).push_back(it->second.nprecisionOutliers);
-	        m_nprecisionCloseHits->at(x).push_back(it->second.nprecisionCloseHits);
-	}
-	for( std::set<Muon::IMuonHitSummaryTool::PhiIndex>::const_iterator it=phiLayers.begin();it!=phiLayers.end();++it )
-	{
-	        unsigned int x = (m_phiName->size()==0) ? 0 : m_phiName->size()-1; // protection
-	        m_phiName->at(x).push_back(m_muonHitSummaryTool->phiName(*it));
-	}
-	*/
 	addBranch("mu_nPrecisionHits1",         order, VINT);
 	addBranch("mu_nPrecisionHits2",         order, VINT);
 	addBranch("mu_nPrecisionHits3",         order, VINT);
@@ -360,7 +389,7 @@ void flatout_book(TDirectory* olddir)
 	addBranch("mu_nPrecisionOutliers1",     order, VINT);
 	addBranch("mu_nPrecisionOutliers2",     order, VINT);
 	addBranch("mu_nPrecisionOutliers3",     order, VINT);
-	
+	*/
 	
 	// Jets
 	addBranch("jet_pt1",       order, VFLT);

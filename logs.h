@@ -8,8 +8,8 @@
 // #endif
 // // #include <boost/lexical_cast.hpp>
 
-#ifndef TauLFVCommonTools_logs_H
-#define TauLFVCommonTools_logs_H
+#ifndef logs_H
+#define logs_H
 
 namespace
 {

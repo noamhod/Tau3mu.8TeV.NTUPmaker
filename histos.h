@@ -1,5 +1,5 @@
-#ifndef TauLFVCommonTools_histos_H
-#define TauLFVCommonTools_histos_H
+#ifndef histos_H
+#define histos_H
 
 namespace
 {

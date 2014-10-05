@@ -1,5 +1,5 @@
-#ifndef TauLFVCommonTools_constants_H
-#define TauLFVCommonTools_constants_H
+#ifndef constants_H
+#define constants_H
 
 static const double luminosity   = 3.2531; // periodD fb-1
 static const double Ltot         = 20.3;   // full 2012 fb-1

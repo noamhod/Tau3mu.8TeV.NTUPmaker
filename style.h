@@ -1,5 +1,5 @@
-#ifndef TauLFVCommonTools_style_H
-#define TauLFVCommonTools_style_H
+#ifndef style_H
+#define style_H
 
 namespace
 {

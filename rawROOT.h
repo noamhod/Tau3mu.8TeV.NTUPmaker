@@ -1,5 +1,5 @@
-#ifndef TauLFVCommonTools_rawROOT_H
-#define TauLFVCommonTools_rawROOT_H
+#ifndef rawROOT_H
+#define rawROOT_H
 
 #include <TROOT.h>
 #include <TSystem.h>

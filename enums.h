@@ -1,5 +1,5 @@
-#ifndef TauLFVCommonTools_enums_H
-#define TauLFVCommonTools_enums_H
+#ifndef enums_H
+#define enums_H
 
 enum pdtEnum { // *** note that this is not a complete list of pdt's particles ***
 	PDTDWN=1, PDTUP=2, PDTSTR=3, PDTCHM=4, PDTBOT=5, PDTTOP=6,

@@ -84,6 +84,10 @@ TMapTSd  periodlumi;
 TMapTSb  periodenable;
 TMapTSb  binnedmcenable;
 TMapTSd  weights;
+TMapuivi fourthMuons;
+TMapuivi fourthTPs;
+TMapuivi fourthMuonTracks;
+TMapuivi fourthTPTracks;
 double totalLumi;
 
 double isolation;
@@ -517,6 +521,10 @@ TVector3 vtrk(double px, double py, double pz)
 	v.SetXYZ(px,py,pz);
 	return v;
 }
+double phitrk(double px, double py, double pz)
+{
+	return vtrk(px,py,pz).Phi();
+}
 double qtrk(double qoverp)
 {
 	if(qoverp==0.) { _ERROR("a neutral track ?"); return 0.; }
@@ -576,7 +584,7 @@ TString getMasterTreeName()
 {
 	if     (mastername.Contains("muons")) return "MUONS_TRIPLET";
 	else if(mastername.Contains("muid"))  return "MUID_TRIPLET";
-	else _FATAL("The name has to contain triplet type");
+	else _FATAL("The name has to contain triplet type - cannot be:"+(string)mastername);
 	return "XXX";
 }
 TString getPrimaryTPTreeName()
@@ -4775,7 +4783,7 @@ double getYline(double x1, double y1, double x2, double y2, double x)
 }
 
 void vertex::set(unsigned int vtx)
-{	
+{
 	sources src;
 	getSrc(vtx,src);
 	if(!validateSrcChain(vtx)) _FATAL("wrong chain");
@@ -5371,6 +5379,247 @@ void vertex::set(unsigned int vtx)
 	m_trkPrecisionOutliers[0] = 0; if(isTPmu1) { for(unsigned int i=0 ; i<N1 ; ++i) m_trkPrecisionOutliers[0] += tpmu_vvi[src1+"_nprecisionOutliers"]->at(isrc1)[i]; }
 	m_trkPrecisionOutliers[1] = 0; if(isTPmu2) { for(unsigned int i=0 ; i<N2 ; ++i) m_trkPrecisionOutliers[1] += tpmu_vvi[src2+"_nprecisionOutliers"]->at(isrc2)[i]; }
 	m_trkPrecisionOutliers[2] = 0; if(isTPmu3) { for(unsigned int i=0 ; i<N3 ; ++i) m_trkPrecisionOutliers[2] += tpmu_vvi[src3+"_nprecisionOutliers"]->at(isrc3)[i]; }
+	
+	
+	_DEBUG("");
+	
+	TString master = mastername;
+	
+	//// Fill the 4th tracks, allow only 3 per triplet and fill first the muons
+	unsigned int n4thMuons = fourthMuons[vtx].size();
+	unsigned int n4thTPs   = fourthTPs[vtx].size();
+	int nMax4thTracks = 3;
+	int nFilled = 0;
+	for(unsigned int i=0 ; (i<n4thMuons && (2+i+1)<3+nMax4thTracks) ; ++i) 
+	{	
+		unsigned int ithis = 2+(i+1);
+		
+		unsigned int m4 = fourthMuons[vtx][i];
+			
+		_DEBUG("");
+		
+		int itrk = (master!="muid") ? muons_inDetTrackIndex->at(m4) : muid_inDetTrackIndex->at(m4);
+		// cout << "Event: " << EventNumber << " itrk=" << itrk << ", trks size="<< trks_pt->size() << endl;
+		if(itrk<0 || itrk>=(int)trks_pt->size()) continue;
+		
+		_DEBUG("");
+		
+		TLorentzVector p4;
+		p4.SetPtEtaPhiM(muons_pt->at(m4),muons_eta->at(m4),muons_phi->at(m4),muonMassMeV);
+		m_trkP[ithis] = p4;
+
+		_DEBUG("");
+
+		m_isrc[ithis]              = m4;
+		m_src[ithis]               = (string)master;
+		m_order[ithis]             = -1;
+		m_trktype[ithis]           = MUON;
+		m_ismuon[ithis]            = 1;
+		m_iscalo[ithis]            = 0;
+		m_istp[ithis]              = 0;  
+		m_istpa[ithis]             = 0;  
+		m_istpb[ithis]             = 0;  
+		m_iscb[ithis]              = (master!="muid") ? muons_isCombined->at(m4)   : muid_isCombined->at(m4);
+		m_istight[ithis]           = (master!="muid") ? muons_isTight->at(m4)      : muid_isTight->at(m4);
+		m_ismedium[ithis]          = (master!="muid") ? muons_isMedium->at(m4)     : muid_isMedium->at(m4);
+		m_isloose[ithis]           = (master!="muid") ? muons_isLoose->at(m4)      : muid_isLoose->at(m4);
+		m_trksctang[ithis]         = (master!="muid") ? muons_sctangsig->at(m4)    : muid_sctangsig->at(m4);
+		m_trksctngb[ithis]         = (master!="muid") ? muons_sctngbsig->at(m4)    : muid_sctngbsig->at(m4);
+		m_trkpbal[ithis]           = (master!="muid") ? muons_pbalsig->at(m4)      : muid_pbalsig->at(m4);
+		m_trkMuMatchChi2Ndf[ithis] = (master!="muid") ? muons_matchchi2ndf->at(m4) : muid_matchchi2ndf->at(m4);
+		m_trkChi2[ithis]           = (master!="muid") ? muons_chi2->at(m4)         : muid_chi2->at(m4); // tpmu_vd[src+"_chi2"]->at(m4);  
+		m_trkNdf[ithis]            = (master!="muid") ? muons_ndf->at(m4)          : muid_ndf->at(m4); // tpmu_vi[src+"_ndf"]->at(m4);  
+		m_trkPval[ithis]           = TMath::Prob(m_trkChi2[ithis],m_trkNdf[ithis]);
+		m_trkChi2Ndf[ithis]        = m_trkChi2[ithis]/m_trkNdf[ithis];
+
+		_DEBUG("");
+
+		TVector3 pme;
+		double q=-999.;
+		if(master!="muid") { pme.SetXYZ(muons_px_me->at(m4),muons_py_me->at(m4),muons_pz_me->at(m4)); q = muons_charge->at(m4); }
+		else               { pme.SetXYZ(muid_px_me->at(m4), muid_py_me->at(m4), muid_pz_me->at(m4));  q = muid_charge->at(m4);  }
+		double qopmemu = q/pme.Mag();
+		m_srcQoverP[ithis] = qopmemu; // tpmu_vd[src+"_qOverP"]->at(m4);
+ 
+		_DEBUG("");
+
+		m_itrk[ithis]            = itrk;
+		m_trkQoverP[ithis]       = trks_qoverp->at(itrk);
+		m_trkPixeldEdx[ithis]    = trks_pixeldEdx->at(itrk);
+		m_trkUsedHitsdEdx[ithis] = trks_nUsedHitsdEdx->at(itrk);
+		m_trkPIXhits[ithis]      = trks_nPix->at(itrk);
+		m_trkDeadPIX[ithis]      = trks_nDeadPixels->at(itrk);
+		m_trkPIXholes[ithis]     = trks_nPixHoles->at(itrk);
+		m_trkSCThits[ithis]      = trks_nSCT->at(itrk);
+		m_trkDeadSCT[ithis]      = trks_nDeadSCT->at(itrk);
+		m_trkSCTholes[ithis]     = trks_nSCTHoles->at(itrk);
+		m_trkTRThits[ithis]      = trks_nTRT->at(itrk);
+		m_trkTRToutliers[ithis]  = trks_nTRTOutliers->at(itrk);
+		m_trkHtTRThits[ithis]    = trks_nHighThresholdTRTHits->at(itrk);
+
+		_DEBUG("");
+
+		m_trkMDThits[ithis]         = -1; // tpmu_vi[src+"_numberOfMdtHits"]->at(m4);
+		m_trkTGCPhiHits[ithis]      = -1; // tpmu_vi[src+"_numberOfTgcPhiHits"]->at(m4);
+		m_trkTGCEtaHits[ithis]      = -1; // tpmu_vi[src+"_numberOfTgcEtaHits"]->at(m4);
+		m_trkCSCPhiHits[ithis]      = -1; // tpmu_vi[src+"_numberOfCscPhiHits"]->at(m4);
+		m_trkCSCEtaHits[ithis]      = -1; // tpmu_vi[src+"_numberOfCscEtaHits"]->at(m4);
+		m_trkRPCPhiHits[ithis]      = -1; // tpmu_vi[src+"_numberOfRpcPhiHits"]->at(m4);
+		m_trkRPCEtaHits[ithis]      = -1; // tpmu_vi[src+"_numberOfRpcEtaHits"]->at(m4);
+		m_trkCSCEtaHoles[ithis]     = -1; // tpmu_vi[src+"_numberOfCscEtaHoles"]->at(m4);
+		m_trkCSCPhiHoles[ithis]     = -1; // tpmu_vi[src+"_numberOfCscPhiHoles"]->at(m4);
+		m_trkRPCEtaHoles[ithis]     = -1; // tpmu_vi[src+"_numberOfRpcEtaHoles"]->at(m4);
+		m_trkRPCPhiHoles[ithis]     = -1; // tpmu_vi[src+"_numberOfRpcPhiHoles"]->at(m4);
+		m_trkTGCEtaHoles[ithis]     = -1; // tpmu_vi[src+"_numberOfTgcEtaHoles"]->at(m4);
+		m_trkTGCPhiHoles[ithis]     = -1; // tpmu_vi[src+"_numberOfTgcPhiHoles"]->at(m4);
+		m_trkMDTholes[ithis]        = -1; // tpmu_vi[src+"_numberOfMdtHoles"]->at(m4);
+		m_trkOutliersOnTrack[ithis] = -1; // tpmu_vi[src+"_numberOfOutliersOnTrack"]->at(m4);
+		m_trkStdDevOfChi2OS[ithis]  = -1; // tpmu_vi[src+"_standardDeviationOfChi2OS"]->at(m4);
+		
+		_DEBUG("");
+		
+		m_trkPrecisionHits[ithis] = 0;
+		// unsigned int N = tpmu_vvi[src+"_nprecisionHits"]->at(mr).size();
+		// for(unsigned int j=0 ; j<N ; ++j) m_trkPrecisionHits[ithis] += tpmu_vvi[src+"_nprecisionHits"]->at(m4)[j];
+		
+		m_trkPhiLayers[ithis] = 0;
+		// N = tpmu_vvi[src+"_nphiLayers"]->at(m4).size();
+		// for(unsigned int j=0 ; j<N ; ++j) m_trkPhiLayers[ithis] += tpmu_vvi[src+"_nphiLayers"]->at(m4)[j];
+
+		m_trkEtaPhiLayers[ithis] = 0;
+		// N = tpmu_vvi[src+"_netaPhiLayers"]->at(m4).size();
+		// for(unsigned int j=0 ; j<N ; ++j) m_trkEtaPhiLayers[ithis] += tpmu_vvi[src+"_netaPhiLayers"]->at(m4)[j];
+		
+		m_trkPrecisionHoles[ithis] = 0;
+		// N = tpmu_vvi[src+"_nprecisionHoles"]->at(m4).size();
+		// for(unsigned int j=0 ; j<N ; ++j) m_trkPrecisionHoles[ithis] += tpmu_vvi[src+"_nprecisionHoles"]->at(m4)[j];
+	
+		m_trkEtaTriggerHoleLayers[ithis] = 0;
+		// N = tpmu_vvi[src+"_netaTriggerHoleLayers"]->at(m4).size();
+		// for(unsigned int j=0 ; j<N ; ++j) m_trkEtaTriggerHoleLayers[ithis] += tpmu_vvi[src+"_netaTriggerHoleLayers"]->at(m4)[j];
+
+		m_trkPhiHoleLayers[ithis] = 0;
+		// N = tpmu_vvi[src+"_nphiHoleLayers"]->at(m4).size();
+		// for(unsigned int j=0 ; j<N ; ++j) m_trkPhiHoleLayers[ithis] += tpmu_vvi[src+"_nphiHoleLayers"]->at(m4)[j];
+
+		m_trkPrecisionOutliers[ithis] = 0;
+		// N = tpmu_vvi[src+"_nprecisionOutliers"]->at(m4).size();
+		// for(unsigned int j=0 ; j<N ; ++j) m_trkPrecisionOutliers[ithis] += tpmu_vvi[src+"_nprecisionOutliers"]->at(m4)[j];
+
+		_DEBUG("");
+		
+		//////////////
+		nFilled++; ///
+		//////////////
+	}
+	if(nFilled<3)
+	{
+		TString srctp = "CombinedFitMuonParticles";
+		for(unsigned int i=0 ; (i<n4thTPs && (2+nFilled+i+1)<3+nMax4thTracks) ; ++i) 
+		{
+			unsigned int ithis = 2+nFilled+(i+1);
+			
+			_DEBUG("");
+			
+			unsigned int m4 = fourthTPs[vtx][i];
+			TLorentzVector p4;
+			p4.SetPtEtaPhiM(tpmu_vd[srctp+"_pt"]->at(m4),tpmu_vd[srctp+"_eta"]->at(m4),tpmu_vd[srctp+"_phi"]->at(m4),muonMassMeV);
+			m_trkP[2+nFilled+(i+1)] = p4;
+			
+			_DEBUG("");
+			
+			m_isrc[ithis]              = m4;
+			m_src[ithis]               = "";
+			m_order[ithis]             = -1;
+			m_trktype[ithis]           = TPA;
+			m_ismuon[ithis]            = 0;
+			m_iscalo[ithis]            = 0;
+			m_istp[ithis]              = 1;  
+			m_istpa[ithis]             = 1;  
+			m_istpb[ithis]             = 0;  
+			m_iscb[ithis]              = -1;
+			m_istight[ithis]           = -1;
+			m_ismedium[ithis]          = -1;
+			m_isloose[ithis]           = -1;
+			m_trksctang[ithis]         = -1;
+			m_trksctngb[ithis]         = -1;
+			m_trkpbal[ithis]           = -1;
+			m_trkMuMatchChi2Ndf[ithis] = -1;
+			m_trkChi2[ithis]           = tpmu_vd[srctp+"_chi2"]->at(m4);  
+			m_trkNdf[ithis]            = tpmu_vi[srctp+"_ndf"]->at(m4);  
+			m_trkPval[ithis]           = TMath::Prob(m_trkChi2[ithis],m_trkNdf[ithis]);
+			m_trkChi2Ndf[ithis]        = m_trkChi2[ithis]/m_trkNdf[ithis];
+			m_srcQoverP[ithis]         = tpmu_vd[srctp+"_qOverP"]->at(m4);
+
+			_DEBUG("");
+			
+			m_itrk[ithis]            = -1; // itrk;
+			m_trkQoverP[ithis]       = tpmu_vd[srctp+"_qOverP"]->at(m4); // (itrk<0) ? -1 : trks_qoverp->at(itrk);
+			m_trkPixeldEdx[ithis]    = tpmu_vd[srctp+"_pixeldEdx"]->at(m4); // (itrk<0) ? -1 : trks_pixeldEdx->at(itrk);
+			m_trkUsedHitsdEdx[ithis] = tpmu_vi[srctp+"_nUsedHitsdEdx"]->at(m4); // (itrk<0) ? -1 : trks_nUsedHitsdEdx->at(itrk);
+			m_trkPIXhits[ithis]      = tpmu_vi[srctp+"_nPix"]->at(m4); // (itrk<0) ? -1 : trks_nPix->at(itrk);
+			m_trkDeadPIX[ithis]      = tpmu_vi[srctp+"_nDeadPixels"]->at(m4); // (itrk<0) ? -1 : trks_nDeadPixels->at(itrk);
+			m_trkPIXholes[ithis]     = tpmu_vi[srctp+"_nPixHoles"]->at(m4); // (itrk<0) ? -1 : trks_nPixHoles->at(itrk);
+			m_trkSCThits[ithis]      = tpmu_vi[srctp+"_nSCT"]->at(m4); // (itrk<0) ? -1 : trks_nSCT->at(itrk);
+			m_trkDeadSCT[ithis]      = tpmu_vi[srctp+"_nDeadSCT"]->at(m4); // (itrk<0) ? -1 : trks_nDeadSCT->at(itrk);
+			m_trkSCTholes[ithis]     = tpmu_vi[srctp+"_nSCTHoles"]->at(m4); // (itrk<0) ? -1 : trks_nSCTHoles->at(itrk);
+			m_trkTRThits[ithis]      = tpmu_vi[srctp+"_nTRT"]->at(m4); // (itrk<0) ? -1 : trks_nTRT->at(itrk);
+			m_trkTRToutliers[ithis]  = tpmu_vi[srctp+"_nTRTOutliers"]->at(m4); // (itrk<0) ? -1 : trks_nTRTOutliers->at(itrk);
+			m_trkHtTRThits[ithis]    = tpmu_vi[srctp+"_nHighThresholdTRTHits"]->at(m4); // (itrk<0) ? -1 : trks_nHighThresholdTRTHits->at(itrk);
+
+			_DEBUG("");
+
+			m_trkMDThits[ithis]         = tpmu_vi[srctp+"_numberOfMdtHits"]->at(m4);
+			m_trkTGCPhiHits[ithis]      = tpmu_vi[srctp+"_numberOfTgcPhiHits"]->at(m4);
+			m_trkTGCEtaHits[ithis]      = tpmu_vi[srctp+"_numberOfTgcEtaHits"]->at(m4);
+			m_trkCSCPhiHits[ithis]      = tpmu_vi[srctp+"_numberOfCscPhiHits"]->at(m4);
+			m_trkCSCEtaHits[ithis]      = tpmu_vi[srctp+"_numberOfCscEtaHits"]->at(m4);
+			m_trkRPCPhiHits[ithis]      = tpmu_vi[srctp+"_numberOfRpcPhiHits"]->at(m4);
+			m_trkRPCEtaHits[ithis]      = tpmu_vi[srctp+"_numberOfRpcEtaHits"]->at(m4);
+			m_trkCSCEtaHoles[ithis]     = tpmu_vi[srctp+"_numberOfCscEtaHoles"]->at(m4);
+			m_trkCSCPhiHoles[ithis]     = tpmu_vi[srctp+"_numberOfCscPhiHoles"]->at(m4);
+			m_trkRPCEtaHoles[ithis]     = tpmu_vi[srctp+"_numberOfRpcEtaHoles"]->at(m4);
+			m_trkRPCPhiHoles[ithis]     = tpmu_vi[srctp+"_numberOfRpcPhiHoles"]->at(m4);
+			m_trkTGCEtaHoles[ithis]     = tpmu_vi[srctp+"_numberOfTgcEtaHoles"]->at(m4);
+			m_trkTGCPhiHoles[ithis]     = tpmu_vi[srctp+"_numberOfTgcPhiHoles"]->at(m4);
+			m_trkMDTholes[ithis]        = tpmu_vi[srctp+"_numberOfMdtHoles"]->at(m4);
+			m_trkOutliersOnTrack[ithis] = tpmu_vi[srctp+"_numberOfOutliersOnTrack"]->at(m4);
+			m_trkStdDevOfChi2OS[ithis]  = tpmu_vi[srctp+"_standardDeviationOfChi2OS"]->at(m4);
+
+			_DEBUG("");
+
+			m_trkPrecisionHits[ithis] = 0;
+			unsigned int N = tpmu_vvi[srctp+"_nprecisionHits"]->at(m4).size();
+			for(unsigned int j=0 ; j<N ; ++j) m_trkPrecisionHits[ithis] += tpmu_vvi[srctp+"_nprecisionHits"]->at(m4)[j];
+
+			m_trkPhiLayers[ithis] = 0;
+			N = tpmu_vvi[srctp+"_nphiLayers"]->at(m4).size();
+			for(unsigned int j=0 ; j<N ; ++j) m_trkPhiLayers[ithis] += tpmu_vvi[srctp+"_nphiLayers"]->at(m4)[j];
+
+			m_trkEtaPhiLayers[ithis] = 0;
+			N = tpmu_vvi[srctp+"_netaPhiLayers"]->at(m4).size();
+			for(unsigned int j=0 ; j<N ; ++j) m_trkEtaPhiLayers[ithis] += tpmu_vvi[srctp+"_netaPhiLayers"]->at(m4)[j];
+
+			m_trkPrecisionHoles[ithis] = 0;
+			N = tpmu_vvi[srctp+"_nprecisionHoles"]->at(m4).size();
+			for(unsigned int j=0 ; j<N ; ++j) m_trkPrecisionHoles[ithis] += tpmu_vvi[srctp+"_nprecisionHoles"]->at(m4)[j];
+
+			m_trkEtaTriggerHoleLayers[ithis] = 0;
+			N = tpmu_vvi[srctp+"_netaTriggerHoleLayers"]->at(m4).size();
+			for(unsigned int j=0 ; j<N ; ++j) m_trkEtaTriggerHoleLayers[ithis] += tpmu_vvi[srctp+"_netaTriggerHoleLayers"]->at(m4)[j];
+
+			m_trkPhiHoleLayers[ithis] = 0;
+			N = tpmu_vvi[srctp+"_nphiHoleLayers"]->at(m4).size();
+			for(unsigned int j=0 ; j<N ; ++j) m_trkPhiHoleLayers[ithis] += tpmu_vvi[srctp+"_nphiHoleLayers"]->at(m4)[j];
+
+			m_trkPrecisionOutliers[ithis] = 0;
+			N = tpmu_vvi[srctp+"_nprecisionOutliers"]->at(m4).size();
+			for(unsigned int j=0 ; j<N ; ++j) m_trkPrecisionOutliers[ithis] += tpmu_vvi[srctp+"_nprecisionOutliers"]->at(m4)[j];
+			
+			_DEBUG("");
+		}
+	}
+	
 	
 	_DEBUG("");
 	
@@ -6405,6 +6654,131 @@ bool acceptVtxMET(TString method, unsigned int vtx, vector<vertex>& vertices, TS
 	return true;
 }
 
+void clearZ4mus()
+{
+	for(TMapuivi::iterator it=fourthMuons.begin() ; it!=fourthMuons.end() ; ++it) it->second.clear(); fourthMuons.clear();
+	for(TMapuivi::iterator it=fourthTPs.begin()   ; it!=fourthTPs.end()   ; ++it) it->second.clear(); fourthTPs.clear();
+}
+
+void countZ4mus(unsigned int vtx, TString name, TMapTSP2TH1& histos, double weight=1.)
+{	
+	double px1 = vtx_reftrks_px->at(vtx)[0];
+	double px2 = vtx_reftrks_px->at(vtx)[1];
+	double px3 = vtx_reftrks_px->at(vtx)[2];	
+	double py1 = vtx_reftrks_py->at(vtx)[0];
+	double py2 = vtx_reftrks_py->at(vtx)[1];
+	double py3 = vtx_reftrks_py->at(vtx)[2];
+	double pz1 = vtx_reftrks_pz->at(vtx)[0];
+	double pz2 = vtx_reftrks_pz->at(vtx)[1];
+	double pz3 = vtx_reftrks_pz->at(vtx)[2];
+	TLorentzVector p1,p2,p3,psum;
+	p1.SetXYZM(px1,py1,pz1,muonMassMeV);
+	p2.SetXYZM(px2,py2,pz2,muonMassMeV);
+	p3.SetXYZM(px3,py3,pz3,muonMassMeV);
+	psum = p1+p2+p3; // psum = getTlv3mu(vtx);
+	
+	// double mass   = vtx_mass->at(vtx); // psum.M();  in principle
+	// double pTsum  = vtx_pt->at(vtx);   // psum.Pt(); in principle
+	// double charge = vtx_charge->at(vtx);
+	// double pvalue = TMath::Prob(vtx_chi2->at(vtx),vtx_ndf->at(vtx));
+	
+	_DEBUG("");
+	
+	sources src;
+	getSrc(vtx,src);
+	if(!validateSrcChain(vtx)) _FATAL("wrong chain");
+	TString shortType = classifyTripletShort(vtx);
+	VtxType = classifyTripletCode(shortType);
+
+	// match the tracks
+	int itrk1 = src.trkIndex[0];
+	int itrk2 = src.trkIndex[1];
+	int itrk3 = src.trkIndex[2];
+	// match the sources        
+	int isrc1 = src.srcIndex[0];
+	int isrc2 = src.srcIndex[1];
+	int isrc3 = src.srcIndex[2];
+	// match the sources        
+	TString src1 = src.srcName[0];
+	TString src2 = src.srcName[1];
+	TString src3 = src.srcName[2];
+	// test if muons
+	bool isMuon1 = src.isMuon[0];
+	bool isMuon2 = src.isMuon[1];
+	bool isMuon3 = src.isMuon[2];
+	// test if TPmuon
+	bool isTPmu1 = src.isTPmu[0]; bool isTPa1 = src.isTPa[0]; bool isTPb1 = src.isTPb[0];
+	bool isTPmu2 = src.isTPmu[1]; bool isTPa2 = src.isTPa[1]; bool isTPb2 = src.isTPb[1];
+	bool isTPmu3 = src.isTPmu[2]; bool isTPa3 = src.isTPa[2]; bool isTPb3 = src.isTPb[2];
+	
+	TString allowedTP = "CombinedFitMuonParticles";
+	unsigned int nMuons = muons_pt->size();
+	unsigned int nTPas  = tpmu_vd[allowedTP+"_pt"]->size();
+	if(nMuons+nTPas<4) return;
+	
+	double margins = 30.*GeV2MeV;
+
+	vector<int> vfourthmuons;
+	for(unsigned int m=0 ; m<nMuons ; ++m)
+	{
+		if(isMuon1 && m==isrc1) continue;
+		if(isMuon2 && m==isrc2) continue;
+		if(isMuon3 && m==isrc3) continue;
+		
+		int itrk = (mastername!="muid") ? muons_inDetTrackIndex->at(m) : muid_inDetTrackIndex->at(m);
+		if(itrk<0 || itrk>=trks_pt->size()) continue;
+		
+		TLorentzVector vZ, v4th;
+		v4th.SetPtEtaPhiM(muons_pt->at(m),muons_eta->at(m),muons_phi->at(m),muonMassMeV);
+		vZ = psum+v4th;
+		double mQuad = vZ.M();
+		
+		if(fabs(vZ.M()-91.*GeV2MeV)>margins) continue;
+		
+		vfourthmuons.push_back(m);
+		
+		histos[name+"_triplet_mQuad_muons"]->Fill(mQuad,weight);
+		histos[name+"_triplet_mQuad_norm_muons"]->Fill(mQuad,weight);
+		// if(fabs(vZ.M()-91.*GeV2MeV)<margins/3.) cout << "Event: " << EventNumber << "(" << isrc1 << "," << isrc2 << "," << isrc3 << "+" << m << ") -> with 4th muon mQuad=" << mQuad << endl;
+	}
+	fourthMuons.insert(make_pair(vtx,vfourthmuons));
+	
+	vector<int> vfourthtps;
+	for(unsigned int m=0 ; m<nTPas ; ++m)
+	{
+		if(isTPa1 && m==isrc1) continue;
+		if(isTPa2 && m==isrc2) continue;
+		if(isTPa3 && m==isrc3) continue;
+		
+		bool isoverlap = false;
+		for(unsigned int n=0 ; n<vfourthmuons.size() ; ++n)
+		{
+			unsigned int m4 = vfourthmuons[n];
+			double dR  = deltaR(muons_eta->at(m4),muons_phi->at(m4),tpmu_vd[allowedTP+"_eta"]->at(m),tpmu_vd[allowedTP+"_phi"]->at(m));
+			double dpT = fabs(muons_pt->at(m4)-tpmu_vd[allowedTP+"_pt"]->at(m))/muons_pt->at(m4);
+			double dQ  = muons_charge->at(m4)-qtrk(tpmu_vd[allowedTP+"_qOverP"]->at(m));
+			
+			if(dR<0.01 && dpT<0.2 && dQ==0) { isoverlap=true; break; }
+		}
+		if(isoverlap) continue;
+		
+		TLorentzVector vZ, v4th;
+		v4th.SetPtEtaPhiM(tpmu_vd[allowedTP+"_pt"]->at(m),tpmu_vd[allowedTP+"_eta"]->at(m),tpmu_vd[allowedTP+"_phi"]->at(m),muonMassMeV);
+		vZ = psum+v4th;
+		double mQuad = vZ.M();
+		
+		if(fabs(vZ.M()-91.*GeV2MeV)>margins) continue;
+		
+		vfourthtps.push_back(m);
+		
+		histos[name+"_triplet_mQuad_TPa"]->Fill(mQuad,weight);
+		histos[name+"_triplet_mQuad_norm_TPa"]->Fill(mQuad,weight);
+		// if(fabs(vZ.M()-91.*GeV2MeV)<margins/3.) cout << "Event: " << EventNumber << "(" << isrc1 << "," << isrc2 << "," << isrc3 << "+" << m << ") -> with 4th TPa mQuad=" << mQuad << endl;
+	}
+	fourthTPs.insert(make_pair(vtx,vfourthtps));
+}
+
+
 bool acceptTriplet(unsigned int vtx, TString name, TMapTSP2TH1& histos, TMapTSP2TH2& histos2, double weight=1., double mBlindMin=1500., double mBlindMax=2000.)
 {	
 	_DEBUG("");
@@ -7062,6 +7436,11 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 		
 		_DEBUG("");
 		
+		/// clear Z-->4mu maps
+		clearZ4mus();
+		
+		_DEBUG("");
+		
 		// truth matching
 		if(!isdata && issignal)
 		{
@@ -7169,9 +7548,14 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 			
 			//// ignore vertices with calo triplets
 			if(shorttype.Contains("calo")) continue;
+			
+			//// ignore vertices with segment-tagged-TPs triplets
+			if(shorttype.Contains("tpmuB")) continue;
         
 			//// ignore vertices with m3body>4 GeV
-			if(m3body>4.*GeV2MeV) continue;
+			// if(m3body>4.*GeV2MeV) continue;
+			
+			countZ4mus(vtx,name,histos,wgt);
 			
 			/////////////////////
 			//// write the vertex
@@ -9090,6 +9474,11 @@ void NTUPmaker(TString runType, TString outDir, TString chnl, TString master, TS
 		addHist(histos,name,"triplet_dRmin_1muons_2tpmu", ";min[#DeltaR(3#mu,#mu_{i})];Normalized",labels,  100,0.,0.25);
 		addHist(histos,name,"triplet_dRmin_0muons_3tpmu", ";min[#DeltaR(3#mu,#mu_{i})];Normalized",labels,  100,0.,0.25);
 		
+		addHist(histos,name,"triplet_mQuad_muons", ";m(3body+muon);Events",labels,  60,(91.-30.)*GeV2MeV,(91.+30.)*GeV2MeV);
+		addHist(histos,name,"triplet_mQuad_TPa",   ";m(3body+TPa);Events",labels,  60,(91.-30.)*GeV2MeV,(91.+30.)*GeV2MeV);
+		addHist(histos,name,"triplet_mQuad_norm_muons", ";m(3body+muon);Normalized",labels,  60,(91.-30.)*GeV2MeV,(91.+30.)*GeV2MeV);
+		addHist(histos,name,"triplet_mQuad_norm_TPa",   ";m(3body+TPa);Normalized",labels,  60,(91.-30.)*GeV2MeV,(91.+30.)*GeV2MeV);
+		
 		addHist(histos,name,"triplet_dRmin",                  ";min[#DeltaR(3#mu,#mu_{i})];Normalized",labels,  100,0.,0.25);
 		addHist(histos,name,"triplet_dRmax",                  ";max[#DeltaR(3#mu,#mu_{i})];Normalized",labels,  100,0.,0.50);
 		addHist(histos,name,"triplet_dRmin_after_vtxclean",    ";min[#DeltaR(3#mu,#mu_{i})] after vtx clean;Normalized",labels,  100,0.,0.25);
@@ -9622,6 +10011,19 @@ void NTUPmaker(TString runType, TString outDir, TString chnl, TString master, TS
 	drawPadAll("unique_triggers_after_hadclean", pads[increment(pcounter)], channels, histos, leg);
 	drawPadAll("triggers_after_vtxmet",          pads[increment(pcounter)], channels, histos, leg);
 	drawPadAll("unique_triggers_after_vtxmet",   pads[increment(pcounter)], channels, histos, leg);
+	closeCnv(pdffilename);
+	/////////////////////////////////////////////////////////
+	
+	
+	_INFO("");
+	divx=2;
+	divy=2;
+	makeCnv(divx,divy,false);
+	pcounter = -1;
+	drawPadAll("triplet_mQuad_muons", pads[increment(pcounter)], channels, histos, leg);
+	drawPadAll("triplet_mQuad_TPa",   pads[increment(pcounter)], channels, histos, leg);
+	drawPadAll("triplet_mQuad_norm_muons", pads[increment(pcounter)], channels, histos, leg);
+	drawPadAll("triplet_mQuad_norm_TPa",   pads[increment(pcounter)], channels, histos, leg);
 	closeCnv(pdffilename);
 	/////////////////////////////////////////////////////////
 	

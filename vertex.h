@@ -1,5 +1,5 @@
-#include "TauLFVCommonTools/rawROOT.h"
-//#include "TauLFVCommonTools/enums.h"
+#include "rawROOT.h"
+//#include "enums.h"
 
 
 class vertex
@@ -140,28 +140,28 @@ private:
 	int m_index, m_code;
 	TString m_type;
 	TLorentzVector m_p4, m_pOS1, m_pOS2, m_pSS;
-	TLorentzVector m_trkP[3];
+	TLorentzVector m_trkP[6];
 	int m_njets;
 	TLorentzVector m_jetPE[4], m_jetPM[4];
 	double m_jetMV1[4];
 	double m_jetSumpt12, m_jetDphi12, m_jetDphi3body, m_jetDR12, m_jetDR3body;
-	bool m_ismuon[3], m_istp[3], m_istpa[3], m_istpb[3], m_iscalo[3];
-	bool m_ismedium[3], m_istight[3], m_isloose[3], m_iscb[3];
-	int m_isrc[3], m_itrk[3], m_trktype[3], m_order[3];
-	string m_src[3];
-	double m_trkChi2[3], m_trkChi2Ndf[3], m_trkPval[3], m_trkMuMatchChi2Ndf[3];
-	double m_trkptfrac[3], m_ptFrac12, m_ptFrac13, m_ptFrac23, m_dpt12, m_dpt13, m_dpt23;
-	double m_trkpbal[3], m_trksctang[3], m_trksctngb[3];
-	double m_trkQoverP[3], m_srcQoverP[3], m_trkPixeldEdx[3];
-	int m_trkNdf[3];
-	int m_trkPIXhits[3], m_trkDeadPIX[3], m_trkPIXholes[3];
-	int m_trkSCThits[3], m_trkDeadSCT[3], m_trkSCTholes[3];
-	int m_trkTRThits[3], m_trkTRToutliers[3], m_trkHtTRThits[3];
-	int m_trkUsedHitsdEdx[3];
-	int m_trkMDThits[3], m_trkTGCPhiHits[3], m_trkTGCEtaHits[3], m_trkCSCPhiHits[3], m_trkCSCEtaHits[3], m_trkRPCPhiHits[3], m_trkRPCEtaHits[3];
-	int m_trkCSCEtaHoles[3], m_trkCSCPhiHoles[3], m_trkRPCEtaHoles[3], m_trkRPCPhiHoles[3], m_trkMDTholes[3], m_trkTGCEtaHoles[3], m_trkTGCPhiHoles[3];
-	int m_trkOutliersOnTrack[3], m_trkStdDevOfChi2OS[3];
-	int m_trkPrecisionHits[3], m_trkPhiLayers[3], m_trkEtaPhiLayers[3], m_trkPrecisionHoles[3], m_trkEtaTriggerHoleLayers[3], m_trkPhiHoleLayers[3], m_trkPrecisionOutliers[3];
+	bool m_ismuon[6], m_istp[6], m_istpa[6], m_istpb[6], m_iscalo[6];
+	bool m_ismedium[6], m_istight[6], m_isloose[6], m_iscb[6];
+	int m_isrc[6], m_itrk[6], m_trktype[6], m_order[6];
+	string m_src[6];
+	double m_trkChi2[6], m_trkChi2Ndf[6], m_trkPval[6], m_trkMuMatchChi2Ndf[6];
+	double m_trkptfrac[6], m_ptFrac12, m_ptFrac13, m_ptFrac23, m_dpt12, m_dpt13, m_dpt23;
+	double m_trkpbal[6], m_trksctang[6], m_trksctngb[6];
+	double m_trkQoverP[6], m_srcQoverP[6], m_trkPixeldEdx[6];
+	int m_trkNdf[6];
+	int m_trkPIXhits[6], m_trkDeadPIX[6], m_trkPIXholes[6];
+	int m_trkSCThits[6], m_trkDeadSCT[6], m_trkSCTholes[6];
+	int m_trkTRThits[6], m_trkTRToutliers[6], m_trkHtTRThits[6];
+	int m_trkUsedHitsdEdx[6];
+	int m_trkMDThits[6], m_trkTGCPhiHits[6], m_trkTGCEtaHits[6], m_trkCSCPhiHits[6], m_trkCSCEtaHits[6], m_trkRPCPhiHits[6], m_trkRPCEtaHits[6];
+	int m_trkCSCEtaHoles[6], m_trkCSCPhiHoles[6], m_trkRPCEtaHoles[6], m_trkRPCPhiHoles[6], m_trkMDTholes[6], m_trkTGCEtaHoles[6], m_trkTGCPhiHoles[6];
+	int m_trkOutliersOnTrack[6], m_trkStdDevOfChi2OS[6];
+	int m_trkPrecisionHits[6], m_trkPhiLayers[6], m_trkEtaPhiLayers[6], m_trkPrecisionHoles[6], m_trkEtaTriggerHoleLayers[6], m_trkPhiHoleLayers[6], m_trkPrecisionOutliers[6];
 	
 	double m_met, m_metPhi, m_metDphi3body, m_metMt;
 	double m_chi2, m_ndf, m_chi2ndf, m_pvalue, m_lxy, m_lxyErr, m_tau;
@@ -170,6 +170,7 @@ private:
 
 int vertex::iSorted(int i)
 {
+	if(i>3)               return i;
 	if((m_order[0]-1)==i) return 0;
 	if((m_order[1]-1)==i) return 1;
 	if((m_order[2]-1)==i) return 2;

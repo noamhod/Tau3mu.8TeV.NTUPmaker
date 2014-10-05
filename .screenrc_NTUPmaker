@@ -1,0 +1,29 @@
+#.screenrc
+#Changes screen escape character to be `
+#escape ``
+
+#change the hardstatus settings to give an window list at the bottom of the
+#screen, with the time and date and with the current window highlighted
+hardstatus alwayslastline
+
+hardstatus string '%{gk}[ %{G}%H %{g}][%{= kK}%-Lw%{= cb}%50>%n*%f %t%?(%u)%?%{=b kK}%+Lw%< %{= kK}%=%{g}][%{Y}%l%{g}]%{=b kC}[ %d/%m %0c:%s ]%{W}'
+
+termcapinfo xterm|xterms|xs|rxvt ti@:te@
+
+# make bells in other windows audible
+bell "Bell in window % "
+
+# detach on hangup
+autodetach on
+
+# don't display the copyright page
+startup_message off
+
+vbell off
+
+defscrollback 5000
+
+screen -t		0	bash
+stuff "source setup.sh\015"
+screen -t 		1	bash
+screen -t 		2	bash
