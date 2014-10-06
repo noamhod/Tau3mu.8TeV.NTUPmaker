@@ -1,6 +1,7 @@
 #include "rawROOT.h"
 //#include "enums.h"
 
+static const unsigned int nMaxTracks = 6; // including the triplet, i.e. 3+3 here
 
 class vertex
 {
@@ -22,11 +23,13 @@ public:
 	TLorentzVector vtxPOS1()           { return m_pOS1;         };
 	TLorentzVector vtxPOS2()           { return m_pOS2;         };
 	TLorentzVector vtxPSS()            { return m_pSS;          };
+	TLorentzVector vtxPquad(int i)     { return m_pQuad[i];     };
 	double         vtxPt()             { return m_p4.Pt();      };
 	double         vtxM()              { return m_p4.M();       };
 	double         vtxMOS1()           { return m_pOS1.M();     };
 	double         vtxMOS2()           { return m_pOS2.M();     };
 	double         vtxMSS()            { return m_pSS.M();      };
+	double         vtxMquad(int i)     { return m_pQuad[i].M(); };
 	int            vtxNdf()            { return m_ndf;          };
 	double         vtxChi2()           { return m_chi2;         };
 	double         vtxChi2Ndf()        { return m_chi2ndf;      };
@@ -139,29 +142,29 @@ public:
 private:
 	int m_index, m_code;
 	TString m_type;
-	TLorentzVector m_p4, m_pOS1, m_pOS2, m_pSS;
-	TLorentzVector m_trkP[6];
+	TLorentzVector m_p4, m_pOS1, m_pOS2, m_pSS, m_pQuad[nMaxTracks-3];
+	TLorentzVector m_trkP[nMaxTracks];
 	int m_njets;
 	TLorentzVector m_jetPE[4], m_jetPM[4];
 	double m_jetMV1[4];
 	double m_jetSumpt12, m_jetDphi12, m_jetDphi3body, m_jetDR12, m_jetDR3body;
-	bool m_ismuon[6], m_istp[6], m_istpa[6], m_istpb[6], m_iscalo[6];
-	bool m_ismedium[6], m_istight[6], m_isloose[6], m_iscb[6];
-	int m_isrc[6], m_itrk[6], m_trktype[6], m_order[6];
-	string m_src[6];
-	double m_trkChi2[6], m_trkChi2Ndf[6], m_trkPval[6], m_trkMuMatchChi2Ndf[6];
-	double m_trkptfrac[6], m_ptFrac12, m_ptFrac13, m_ptFrac23, m_dpt12, m_dpt13, m_dpt23;
-	double m_trkpbal[6], m_trksctang[6], m_trksctngb[6];
-	double m_trkQoverP[6], m_srcQoverP[6], m_trkPixeldEdx[6];
-	int m_trkNdf[6];
-	int m_trkPIXhits[6], m_trkDeadPIX[6], m_trkPIXholes[6];
-	int m_trkSCThits[6], m_trkDeadSCT[6], m_trkSCTholes[6];
-	int m_trkTRThits[6], m_trkTRToutliers[6], m_trkHtTRThits[6];
-	int m_trkUsedHitsdEdx[6];
-	int m_trkMDThits[6], m_trkTGCPhiHits[6], m_trkTGCEtaHits[6], m_trkCSCPhiHits[6], m_trkCSCEtaHits[6], m_trkRPCPhiHits[6], m_trkRPCEtaHits[6];
-	int m_trkCSCEtaHoles[6], m_trkCSCPhiHoles[6], m_trkRPCEtaHoles[6], m_trkRPCPhiHoles[6], m_trkMDTholes[6], m_trkTGCEtaHoles[6], m_trkTGCPhiHoles[6];
-	int m_trkOutliersOnTrack[6], m_trkStdDevOfChi2OS[6];
-	int m_trkPrecisionHits[6], m_trkPhiLayers[6], m_trkEtaPhiLayers[6], m_trkPrecisionHoles[6], m_trkEtaTriggerHoleLayers[6], m_trkPhiHoleLayers[6], m_trkPrecisionOutliers[6];
+	bool m_ismuon[nMaxTracks], m_istp[nMaxTracks], m_istpa[nMaxTracks], m_istpb[nMaxTracks], m_iscalo[nMaxTracks];
+	bool m_ismedium[nMaxTracks], m_istight[nMaxTracks], m_isloose[nMaxTracks], m_iscb[nMaxTracks];
+	int m_isrc[nMaxTracks], m_itrk[nMaxTracks], m_trktype[nMaxTracks], m_order[nMaxTracks];
+	string m_src[nMaxTracks];
+	double m_trkChi2[nMaxTracks], m_trkChi2Ndf[nMaxTracks], m_trkPval[nMaxTracks], m_trkMuMatchChi2Ndf[nMaxTracks];
+	double m_trkptfrac[nMaxTracks], m_ptFrac12, m_ptFrac13, m_ptFrac23, m_dpt12, m_dpt13, m_dpt23;
+	double m_trkpbal[nMaxTracks], m_trksctang[nMaxTracks], m_trksctngb[nMaxTracks];
+	double m_trkQoverP[nMaxTracks], m_srcQoverP[nMaxTracks], m_trkPixeldEdx[nMaxTracks];
+	int m_trkNdf[nMaxTracks];
+	int m_trkPIXhits[nMaxTracks], m_trkDeadPIX[nMaxTracks], m_trkPIXholes[nMaxTracks];
+	int m_trkSCThits[nMaxTracks], m_trkDeadSCT[nMaxTracks], m_trkSCTholes[nMaxTracks];
+	int m_trkTRThits[nMaxTracks], m_trkTRToutliers[nMaxTracks], m_trkHtTRThits[nMaxTracks];
+	int m_trkUsedHitsdEdx[nMaxTracks];
+	int m_trkMDThits[nMaxTracks], m_trkTGCPhiHits[nMaxTracks], m_trkTGCEtaHits[nMaxTracks], m_trkCSCPhiHits[nMaxTracks], m_trkCSCEtaHits[nMaxTracks], m_trkRPCPhiHits[nMaxTracks], m_trkRPCEtaHits[nMaxTracks];
+	int m_trkCSCEtaHoles[nMaxTracks], m_trkCSCPhiHoles[nMaxTracks], m_trkRPCEtaHoles[nMaxTracks], m_trkRPCPhiHoles[nMaxTracks], m_trkMDTholes[nMaxTracks], m_trkTGCEtaHoles[nMaxTracks], m_trkTGCPhiHoles[nMaxTracks];
+	int m_trkOutliersOnTrack[nMaxTracks], m_trkStdDevOfChi2OS[nMaxTracks];
+	int m_trkPrecisionHits[nMaxTracks], m_trkPhiLayers[nMaxTracks], m_trkEtaPhiLayers[nMaxTracks], m_trkPrecisionHoles[nMaxTracks], m_trkEtaTriggerHoleLayers[nMaxTracks], m_trkPhiHoleLayers[nMaxTracks], m_trkPrecisionOutliers[nMaxTracks];
 	
 	double m_met, m_metPhi, m_metDphi3body, m_metMt;
 	double m_chi2, m_ndf, m_chi2ndf, m_pvalue, m_lxy, m_lxyErr, m_tau;
@@ -170,9 +173,9 @@ private:
 
 int vertex::iSorted(int i)
 {
-	if(i>3)               return i;
-	if((m_order[0]-1)==i) return 0;
-	if((m_order[1]-1)==i) return 1;
-	if((m_order[2]-1)==i) return 2;
+	if(i>2 && i<nMaxTracks) return i;
+	if((m_order[0]-1)==i)   return 0;
+	if((m_order[1]-1)==i)   return 1;
+	if((m_order[2]-1)==i)   return 2;
 	return -1;
 }

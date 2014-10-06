@@ -104,6 +104,7 @@ void flatout_book(TDirectory* olddir)
 	addBranch("evt_averageIntPerXing", order, INT);
 	
 	// weights info
+	addBranch("wgt_mcevt",      order, FLT);
 	addBranch("wgt_shapeFONLL", order, FLT);
 	addBranch("wgt_normFONLL",  order, FLT);
 	addBranch("wgt_luminosity", order, FLT);
@@ -132,6 +133,9 @@ void flatout_book(TDirectory* olddir)
 	addBranch("vtx_mOS1",      order, VFLT);
 	addBranch("vtx_mOS2",      order, VFLT);
 	addBranch("vtx_mSS",       order, VFLT);
+	addBranch("vtx_mQuad4",    order, VFLT);
+	addBranch("vtx_mQuad5",    order, VFLT);
+	addBranch("vtx_mQuad6",    order, VFLT);
 	addBranch("vtx_pt",        order, VFLT);
 	addBranch("vtx_rapidity",  order, VFLT);
 	addBranch("vtx_chi2",      order, VFLT);
@@ -182,214 +186,57 @@ void flatout_book(TDirectory* olddir)
 	addBranch("met_reffinal_dPhi3mu", order, VFLT);
 	
 	// Muons
-	for(int i=1 ; i<=6 ; ++i)
-	{
-		TString x = _s((float)i,0);
-		addBranch("mu_order"+x,          order, VINT);
-		addBranch("mu_type"+x,           order, VINT);
-		addBranch("mu_pt"+x,             order, VFLT);
-		addBranch("mu_eta"+x,            order, VFLT);
-		addBranch("mu_phi"+x,            order, VFLT);
-		addBranch("mu_sctangsig"+x,      order, VFLT);
-		addBranch("mu_sctngbsig"+x,      order, VFLT);
-		addBranch("mu_pbalsig"+x,        order, VFLT);
-		addBranch("mu_chi2trkfit"+x,     order, VFLT);
-		addBranch("mu_ndftrkfit"+x,      order, VFLT);
-		addBranch("mu_chi2ndftrkfit"+x,  order, VFLT);
-		addBranch("mu_pvaltrkfit"+x,     order, VFLT);
-		addBranch("mu_srcqoverp"+x,      order, VFLT);
-		addBranch("mu_trkqoverp"+x,      order, VFLT);
-		addBranch("mu_ptfrac"+x,         order, VFLT);
-		addBranch("mu_pixeldEdx"+x,      order, VFLT);
-		addBranch("mu_isMedium"+x,       order, VINT);
-		addBranch("mu_nPIXhits"+x,       order, VINT);
-		addBranch("mu_nDeadPIX"+x,       order, VINT);
-		addBranch("mu_nPIXholes"+x,      order, VINT);  
-		addBranch("mu_nSCThits"+x,       order, VINT);
-		addBranch("mu_nDeadSCT"+x,       order, VINT);
-		addBranch("mu_nSCTholes"+x,      order, VINT);
-		addBranch("mu_nTRThits"+x,       order, VINT);
-		addBranch("mu_nTRToutliers"+x,   order, VINT);
-		addBranch("mu_htTRThits"+x,      order, VINT);
-		addBranch("mu_nUsedHitsdEdx"+x,  order, VINT);
-		addBranch("mu_nMDThits"+x,                   order, VINT);
-		addBranch("mu_nTGCPhiHits"+x,                order, VINT);
-		addBranch("mu_nTGCEtaHits"+x,                order, VINT);
-		addBranch("mu_nCSCPhiHits"+x,                order, VINT);
-		addBranch("mu_nCSCEtaHits"+x,                order, VINT);
-		addBranch("mu_nRPCPhiHits"+x,                order, VINT);
-		addBranch("mu_nRPCEtaHits"+x,                order, VINT);
-		addBranch("mu_nCSCEtaHoles"+x,               order, VINT);
-		addBranch("mu_nCSCPhiHoles"+x,               order, VINT);
-		addBranch("mu_nRPCEtaHoles"+x,               order, VINT);
-		addBranch("mu_nRPCPhiHoles"+x,               order, VINT);
-		addBranch("mu_nMDTHoles"+x,                  order, VINT);
-		addBranch("mu_nTGCEtaHoles"+x,               order, VINT);
-		addBranch("mu_nTGCPhiHoles"+x,               order, VINT);
-		addBranch("mu_nOutliersOnTrack"+x,           order, VINT);
-		addBranch("mu_standardDeviationOfChi2OS"+x,  order, VINT);
-		addBranch("mu_nPrecisionHits"+x,         order, VINT);
-		addBranch("mu_nPhiLayers"+x,             order, VINT);
-		addBranch("mu_nEtaPhiLayers"+x,          order, VINT);
-		addBranch("mu_nPrecisionHoles"+x,        order, VINT);
-		addBranch("mu_nEtaTriggerHoleLayers"+x,  order, VINT);
-		addBranch("mu_nPhiHoleLayers"+x,         order, VINT);
-		addBranch("mu_nPrecisionOutliers"+x,     order, VINT);
-	}
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_order"+x,          order, VINT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_type"+x,           order, VINT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_pt"+x,             order, VFLT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_eta"+x,            order, VFLT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_phi"+x,            order, VFLT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_sctangsig"+x,      order, VFLT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_sctngbsig"+x,      order, VFLT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_pbalsig"+x,        order, VFLT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_chi2trkfit"+x,     order, VFLT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_ndftrkfit"+x,      order, VFLT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_chi2ndftrkfit"+x,  order, VFLT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_pvaltrkfit"+x,     order, VFLT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_srcqoverp"+x,      order, VFLT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_trkqoverp"+x,      order, VFLT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_ptfrac"+x,         order, VFLT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_pixeldEdx"+x,      order, VFLT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_isMedium"+x,       order, VINT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_nPIXhits"+x,       order, VINT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_nDeadPIX"+x,       order, VINT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_nPIXholes"+x,      order, VINT); }  
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_nSCThits"+x,       order, VINT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_nDeadSCT"+x,       order, VINT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_nSCTholes"+x,      order, VINT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_nTRThits"+x,       order, VINT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_nTRToutliers"+x,   order, VINT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_htTRThits"+x,      order, VINT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_nUsedHitsdEdx"+x,  order, VINT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_nMDThits"+x,                   order, VINT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_nTGCPhiHits"+x,                order, VINT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_nTGCEtaHits"+x,                order, VINT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_nCSCPhiHits"+x,                order, VINT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_nCSCEtaHits"+x,                order, VINT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_nRPCPhiHits"+x,                order, VINT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_nRPCEtaHits"+x,                order, VINT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_nCSCEtaHoles"+x,               order, VINT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_nCSCPhiHoles"+x,               order, VINT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_nRPCEtaHoles"+x,               order, VINT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_nRPCPhiHoles"+x,               order, VINT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_nMDTHoles"+x,                  order, VINT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_nTGCEtaHoles"+x,               order, VINT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_nTGCPhiHoles"+x,               order, VINT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_nOutliersOnTrack"+x,           order, VINT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_standardDeviationOfChi2OS"+x,  order, VINT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_nPrecisionHits"+x,         order, VINT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_nPhiLayers"+x,             order, VINT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_nEtaPhiLayers"+x,          order, VINT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_nPrecisionHoles"+x,        order, VINT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_nEtaTriggerHoleLayers"+x,  order, VINT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_nPhiHoleLayers"+x,         order, VINT); }
+	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_nPrecisionOutliers"+x,     order, VINT); }
 	
-	/*
-	addBranch("mu_order1",          order, VINT);
-	addBranch("mu_order2",          order, VINT);
-	addBranch("mu_order3",          order, VINT);
-	addBranch("mu_type1",           order, VINT);
-	addBranch("mu_type2",           order, VINT);
-	addBranch("mu_type3",           order, VINT);
-	addBranch("mu_pt1",             order, VFLT);
-	addBranch("mu_pt2",             order, VFLT);
-	addBranch("mu_pt3",             order, VFLT);
-	addBranch("mu_eta1",            order, VFLT);
-	addBranch("mu_eta2",            order, VFLT);
-	addBranch("mu_eta3",            order, VFLT);
-	addBranch("mu_phi1",            order, VFLT);
-	addBranch("mu_phi2",            order, VFLT);
-	addBranch("mu_phi3",            order, VFLT);
-	addBranch("mu_sctangsig1",      order, VFLT);
-	addBranch("mu_sctangsig2",      order, VFLT);
-	addBranch("mu_sctangsig3",      order, VFLT);
-	addBranch("mu_sctngbsig1",      order, VFLT);
-	addBranch("mu_sctngbsig2",      order, VFLT);
-	addBranch("mu_sctngbsig3",      order, VFLT);
-	addBranch("mu_pbalsig1",        order, VFLT);
-	addBranch("mu_pbalsig2",        order, VFLT);
-	addBranch("mu_pbalsig3",        order, VFLT);
-	addBranch("mu_chi2trkfit1",     order, VFLT);
-	addBranch("mu_chi2trkfit2",     order, VFLT);
-	addBranch("mu_chi2trkfit3",     order, VFLT);
-	addBranch("mu_ndftrkfit1",      order, VFLT);
-	addBranch("mu_ndftrkfit2",      order, VFLT);
-	addBranch("mu_ndftrkfit3",      order, VFLT);
-	addBranch("mu_chi2ndftrkfit1",  order, VFLT);
-	addBranch("mu_chi2ndftrkfit2",  order, VFLT);
-	addBranch("mu_chi2ndftrkfit3",  order, VFLT);
-	addBranch("mu_pvaltrkfit1",     order, VFLT);
-	addBranch("mu_pvaltrkfit2",     order, VFLT);
-	addBranch("mu_pvaltrkfit3",     order, VFLT);
-	addBranch("mu_srcqoverp1",      order, VFLT);
-	addBranch("mu_srcqoverp2",      order, VFLT);
-	addBranch("mu_srcqoverp3",      order, VFLT);
-	addBranch("mu_trkqoverp1",      order, VFLT);
-	addBranch("mu_trkqoverp2",      order, VFLT);
-	addBranch("mu_trkqoverp3",      order, VFLT);
-	addBranch("mu_ptfrac1",         order, VFLT);
-	addBranch("mu_ptfrac2",         order, VFLT);
-	addBranch("mu_ptfrac3",         order, VFLT);
-	addBranch("mu_pixeldEdx1",      order, VFLT);
-	addBranch("mu_pixeldEdx2",      order, VFLT);
-	addBranch("mu_pixeldEdx3",      order, VFLT);
-	addBranch("mu_isMedium1",       order, VINT);
-	addBranch("mu_isMedium2",       order, VINT);
-	addBranch("mu_isMedium3",       order, VINT);
-	addBranch("mu_nPIXhits1",       order, VINT);
-	addBranch("mu_nPIXhits2",       order, VINT);
-	addBranch("mu_nPIXhits3",       order, VINT);
-	addBranch("mu_nDeadPIX1",       order, VINT);
-	addBranch("mu_nDeadPIX2",       order, VINT);
-	addBranch("mu_nDeadPIX3",       order, VINT);
-	addBranch("mu_nPIXholes1",      order, VINT);
-	addBranch("mu_nPIXholes2",      order, VINT);
-	addBranch("mu_nPIXholes3",      order, VINT);  
-	addBranch("mu_nSCThits1",       order, VINT);
-	addBranch("mu_nSCThits2",       order, VINT);
-	addBranch("mu_nSCThits3",       order, VINT);
-	addBranch("mu_nDeadSCT1",       order, VINT);
-	addBranch("mu_nDeadSCT2",       order, VINT);
-	addBranch("mu_nDeadSCT3",       order, VINT);
-	addBranch("mu_nSCTholes1",      order, VINT);
-	addBranch("mu_nSCTholes2",      order, VINT);
-	addBranch("mu_nSCTholes3",      order, VINT);
-	addBranch("mu_nTRThits1",       order, VINT);
-	addBranch("mu_nTRThits2",       order, VINT);
-	addBranch("mu_nTRThits3",       order, VINT);
-	addBranch("mu_nTRToutliers1",   order, VINT);
-	addBranch("mu_nTRToutliers2",   order, VINT);
-	addBranch("mu_nTRToutliers3",   order, VINT);
-	addBranch("mu_htTRThits1",      order, VINT);
-	addBranch("mu_htTRThits2",      order, VINT);
-	addBranch("mu_htTRThits3",      order, VINT);
-	addBranch("mu_nUsedHitsdEdx1",  order, VINT);	
-	addBranch("mu_nUsedHitsdEdx2",  order, VINT);	
-	addBranch("mu_nUsedHitsdEdx3",  order, VINT);
-	
-	addBranch("mu_nMDThits1",                   order, VINT);
-	addBranch("mu_nMDThits2",                   order, VINT);
-	addBranch("mu_nMDThits3",                   order, VINT);
-	addBranch("mu_nTGCPhiHits1",                order, VINT);
-	addBranch("mu_nTGCPhiHits2",                order, VINT);
-	addBranch("mu_nTGCPhiHits3",                order, VINT);
-	addBranch("mu_nTGCEtaHits1",                order, VINT);
-	addBranch("mu_nTGCEtaHits2",                order, VINT);
-	addBranch("mu_nTGCEtaHits3",                order, VINT);
-	addBranch("mu_nCSCPhiHits1",                order, VINT);
-	addBranch("mu_nCSCPhiHits2",                order, VINT);
-	addBranch("mu_nCSCPhiHits3",                order, VINT);
-	addBranch("mu_nCSCEtaHits1",                order, VINT);
-	addBranch("mu_nCSCEtaHits2",                order, VINT);
-	addBranch("mu_nCSCEtaHits3",                order, VINT);
-	addBranch("mu_nRPCPhiHits1",                order, VINT);
-	addBranch("mu_nRPCPhiHits2",                order, VINT);
-	addBranch("mu_nRPCPhiHits3",                order, VINT);
-	addBranch("mu_nRPCEtaHits1",                order, VINT);
-	addBranch("mu_nRPCEtaHits2",                order, VINT);
-	addBranch("mu_nRPCEtaHits3",                order, VINT);
-	addBranch("mu_nCSCEtaHoles1",               order, VINT);
-	addBranch("mu_nCSCEtaHoles2",               order, VINT);
-	addBranch("mu_nCSCEtaHoles3",               order, VINT);
-	addBranch("mu_nCSCPhiHoles1",               order, VINT);
-	addBranch("mu_nCSCPhiHoles2",               order, VINT);
-	addBranch("mu_nCSCPhiHoles3",               order, VINT);
-	addBranch("mu_nRPCEtaHoles1",               order, VINT);
-	addBranch("mu_nRPCEtaHoles2",               order, VINT);
-	addBranch("mu_nRPCEtaHoles3",               order, VINT);
-	addBranch("mu_nRPCPhiHoles1",               order, VINT);
-	addBranch("mu_nRPCPhiHoles2",               order, VINT);
-	addBranch("mu_nRPCPhiHoles3",               order, VINT);
-	addBranch("mu_nMDTHoles1",                  order, VINT);
-	addBranch("mu_nMDTHoles2",                  order, VINT);
-	addBranch("mu_nMDTHoles3",                  order, VINT);
-	addBranch("mu_nTGCEtaHoles1",               order, VINT);
-	addBranch("mu_nTGCEtaHoles2",               order, VINT);
-	addBranch("mu_nTGCEtaHoles3",               order, VINT);
-	addBranch("mu_nTGCPhiHoles1",               order, VINT);
-	addBranch("mu_nTGCPhiHoles2",               order, VINT);
-	addBranch("mu_nTGCPhiHoles3",               order, VINT);
-	addBranch("mu_nOutliersOnTrack1",           order, VINT);
-	addBranch("mu_nOutliersOnTrack2",           order, VINT);
-	addBranch("mu_nOutliersOnTrack3",           order, VINT);
-	addBranch("mu_standardDeviationOfChi2OS1",  order, VINT);
-	addBranch("mu_standardDeviationOfChi2OS2",  order, VINT);
-	addBranch("mu_standardDeviationOfChi2OS3",  order, VINT);
-	addBranch("mu_nPrecisionHits1",         order, VINT);
-	addBranch("mu_nPrecisionHits2",         order, VINT);
-	addBranch("mu_nPrecisionHits3",         order, VINT);
-	addBranch("mu_nPhiLayers1",             order, VINT);
-	addBranch("mu_nPhiLayers2",             order, VINT);
-	addBranch("mu_nPhiLayers3",             order, VINT);
-	addBranch("mu_nEtaPhiLayers1",          order, VINT);
-	addBranch("mu_nEtaPhiLayers2",          order, VINT);
-	addBranch("mu_nEtaPhiLayers3",          order, VINT);
-	addBranch("mu_nPrecisionHoles1",        order, VINT);
-	addBranch("mu_nPrecisionHoles2",        order, VINT);
-	addBranch("mu_nPrecisionHoles3",        order, VINT);
-	addBranch("mu_nEtaTriggerHoleLayers1",  order, VINT);
-	addBranch("mu_nEtaTriggerHoleLayers2",  order, VINT);
-	addBranch("mu_nEtaTriggerHoleLayers3",  order, VINT);
-	addBranch("mu_nPhiHoleLayers1",         order, VINT);
-	addBranch("mu_nPhiHoleLayers2",         order, VINT);
-	addBranch("mu_nPhiHoleLayers3",         order, VINT);
-	addBranch("mu_nPrecisionOutliers1",     order, VINT);
-	addBranch("mu_nPrecisionOutliers2",     order, VINT);
-	addBranch("mu_nPrecisionOutliers3",     order, VINT);
-	*/
 	
 	// Jets
 	addBranch("jet_pt1",       order, VFLT);
@@ -421,6 +268,32 @@ void flatout_book(TDirectory* olddir)
 	addBranch("jet_dR3muJ1",   order, VFLT);
 	addBranch("jet_dphiJ1J2",  order, VFLT);
 	addBranch("jet_dRJ1J2",    order, VFLT);
+	
+	
+	// addBranch("mc_channel_number",  order, INT);
+	// addBranch("mc_event_number",    order, INT);
+	// addBranch("mc_event_weight",    order, FLT);
+	// addBranch("mc_pdgId",           order, VINT);
+	// addBranch("mc_pt",              order, VFLT);
+	// addBranch("mc_eta",             order, VFLT);
+	// addBranch("mc_phi",             order, VFLT);
+	// addBranch("mc_m",               order, VFLT);
+	// addBranch("mc_charge",          order, VFLT);
+	// addBranch("mc_prodvtx_x",       order, VFLT);
+	// addBranch("mc_prodvtx_y",       order, VFLT);
+	// addBranch("mc_prodvtx_z",       order, VFLT);
+	// addBranch("mc_decayvtx_z",      order, VFLT);
+	// addBranch("mc_decayvtx_z",      order, VFLT);
+	// addBranch("mc_decayvtx_z",      order, VFLT);
+	// /*
+	// vector<int>*          mc_productionvtx_barcode;
+	// vector<int>*          mc_decayvtx_barcode;
+	// vector<int>*          mc_has_productionvtx;
+	// vector<int>*          mc_has_decayvtx;
+	// */
+	
+	
+	
 	
 	// Attach the branches
 	flatout_file->cd();

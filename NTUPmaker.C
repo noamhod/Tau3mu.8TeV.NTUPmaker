@@ -84,11 +84,8 @@ TMapTSd  periodlumi;
 TMapTSb  periodenable;
 TMapTSb  binnedmcenable;
 TMapTSd  weights;
-TMapuivi fourthMuons;
-TMapuivi fourthTPs;
-TMapuivi fourthMuonTracks;
-TMapuivi fourthTPTracks;
 double totalLumi;
+TMapuivi isFourthTrack;
 
 double isolation;
 vector<double> iso10;
@@ -1804,159 +1801,61 @@ void fillFlatoutTree(vector<vertex>& vertices, int allPassing)
 		
 		_DEBUG("");
 		
-		flatout_vints["mu_order1"]          ->push_back(v.trkOrder(0));
-		flatout_vints["mu_order2"]          ->push_back(v.trkOrder(1));
-		flatout_vints["mu_order3"]          ->push_back(v.trkOrder(2));
-		flatout_vints["mu_type1"]           ->push_back(v.trkType(0));
-		flatout_vints["mu_type2"]           ->push_back(v.trkType(1));
-		flatout_vints["mu_type3"]           ->push_back(v.trkType(2));
-		flatout_vfloats["mu_pt1"]           ->push_back(v.trkP(0).Pt());
-		flatout_vfloats["mu_pt2"]           ->push_back(v.trkP(1).Pt());
-		flatout_vfloats["mu_pt3"]           ->push_back(v.trkP(2).Pt());
-		flatout_vfloats["mu_eta1"]          ->push_back(v.trkP(0).Eta());
-		flatout_vfloats["mu_eta2"]          ->push_back(v.trkP(1).Eta());
-		flatout_vfloats["mu_eta3"]          ->push_back(v.trkP(2).Eta());
-		flatout_vfloats["mu_phi1"]          ->push_back(v.trkP(0).Phi());
-		flatout_vfloats["mu_phi2"]          ->push_back(v.trkP(1).Phi());
-		flatout_vfloats["mu_phi3"]          ->push_back(v.trkP(2).Phi());
-		flatout_vfloats["mu_sctangsig1"]    ->push_back(v.trkSctAngMu(0));
-		flatout_vfloats["mu_sctangsig2"]    ->push_back(v.trkSctAngMu(1));
-		flatout_vfloats["mu_sctangsig3"]    ->push_back(v.trkSctAngMu(2));
-		flatout_vfloats["mu_sctngbsig1"]    ->push_back(v.trkSctNgbMu(0));
-		flatout_vfloats["mu_sctngbsig2"]    ->push_back(v.trkSctNgbMu(1));
-		flatout_vfloats["mu_sctngbsig3"]    ->push_back(v.trkSctNgbMu(2));
-		flatout_vfloats["mu_pbalsig1"]      ->push_back(v.trkPbalMu(0));
-		flatout_vfloats["mu_pbalsig2"]      ->push_back(v.trkPbalMu(1));
-		flatout_vfloats["mu_pbalsig3"]      ->push_back(v.trkPbalMu(2));
-		flatout_vfloats["mu_chi2trkfit1"]   ->push_back(v.trkChi2(0));
-		flatout_vfloats["mu_chi2trkfit2"]   ->push_back(v.trkChi2(1));
-		flatout_vfloats["mu_chi2trkfit3"]   ->push_back(v.trkChi2(2));
-		flatout_vfloats["mu_ndftrkfit1"]    ->push_back(v.trkNdf(0));
-		flatout_vfloats["mu_ndftrkfit2"]    ->push_back(v.trkNdf(1));
-		flatout_vfloats["mu_ndftrkfit3"]    ->push_back(v.trkNdf(2));
-		flatout_vfloats["mu_chi2ndftrkfit1"]->push_back(v.trkChi2Ndf(0));
-		flatout_vfloats["mu_chi2ndftrkfit2"]->push_back(v.trkChi2Ndf(1));
-		flatout_vfloats["mu_chi2ndftrkfit3"]->push_back(v.trkChi2Ndf(2));
-		flatout_vfloats["mu_pvaltrkfit1"]   ->push_back(v.trkPval(0));
-		flatout_vfloats["mu_pvaltrkfit2"]   ->push_back(v.trkPval(1));
-		flatout_vfloats["mu_pvaltrkfit3"]   ->push_back(v.trkPval(2));
-		flatout_vfloats["mu_srcqoverp1"]    ->push_back(v.trkQoverPsrc(0));
-		flatout_vfloats["mu_srcqoverp2"]    ->push_back(v.trkQoverPsrc(1));
-		flatout_vfloats["mu_srcqoverp3"]    ->push_back(v.trkQoverPsrc(2));
-		flatout_vfloats["mu_trkqoverp1"]    ->push_back(v.trkQoverPtrk(0));
-		flatout_vfloats["mu_trkqoverp2"]    ->push_back(v.trkQoverPtrk(1));
-		flatout_vfloats["mu_trkqoverp3"]    ->push_back(v.trkQoverPtrk(2));
-		flatout_vfloats["mu_ptfrac1"]       ->push_back(v.trkPtfrac(0));
-		flatout_vfloats["mu_ptfrac2"]       ->push_back(v.trkPtfrac(1));
-		flatout_vfloats["mu_ptfrac3"]       ->push_back(v.trkPtfrac(2));
-		flatout_vfloats["mu_pixeldEdx1"]    ->push_back(v.trkPixeldEdx(0));
-		flatout_vfloats["mu_pixeldEdx2"]    ->push_back(v.trkPixeldEdx(1));
-		flatout_vfloats["mu_pixeldEdx3"]    ->push_back(v.trkPixeldEdx(2));
-		flatout_vints["mu_isMedium1"]       ->push_back(v.trkIsMediumMu(0));
-		flatout_vints["mu_isMedium2"]       ->push_back(v.trkIsMediumMu(1));
-		flatout_vints["mu_isMedium3"]       ->push_back(v.trkIsMediumMu(2));
-		flatout_vints["mu_nPIXhits1"]       ->push_back(v.trkPIXhits(0));
-		flatout_vints["mu_nPIXhits2"]       ->push_back(v.trkPIXhits(1));
-		flatout_vints["mu_nPIXhits3"]       ->push_back(v.trkPIXhits(2));
-		flatout_vints["mu_nDeadPIX1"]       ->push_back(v.trkDeadPIX(0));
-		flatout_vints["mu_nDeadPIX2"]       ->push_back(v.trkDeadPIX(1));
-		flatout_vints["mu_nDeadPIX3"]       ->push_back(v.trkDeadPIX(2));
-		flatout_vints["mu_nPIXholes1"]      ->push_back(v.trkPIXholes(0));
-		flatout_vints["mu_nPIXholes2"]      ->push_back(v.trkPIXholes(1));
-		flatout_vints["mu_nPIXholes3"]      ->push_back(v.trkPIXholes(2));		
-		flatout_vints["mu_nSCThits1"]       ->push_back(v.trkSCThits(0));
-		flatout_vints["mu_nSCThits2"]       ->push_back(v.trkSCThits(1));
-		flatout_vints["mu_nSCThits3"]       ->push_back(v.trkSCThits(2));
-		flatout_vints["mu_nDeadSCT1"]       ->push_back(v.trkDeadSCT(0));
-		flatout_vints["mu_nDeadSCT2"]       ->push_back(v.trkDeadSCT(1));
-		flatout_vints["mu_nDeadSCT3"]       ->push_back(v.trkDeadSCT(2));
-		flatout_vints["mu_nSCTholes1"]      ->push_back(v.trkSCTholes(0));
-		flatout_vints["mu_nSCTholes2"]      ->push_back(v.trkSCTholes(1));
-		flatout_vints["mu_nSCTholes3"]      ->push_back(v.trkSCTholes(2));
-		flatout_vints["mu_nTRThits1"]       ->push_back(v.trkTRThits(0));
-		flatout_vints["mu_nTRThits2"]       ->push_back(v.trkTRThits(1));
-		flatout_vints["mu_nTRThits3"]       ->push_back(v.trkTRThits(2));
-		flatout_vints["mu_nTRToutliers1"]   ->push_back(v.trkTRToutliers(0));
-		flatout_vints["mu_nTRToutliers2"]   ->push_back(v.trkTRToutliers(1));
-		flatout_vints["mu_nTRToutliers3"]   ->push_back(v.trkTRToutliers(2));
-		flatout_vints["mu_htTRThits1"]      ->push_back(v.trkHtTRThits(0));
-		flatout_vints["mu_htTRThits2"]      ->push_back(v.trkHtTRThits(1));
-		flatout_vints["mu_htTRThits3"]      ->push_back(v.trkHtTRThits(2));
-		flatout_vints["mu_nUsedHitsdEdx1"]  ->push_back(v.trkUsedHitsdEdx(0));
-		flatout_vints["mu_nUsedHitsdEdx2"]  ->push_back(v.trkUsedHitsdEdx(1));
-		flatout_vints["mu_nUsedHitsdEdx3"]  ->push_back(v.trkUsedHitsdEdx(2));
-		
- 		flatout_vints["mu_nMDThits1"]->push_back(v.trkMDThits(0));
-		flatout_vints["mu_nMDThits2"]->push_back(v.trkMDThits(1));
-		flatout_vints["mu_nMDThits3"]->push_back(v.trkMDThits(2));
-		flatout_vints["mu_nTGCPhiHits1"]->push_back(v.trkTGCPhiHits(0));
-		flatout_vints["mu_nTGCPhiHits2"]->push_back(v.trkTGCPhiHits(1));
-		flatout_vints["mu_nTGCPhiHits3"]->push_back(v.trkTGCPhiHits(2));
-		flatout_vints["mu_nTGCEtaHits1"]->push_back(v.trkTGCEtaHits(0));
-		flatout_vints["mu_nTGCEtaHits2"]->push_back(v.trkTGCEtaHits(1));
-		flatout_vints["mu_nTGCEtaHits3"]->push_back(v.trkTGCEtaHits(2));
-		flatout_vints["mu_nCSCPhiHits1"]->push_back(v.trkCSCPhiHits(0));
-		flatout_vints["mu_nCSCPhiHits2"]->push_back(v.trkCSCPhiHits(1));
-		flatout_vints["mu_nCSCPhiHits3"]->push_back(v.trkCSCPhiHits(2));
-		flatout_vints["mu_nCSCEtaHits1"]->push_back(v.trkCSCEtaHits(0));
-		flatout_vints["mu_nCSCEtaHits2"]->push_back(v.trkCSCEtaHits(1));
-		flatout_vints["mu_nCSCEtaHits3"]->push_back(v.trkCSCEtaHits(2));
-		flatout_vints["mu_nRPCPhiHits1"]->push_back(v.trkRPCPhiHits(0));
-		flatout_vints["mu_nRPCPhiHits2"]->push_back(v.trkRPCPhiHits(1));
-		flatout_vints["mu_nRPCPhiHits3"]->push_back(v.trkRPCPhiHits(2));
-		flatout_vints["mu_nRPCEtaHits1"]->push_back(v.trkRPCEtaHits(0));
-		flatout_vints["mu_nRPCEtaHits2"]->push_back(v.trkRPCEtaHits(1));
-		flatout_vints["mu_nRPCEtaHits3"]->push_back(v.trkRPCEtaHits(2));
-		flatout_vints["mu_nCSCEtaHoles1"]->push_back(v.trkCSCEtaHoles(0));
-		flatout_vints["mu_nCSCEtaHoles2"]->push_back(v.trkCSCEtaHoles(1));
-		flatout_vints["mu_nCSCEtaHoles3"]->push_back(v.trkCSCEtaHoles(2));
-		flatout_vints["mu_nCSCPhiHoles1"]->push_back(v.trkCSCPhiHoles(0));
-		flatout_vints["mu_nCSCPhiHoles2"]->push_back(v.trkCSCPhiHoles(1));
-		flatout_vints["mu_nCSCPhiHoles3"]->push_back(v.trkCSCPhiHoles(2));
-		flatout_vints["mu_nRPCEtaHoles1"]->push_back(v.trkRPCEtaHoles(0));
-		flatout_vints["mu_nRPCEtaHoles2"]->push_back(v.trkRPCEtaHoles(1));
-		flatout_vints["mu_nRPCEtaHoles3"]->push_back(v.trkRPCEtaHoles(2));
-		flatout_vints["mu_nRPCPhiHoles1"]->push_back(v.trkRPCPhiHoles(0));
-		flatout_vints["mu_nRPCPhiHoles2"]->push_back(v.trkRPCPhiHoles(1));
-		flatout_vints["mu_nRPCPhiHoles3"]->push_back(v.trkRPCPhiHoles(2));
-		flatout_vints["mu_nMDTHoles1"]->push_back(v.trkMDTholes(0));
-		flatout_vints["mu_nMDTHoles2"]->push_back(v.trkMDTholes(1));
-		flatout_vints["mu_nMDTHoles3"]->push_back(v.trkMDTholes(2));
-		flatout_vints["mu_nTGCEtaHoles1"]->push_back(v.trkTGCEtaHoles(0));
-		flatout_vints["mu_nTGCEtaHoles2"]->push_back(v.trkTGCEtaHoles(1));
-		flatout_vints["mu_nTGCEtaHoles3"]->push_back(v.trkTGCEtaHoles(2));
-		flatout_vints["mu_nTGCPhiHoles1"]->push_back(v.trkTGCPhiHoles(0));
-		flatout_vints["mu_nTGCPhiHoles2"]->push_back(v.trkTGCPhiHoles(1));
-		flatout_vints["mu_nTGCPhiHoles3"]->push_back(v.trkTGCPhiHoles(2));
-		flatout_vints["mu_nOutliersOnTrack1"]->push_back(v.trkOutliersOnTrack(0));
-		flatout_vints["mu_nOutliersOnTrack2"]->push_back(v.trkOutliersOnTrack(1));
-		flatout_vints["mu_nOutliersOnTrack3"]->push_back(v.trkOutliersOnTrack(2));
-		flatout_vints["mu_standardDeviationOfChi2OS1"]->push_back(v.trkStdDevOfChi2OS(0));
-		flatout_vints["mu_standardDeviationOfChi2OS2"]->push_back(v.trkStdDevOfChi2OS(1));
-		flatout_vints["mu_standardDeviationOfChi2OS3"]->push_back(v.trkStdDevOfChi2OS(2));
-
-		flatout_vints["mu_nPrecisionHits1"]->push_back(v.trkPrecisionHits(0));
-		flatout_vints["mu_nPrecisionHits2"]->push_back(v.trkPrecisionHits(1));
-		flatout_vints["mu_nPrecisionHits3"]->push_back(v.trkPrecisionHits(2));
-		flatout_vints["mu_nPhiLayers1"]->push_back(v.trkPhiLayers(0));
-		flatout_vints["mu_nPhiLayers2"]->push_back(v.trkPhiLayers(1));
-		flatout_vints["mu_nPhiLayers3"]->push_back(v.trkPhiLayers(2));
-		flatout_vints["mu_nEtaPhiLayers1"]->push_back(v.trkEtaPhiLayers(0));
-		flatout_vints["mu_nEtaPhiLayers2"]->push_back(v.trkEtaPhiLayers(1));
-		flatout_vints["mu_nEtaPhiLayers3"]->push_back(v.trkEtaPhiLayers(2));
-		flatout_vints["mu_nPrecisionHoles1"]->push_back(v.trkPrecisionHoles(0));
-		flatout_vints["mu_nPrecisionHoles2"]->push_back(v.trkPrecisionHoles(1));
-		flatout_vints["mu_nPrecisionHoles3"]->push_back(v.trkPrecisionHoles(2));
-		flatout_vints["mu_nEtaTriggerHoleLayers1"]->push_back(v.trkEtaTriggerHoleLayers(0));
-		flatout_vints["mu_nEtaTriggerHoleLayers2"]->push_back(v.trkEtaTriggerHoleLayers(1));
-		flatout_vints["mu_nEtaTriggerHoleLayers3"]->push_back(v.trkEtaTriggerHoleLayers(2));
-		flatout_vints["mu_nPhiHoleLayers1"]->push_back(v.trkPhiHoleLayers(0));
-		flatout_vints["mu_nPhiHoleLayers2"]->push_back(v.trkPhiHoleLayers(1));
-		flatout_vints["mu_nPhiHoleLayers3"]->push_back(v.trkPhiHoleLayers(2));
-		flatout_vints["mu_nPrecisionOutliers1"]->push_back(v.trkPrecisionOutliers(0));
-		flatout_vints["mu_nPrecisionOutliers2"]->push_back(v.trkPrecisionOutliers(1));
-		flatout_vints["mu_nPrecisionOutliers3"]->push_back(v.trkPrecisionOutliers(2));
-
+		for(int m=0 ; m<nMaxTracks ; ++m)
+		{
+			TString x = _s((float)(m+1),0);
+			if(m>2 && isFourthTrack[vtx][m]) {  flatout_vfloats["vtx_mQuad"+x]->push_back(v.vtxMquad(m-3)); }
+		}
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_order"+x]          ->push_back(v.trkOrder(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_type"+x]           ->push_back(v.trkType(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_pt"+x]           ->push_back(v.trkP(m).Pt()); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_eta"+x]          ->push_back(v.trkP(m).Eta()); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_phi"+x]          ->push_back(v.trkP(m).Phi()); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_sctangsig"+x]    ->push_back(v.trkSctAngMu(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_sctngbsig"+x]    ->push_back(v.trkSctNgbMu(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_pbalsig"+x]      ->push_back(v.trkPbalMu(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_chi2trkfit"+x]   ->push_back(v.trkChi2(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_ndftrkfit"+x]    ->push_back(v.trkNdf(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_chi2ndftrkfit"+x]->push_back(v.trkChi2Ndf(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_pvaltrkfit"+x]   ->push_back(v.trkPval(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_srcqoverp"+x]    ->push_back(v.trkQoverPsrc(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_trkqoverp"+x]    ->push_back(v.trkQoverPtrk(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_ptfrac"+x]       ->push_back(v.trkPtfrac(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_pixeldEdx"+x]    ->push_back(v.trkPixeldEdx(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_isMedium"+x]       ->push_back(v.trkIsMediumMu(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nPIXhits"+x]       ->push_back(v.trkPIXhits(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nDeadPIX"+x]       ->push_back(v.trkDeadPIX(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nPIXholes"+x]      ->push_back(v.trkPIXholes(m)); }	
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nSCThits"+x]       ->push_back(v.trkSCThits(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nDeadSCT"+x]       ->push_back(v.trkDeadSCT(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nSCTholes"+x]      ->push_back(v.trkSCTholes(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nTRThits"+x]       ->push_back(v.trkTRThits(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nTRToutliers"+x]   ->push_back(v.trkTRToutliers(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_htTRThits"+x]      ->push_back(v.trkHtTRThits(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nUsedHitsdEdx"+x]  ->push_back(v.trkUsedHitsdEdx(m)); }
+	 	for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nMDThits"+x]->push_back(v.trkMDThits(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nTGCPhiHits"+x]->push_back(v.trkTGCPhiHits(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nTGCEtaHits"+x]->push_back(v.trkTGCEtaHits(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nCSCPhiHits"+x]->push_back(v.trkCSCPhiHits(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nCSCEtaHits"+x]->push_back(v.trkCSCEtaHits(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nRPCPhiHits"+x]->push_back(v.trkRPCPhiHits(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nRPCEtaHits"+x]->push_back(v.trkRPCEtaHits(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nCSCEtaHoles"+x]->push_back(v.trkCSCEtaHoles(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nCSCPhiHoles"+x]->push_back(v.trkCSCPhiHoles(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nRPCEtaHoles"+x]->push_back(v.trkRPCEtaHoles(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nRPCPhiHoles"+x]->push_back(v.trkRPCPhiHoles(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nMDTHoles"+x]->push_back(v.trkMDTholes(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nTGCEtaHoles"+x]->push_back(v.trkTGCEtaHoles(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nTGCPhiHoles"+x]->push_back(v.trkTGCPhiHoles(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nOutliersOnTrack"+x]->push_back(v.trkOutliersOnTrack(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_standardDeviationOfChi2OS"+x]->push_back(v.trkStdDevOfChi2OS(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nPrecisionHits"+x]->push_back(v.trkPrecisionHits(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nPhiLayers"+x]->push_back(v.trkPhiLayers(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nEtaPhiLayers"+x]->push_back(v.trkEtaPhiLayers(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nPrecisionHoles"+x]->push_back(v.trkPrecisionHoles(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nEtaTriggerHoleLayers"+x]->push_back(v.trkEtaTriggerHoleLayers(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nPhiHoleLayers"+x]->push_back(v.trkPhiHoleLayers(m)); }
+		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nPrecisionOutliers"+x]->push_back(v.trkPrecisionOutliers(m)); }
 		
 		_DEBUG("");
 
@@ -4782,6 +4681,128 @@ double getYline(double x1, double y1, double x2, double y2, double x)
 	return y;
 }
 
+// void clearZ4mus()
+// {
+// 	for(TMapuivi::iterator it=fourthMuons.begin() ; it!=fourthMuons.end() ; ++it) it->second.clear(); fourthMuons.clear();
+// 	for(TMapuivi::iterator it=fourthTPs.begin()   ; it!=fourthTPs.end()   ; ++it) it->second.clear(); fourthTPs.clear();
+// }
+// void countZ4mus(unsigned int vtx/*, TString name, TMapTSP2TH1& histos, double weight=1.*/)
+// {	
+// 	double px1 = vtx_reftrks_px->at(vtx)[0];
+// 	double px2 = vtx_reftrks_px->at(vtx)[1];
+// 	double px3 = vtx_reftrks_px->at(vtx)[2];	
+// 	double py1 = vtx_reftrks_py->at(vtx)[0];
+// 	double py2 = vtx_reftrks_py->at(vtx)[1];
+// 	double py3 = vtx_reftrks_py->at(vtx)[2];
+// 	double pz1 = vtx_reftrks_pz->at(vtx)[0];
+// 	double pz2 = vtx_reftrks_pz->at(vtx)[1];
+// 	double pz3 = vtx_reftrks_pz->at(vtx)[2];
+// 	TLorentzVector p1,p2,p3,psum;
+// 	p1.SetXYZM(px1,py1,pz1,muonMassMeV);
+// 	p2.SetXYZM(px2,py2,pz2,muonMassMeV);
+// 	p3.SetXYZM(px3,py3,pz3,muonMassMeV);
+// 	psum = p1+p2+p3; // psum = getTlv3mu(vtx);
+// 	
+// 	// double mass   = vtx_mass->at(vtx); // psum.M();  in principle
+// 	// double pTsum  = vtx_pt->at(vtx);   // psum.Pt(); in principle
+// 	// double charge = vtx_charge->at(vtx);
+// 	// double pvalue = TMath::Prob(vtx_chi2->at(vtx),vtx_ndf->at(vtx));
+// 	
+// 	_DEBUG("");
+// 	
+// 	sources src;
+// 	getSrc(vtx,src);
+// 	if(!validateSrcChain(vtx)) _FATAL("wrong chain");
+// 	TString shortType = classifyTripletShort(vtx);
+// 	VtxType = classifyTripletCode(shortType);
+// 
+// 	// match the tracks
+// 	int itrk1 = src.trkIndex[0];
+// 	int itrk2 = src.trkIndex[1];
+// 	int itrk3 = src.trkIndex[2];
+// 	// match the sources        
+// 	int isrc1 = src.srcIndex[0];
+// 	int isrc2 = src.srcIndex[1];
+// 	int isrc3 = src.srcIndex[2];
+// 	// match the sources        
+// 	TString src1 = src.srcName[0];
+// 	TString src2 = src.srcName[1];
+// 	TString src3 = src.srcName[2];
+// 	// test if muons
+// 	bool isMuon1 = src.isMuon[0];
+// 	bool isMuon2 = src.isMuon[1];
+// 	bool isMuon3 = src.isMuon[2];
+// 	// test if TPmuon
+// 	bool isTPmu1 = src.isTPmu[0]; bool isTPa1 = src.isTPa[0]; bool isTPb1 = src.isTPb[0];
+// 	bool isTPmu2 = src.isTPmu[1]; bool isTPa2 = src.isTPa[1]; bool isTPb2 = src.isTPb[1];
+// 	bool isTPmu3 = src.isTPmu[2]; bool isTPa3 = src.isTPa[2]; bool isTPb3 = src.isTPb[2];
+// 	
+// 	TString allowedTP = "CombinedFitMuonParticles";
+// 	unsigned int nMuons = muons_pt->size();
+// 	unsigned int nTPas  = tpmu_vd[allowedTP+"_pt"]->size();
+// 	if(nMuons+nTPas<4) return;
+// 	
+// 	double margins = 30.*GeV2MeV;
+// 
+// 	vector<int> vfourthmuons;
+// 	for(unsigned int m=0 ; m<nMuons ; ++m)
+// 	{
+// 		if(isMuon1 && m==isrc1) continue;
+// 		if(isMuon2 && m==isrc2) continue;
+// 		if(isMuon3 && m==isrc3) continue;
+// 		
+// 		int itrk = (mastername!="muid") ? muons_inDetTrackIndex->at(m) : muid_inDetTrackIndex->at(m);
+// 		if(itrk<0 || itrk>=trks_pt->size()) continue;
+// 		
+// 		TLorentzVector vZ, v4th;
+// 		v4th.SetPtEtaPhiM(muons_pt->at(m),muons_eta->at(m),muons_phi->at(m),muonMassMeV);
+// 		vZ = psum+v4th;
+// 		double mQuad = vZ.M();
+// 		
+// 		if(fabs(vZ.M()-91.*GeV2MeV)>margins) continue;
+// 		
+// 		vfourthmuons.push_back(m);
+// 		
+// 		// histos[name+"_triplet_mQuad_muons"]->Fill(mQuad,weight);
+// 		// histos[name+"_triplet_mQuad_norm_muons"]->Fill(mQuad,weight);
+// 		if(fabs(vZ.M()-91.*GeV2MeV)<margins/3.) cout << "Event: " << EventNumber << "(" << isrc1 << "," << isrc2 << "," << isrc3 << "+" << m << ") -> with 4th muon mQuad=" << mQuad << endl;
+// 	}
+// 	fourthMuons.insert(make_pair(vtx,vfourthmuons));
+// 	
+// 	vector<int> vfourthtps;
+// 	for(unsigned int m=0 ; m<nTPas ; ++m)
+// 	{
+// 		if(isTPa1 && m==isrc1) continue;
+// 		if(isTPa2 && m==isrc2) continue;
+// 		if(isTPa3 && m==isrc3) continue;
+// 		
+// 		bool isoverlap = false;
+// 		for(unsigned int n=0 ; n<vfourthmuons.size() ; ++n)
+// 		{
+// 			unsigned int m4 = vfourthmuons[n];
+// 			double dR  = deltaR(muons_eta->at(m4),muons_phi->at(m4),tpmu_vd[allowedTP+"_eta"]->at(m),tpmu_vd[allowedTP+"_phi"]->at(m));
+// 			double dpT = fabs(muons_pt->at(m4)-tpmu_vd[allowedTP+"_pt"]->at(m))/muons_pt->at(m4);
+// 			double dQ  = muons_charge->at(m4)-qtrk(tpmu_vd[allowedTP+"_qOverP"]->at(m));
+// 			
+// 			if(dR<0.01 && dpT<0.2 && dQ==0) { isoverlap=true; break; }
+// 		}
+// 		if(isoverlap) continue;
+// 		
+// 		TLorentzVector vZ, v4th;
+// 		v4th.SetPtEtaPhiM(tpmu_vd[allowedTP+"_pt"]->at(m),tpmu_vd[allowedTP+"_eta"]->at(m),tpmu_vd[allowedTP+"_phi"]->at(m),muonMassMeV);
+// 		vZ = psum+v4th;
+// 		double mQuad = vZ.M();
+// 		
+// 		if(fabs(vZ.M()-91.*GeV2MeV)>margins) continue;
+// 		
+// 		vfourthtps.push_back(m);
+// 		
+// 		// histos[name+"_triplet_mQuad_TPa"]->Fill(mQuad,weight);
+// 		// histos[name+"_triplet_mQuad_norm_TPa"]->Fill(mQuad,weight);
+// 		if(fabs(vZ.M()-91.*GeV2MeV)<margins/3.) cout << "Event: " << EventNumber << "(" << isrc1 << "," << isrc2 << "," << isrc3 << "+" << m << ") -> with 4th TPa mQuad=" << mQuad << endl;
+// 	}
+// 	fourthTPs.insert(make_pair(vtx,vfourthtps));
+// }
 void vertex::set(unsigned int vtx)
 {
 	sources src;
@@ -5386,30 +5407,94 @@ void vertex::set(unsigned int vtx)
 	TString master = mastername;
 	
 	//// Fill the 4th tracks, allow only 3 per triplet and fill first the muons
-	unsigned int n4thMuons = fourthMuons[vtx].size();
-	unsigned int n4thTPs   = fourthTPs[vtx].size();
-	int nMax4thTracks = 3;
+	// cout << "\n------------- Event: " << EventNumber << " -------------" << endl;
+	/////////////////////////
+	vector<int> vtmp;
+	isFourthTrack.insert(make_pair(vtx,vtmp));
+	for(int t=1 ; t<=nMaxTracks ; ++t)
+	{
+		if(t<=3) isFourthTrack[vtx].push_back(1);
+		else     isFourthTrack[vtx].push_back(0);
+	}
+	/////////////////////////
+	double margins = 30.*GeV2MeV;
+	TString srctp = "CombinedFitMuonParticles";
+	unsigned int nMuons = muons_pt->size();
+	unsigned int nTPas  = tpmu_vd[srctp+"_pt"]->size();
+	vector<int> vfourthmuons;
+	vector<int> vfourthtps;
+	if(nMuons>3 || nTPas>3)
+	{
+		for(unsigned int m=0 ; m<nMuons ; ++m)
+		{
+			if(isMuon1 && m==isrc1) continue;
+			if(isMuon2 && m==isrc2) continue;
+			if(isMuon3 && m==isrc3) continue;
+			
+			int itrk = (mastername!="muid") ? muons_inDetTrackIndex->at(m) : muid_inDetTrackIndex->at(m);
+			if(itrk<0 || itrk>=trks_pt->size()) continue;
+			
+			
+			
+			TLorentzVector vZ, v4th;
+			v4th.SetPtEtaPhiM(muons_pt->at(m),muons_eta->at(m),muons_phi->at(m),muonMassMeV);
+			vZ = psum+v4th;
+			double mQuad = vZ.M();
+			if(fabs(vZ.M()-91.*GeV2MeV)>margins) continue;
+			
+			vfourthmuons.push_back(m);
+			// cout << "\tEvent: " << EventNumber << "(" << isrc1 << "," << isrc2 << "," << isrc3 << "+" << m << ") -> with 4th muon mQuad=" << mQuad << endl;
+		}
+		
+		for(unsigned int m=0 ; m<nTPas ; ++m)
+		{
+			if(isTPa1 && m==isrc1) continue;
+			if(isTPa2 && m==isrc2) continue;
+			if(isTPa3 && m==isrc3) continue;
+			
+			bool isoverlap = false;
+			for(unsigned int n=0 ; n<vfourthmuons.size() ; ++n)
+			{
+				unsigned int m4 = vfourthmuons[n];
+				double dR  = deltaR(muons_eta->at(m4),muons_phi->at(m4),tpmu_vd[srctp+"_eta"]->at(m),tpmu_vd[srctp+"_phi"]->at(m));
+				double dpT = fabs(muons_pt->at(m4)-tpmu_vd[srctp+"_pt"]->at(m))/muons_pt->at(m4);
+				double dQ  = muons_charge->at(m4)-qtrk(tpmu_vd[srctp+"_qOverP"]->at(m));
+				
+				if(dR<0.01 && dpT<0.2 && dQ==0) { isoverlap=true; break; }
+			}
+			if(isoverlap) continue;
+			
+			TLorentzVector vZ, v4th;
+			v4th.SetPtEtaPhiM(tpmu_vd[srctp+"_pt"]->at(m),tpmu_vd[srctp+"_eta"]->at(m),tpmu_vd[srctp+"_phi"]->at(m),muonMassMeV);
+			vZ = psum+v4th;
+			double mQuad = vZ.M();
+			if(fabs(vZ.M()-91.*GeV2MeV)>margins) continue;
+			
+			vfourthtps.push_back(m);
+			// cout << "\tEvent: " << EventNumber << "(" << isrc1 << "," << isrc2 << "," << isrc3 << "+" << m << ") -> with 4th TPa mQuad=" << mQuad << endl;
+		}
+	}
+	unsigned int n4thMuons = vfourthmuons.size();
+	unsigned int n4thTPs   = vfourthtps.size();
+	int nMax4thTracks = nMaxTracks-3;
 	int nFilled = 0;
-	for(unsigned int i=0 ; (i<n4thMuons && (2+i+1)<3+nMax4thTracks) ; ++i) 
-	{	
+	// if(n4thMuons+n4thTPs>0) cout << "\tn4thMuons=" << n4thMuons << ", n4thTPs=" << n4thTPs << endl;
+	for(unsigned int i=0 ; (i<n4thMuons && (2+i+1)<(3+nMax4thTracks)) ; ++i) 
+	{
 		unsigned int ithis = 2+(i+1);
 		
-		unsigned int m4 = fourthMuons[vtx][i];
-			
-		_DEBUG("");
+		unsigned int m4 = vfourthmuons[i];
 		
 		int itrk = (master!="muid") ? muons_inDetTrackIndex->at(m4) : muid_inDetTrackIndex->at(m4);
-		// cout << "Event: " << EventNumber << " itrk=" << itrk << ", trks size="<< trks_pt->size() << endl;
-		if(itrk<0 || itrk>=(int)trks_pt->size()) continue;
+		// if(itrk<0 || itrk>=(int)trks_pt->size()) continue;
 		
-		_DEBUG("");
+		isFourthTrack[vtx][ithis] = 1;
 		
 		TLorentzVector p4;
 		p4.SetPtEtaPhiM(muons_pt->at(m4),muons_eta->at(m4),muons_phi->at(m4),muonMassMeV);
 		m_trkP[ithis] = p4;
 
-		_DEBUG("");
-
+		m_pQuad[ithis-3]           = p4+psum;
 		m_isrc[ithis]              = m4;
 		m_src[ithis]               = (string)master;
 		m_order[ithis]             = -1;
@@ -5432,16 +5517,12 @@ void vertex::set(unsigned int vtx)
 		m_trkPval[ithis]           = TMath::Prob(m_trkChi2[ithis],m_trkNdf[ithis]);
 		m_trkChi2Ndf[ithis]        = m_trkChi2[ithis]/m_trkNdf[ithis];
 
-		_DEBUG("");
-
 		TVector3 pme;
 		double q=-999.;
 		if(master!="muid") { pme.SetXYZ(muons_px_me->at(m4),muons_py_me->at(m4),muons_pz_me->at(m4)); q = muons_charge->at(m4); }
 		else               { pme.SetXYZ(muid_px_me->at(m4), muid_py_me->at(m4), muid_pz_me->at(m4));  q = muid_charge->at(m4);  }
 		double qopmemu = q/pme.Mag();
-		m_srcQoverP[ithis] = qopmemu; // tpmu_vd[src+"_qOverP"]->at(m4);
- 
-		_DEBUG("");
+		m_srcQoverP[ithis] = qopmemu;
 
 		m_itrk[ithis]            = itrk;
 		m_trkQoverP[ithis]       = trks_qoverp->at(itrk);
@@ -5456,8 +5537,6 @@ void vertex::set(unsigned int vtx)
 		m_trkTRThits[ithis]      = trks_nTRT->at(itrk);
 		m_trkTRToutliers[ithis]  = trks_nTRTOutliers->at(itrk);
 		m_trkHtTRThits[ithis]    = trks_nHighThresholdTRTHits->at(itrk);
-
-		_DEBUG("");
 
 		m_trkMDThits[ithis]         = -1; // tpmu_vi[src+"_numberOfMdtHits"]->at(m4);
 		m_trkTGCPhiHits[ithis]      = -1; // tpmu_vi[src+"_numberOfTgcPhiHits"]->at(m4);
@@ -5475,8 +5554,6 @@ void vertex::set(unsigned int vtx)
 		m_trkMDTholes[ithis]        = -1; // tpmu_vi[src+"_numberOfMdtHoles"]->at(m4);
 		m_trkOutliersOnTrack[ithis] = -1; // tpmu_vi[src+"_numberOfOutliersOnTrack"]->at(m4);
 		m_trkStdDevOfChi2OS[ithis]  = -1; // tpmu_vi[src+"_standardDeviationOfChi2OS"]->at(m4);
-		
-		_DEBUG("");
 		
 		m_trkPrecisionHits[ithis] = 0;
 		// unsigned int N = tpmu_vvi[src+"_nprecisionHits"]->at(mr).size();
@@ -5505,29 +5582,32 @@ void vertex::set(unsigned int vtx)
 		m_trkPrecisionOutliers[ithis] = 0;
 		// N = tpmu_vvi[src+"_nprecisionOutliers"]->at(m4).size();
 		// for(unsigned int j=0 ; j<N ; ++j) m_trkPrecisionOutliers[ithis] += tpmu_vvi[src+"_nprecisionOutliers"]->at(m4)[j];
-
-		_DEBUG("");
 		
 		//////////////
 		nFilled++; ///
 		//////////////
+		
+		// cout << "\t Adding muon: ithis=" << ithis << ", m4=" << m4 << ", itrk=" << itrk << ", mQuad=" << (p4+psum).M() << ", nFilled=" << nFilled << endl;
 	}
-	if(nFilled<3)
+	// cout << "\tAdded " << nFilled << " muons" << endl;
+	
+	int nTPaFilled = 0;
+	if(nFilled<nMax4thTracks)
 	{
-		TString srctp = "CombinedFitMuonParticles";
-		for(unsigned int i=0 ; (i<n4thTPs && (2+nFilled+i+1)<3+nMax4thTracks) ; ++i) 
+		// cout << "\tGoing to add " << nMax4thTracks-nFilled << " TPas" << endl;
+		
+		for(unsigned int i=0 ; (i<n4thTPs && (2+nFilled+i+1)<(3+nMax4thTracks)) ; ++i) 
 		{
 			unsigned int ithis = 2+nFilled+(i+1);
 			
-			_DEBUG("");
-			
-			unsigned int m4 = fourthTPs[vtx][i];
+			unsigned int m4 = vfourthtps[i];
 			TLorentzVector p4;
 			p4.SetPtEtaPhiM(tpmu_vd[srctp+"_pt"]->at(m4),tpmu_vd[srctp+"_eta"]->at(m4),tpmu_vd[srctp+"_phi"]->at(m4),muonMassMeV);
-			m_trkP[2+nFilled+(i+1)] = p4;
+			m_trkP[ithis] = p4;
 			
-			_DEBUG("");
+			isFourthTrack[vtx][ithis] = 1;
 			
+			m_pQuad[ithis-3]           = p4+psum;
 			m_isrc[ithis]              = m4;
 			m_src[ithis]               = "";
 			m_order[ithis]             = -1;
@@ -5550,8 +5630,6 @@ void vertex::set(unsigned int vtx)
 			m_trkPval[ithis]           = TMath::Prob(m_trkChi2[ithis],m_trkNdf[ithis]);
 			m_trkChi2Ndf[ithis]        = m_trkChi2[ithis]/m_trkNdf[ithis];
 			m_srcQoverP[ithis]         = tpmu_vd[srctp+"_qOverP"]->at(m4);
-
-			_DEBUG("");
 			
 			m_itrk[ithis]            = -1; // itrk;
 			m_trkQoverP[ithis]       = tpmu_vd[srctp+"_qOverP"]->at(m4); // (itrk<0) ? -1 : trks_qoverp->at(itrk);
@@ -5566,8 +5644,6 @@ void vertex::set(unsigned int vtx)
 			m_trkTRThits[ithis]      = tpmu_vi[srctp+"_nTRT"]->at(m4); // (itrk<0) ? -1 : trks_nTRT->at(itrk);
 			m_trkTRToutliers[ithis]  = tpmu_vi[srctp+"_nTRTOutliers"]->at(m4); // (itrk<0) ? -1 : trks_nTRTOutliers->at(itrk);
 			m_trkHtTRThits[ithis]    = tpmu_vi[srctp+"_nHighThresholdTRTHits"]->at(m4); // (itrk<0) ? -1 : trks_nHighThresholdTRTHits->at(itrk);
-
-			_DEBUG("");
 
 			m_trkMDThits[ithis]         = tpmu_vi[srctp+"_numberOfMdtHits"]->at(m4);
 			m_trkTGCPhiHits[ithis]      = tpmu_vi[srctp+"_numberOfTgcPhiHits"]->at(m4);
@@ -5617,10 +5693,18 @@ void vertex::set(unsigned int vtx)
 			for(unsigned int j=0 ; j<N ; ++j) m_trkPrecisionOutliers[ithis] += tpmu_vvi[srctp+"_nprecisionOutliers"]->at(m4)[j];
 			
 			_DEBUG("");
+			
+			/////////////////
+			nTPaFilled++; ///
+			/////////////////
+			
+			// cout << "\t Adding TPa: ithis=" << ithis << ", m4=" << m4 << ", mQuad=" << (p4+psum).M() << ", nTPaFilled=" << nTPaFilled << endl;
 		}
+		
+		// cout << "\tAdded " << nTPaFilled << " TPas" << endl;
 	}
-	
-	
+	// cout << "\tAdded " << nFilled+nTPaFilled << " Muons+TPas" << endl;
+	// cout << "--------------------------------------------" << endl;
 	_DEBUG("");
 	
 	
@@ -6654,129 +6738,6 @@ bool acceptVtxMET(TString method, unsigned int vtx, vector<vertex>& vertices, TS
 	return true;
 }
 
-void clearZ4mus()
-{
-	for(TMapuivi::iterator it=fourthMuons.begin() ; it!=fourthMuons.end() ; ++it) it->second.clear(); fourthMuons.clear();
-	for(TMapuivi::iterator it=fourthTPs.begin()   ; it!=fourthTPs.end()   ; ++it) it->second.clear(); fourthTPs.clear();
-}
-
-void countZ4mus(unsigned int vtx, TString name, TMapTSP2TH1& histos, double weight=1.)
-{	
-	double px1 = vtx_reftrks_px->at(vtx)[0];
-	double px2 = vtx_reftrks_px->at(vtx)[1];
-	double px3 = vtx_reftrks_px->at(vtx)[2];	
-	double py1 = vtx_reftrks_py->at(vtx)[0];
-	double py2 = vtx_reftrks_py->at(vtx)[1];
-	double py3 = vtx_reftrks_py->at(vtx)[2];
-	double pz1 = vtx_reftrks_pz->at(vtx)[0];
-	double pz2 = vtx_reftrks_pz->at(vtx)[1];
-	double pz3 = vtx_reftrks_pz->at(vtx)[2];
-	TLorentzVector p1,p2,p3,psum;
-	p1.SetXYZM(px1,py1,pz1,muonMassMeV);
-	p2.SetXYZM(px2,py2,pz2,muonMassMeV);
-	p3.SetXYZM(px3,py3,pz3,muonMassMeV);
-	psum = p1+p2+p3; // psum = getTlv3mu(vtx);
-	
-	// double mass   = vtx_mass->at(vtx); // psum.M();  in principle
-	// double pTsum  = vtx_pt->at(vtx);   // psum.Pt(); in principle
-	// double charge = vtx_charge->at(vtx);
-	// double pvalue = TMath::Prob(vtx_chi2->at(vtx),vtx_ndf->at(vtx));
-	
-	_DEBUG("");
-	
-	sources src;
-	getSrc(vtx,src);
-	if(!validateSrcChain(vtx)) _FATAL("wrong chain");
-	TString shortType = classifyTripletShort(vtx);
-	VtxType = classifyTripletCode(shortType);
-
-	// match the tracks
-	int itrk1 = src.trkIndex[0];
-	int itrk2 = src.trkIndex[1];
-	int itrk3 = src.trkIndex[2];
-	// match the sources        
-	int isrc1 = src.srcIndex[0];
-	int isrc2 = src.srcIndex[1];
-	int isrc3 = src.srcIndex[2];
-	// match the sources        
-	TString src1 = src.srcName[0];
-	TString src2 = src.srcName[1];
-	TString src3 = src.srcName[2];
-	// test if muons
-	bool isMuon1 = src.isMuon[0];
-	bool isMuon2 = src.isMuon[1];
-	bool isMuon3 = src.isMuon[2];
-	// test if TPmuon
-	bool isTPmu1 = src.isTPmu[0]; bool isTPa1 = src.isTPa[0]; bool isTPb1 = src.isTPb[0];
-	bool isTPmu2 = src.isTPmu[1]; bool isTPa2 = src.isTPa[1]; bool isTPb2 = src.isTPb[1];
-	bool isTPmu3 = src.isTPmu[2]; bool isTPa3 = src.isTPa[2]; bool isTPb3 = src.isTPb[2];
-	
-	TString allowedTP = "CombinedFitMuonParticles";
-	unsigned int nMuons = muons_pt->size();
-	unsigned int nTPas  = tpmu_vd[allowedTP+"_pt"]->size();
-	if(nMuons+nTPas<4) return;
-	
-	double margins = 30.*GeV2MeV;
-
-	vector<int> vfourthmuons;
-	for(unsigned int m=0 ; m<nMuons ; ++m)
-	{
-		if(isMuon1 && m==isrc1) continue;
-		if(isMuon2 && m==isrc2) continue;
-		if(isMuon3 && m==isrc3) continue;
-		
-		int itrk = (mastername!="muid") ? muons_inDetTrackIndex->at(m) : muid_inDetTrackIndex->at(m);
-		if(itrk<0 || itrk>=trks_pt->size()) continue;
-		
-		TLorentzVector vZ, v4th;
-		v4th.SetPtEtaPhiM(muons_pt->at(m),muons_eta->at(m),muons_phi->at(m),muonMassMeV);
-		vZ = psum+v4th;
-		double mQuad = vZ.M();
-		
-		if(fabs(vZ.M()-91.*GeV2MeV)>margins) continue;
-		
-		vfourthmuons.push_back(m);
-		
-		histos[name+"_triplet_mQuad_muons"]->Fill(mQuad,weight);
-		histos[name+"_triplet_mQuad_norm_muons"]->Fill(mQuad,weight);
-		// if(fabs(vZ.M()-91.*GeV2MeV)<margins/3.) cout << "Event: " << EventNumber << "(" << isrc1 << "," << isrc2 << "," << isrc3 << "+" << m << ") -> with 4th muon mQuad=" << mQuad << endl;
-	}
-	fourthMuons.insert(make_pair(vtx,vfourthmuons));
-	
-	vector<int> vfourthtps;
-	for(unsigned int m=0 ; m<nTPas ; ++m)
-	{
-		if(isTPa1 && m==isrc1) continue;
-		if(isTPa2 && m==isrc2) continue;
-		if(isTPa3 && m==isrc3) continue;
-		
-		bool isoverlap = false;
-		for(unsigned int n=0 ; n<vfourthmuons.size() ; ++n)
-		{
-			unsigned int m4 = vfourthmuons[n];
-			double dR  = deltaR(muons_eta->at(m4),muons_phi->at(m4),tpmu_vd[allowedTP+"_eta"]->at(m),tpmu_vd[allowedTP+"_phi"]->at(m));
-			double dpT = fabs(muons_pt->at(m4)-tpmu_vd[allowedTP+"_pt"]->at(m))/muons_pt->at(m4);
-			double dQ  = muons_charge->at(m4)-qtrk(tpmu_vd[allowedTP+"_qOverP"]->at(m));
-			
-			if(dR<0.01 && dpT<0.2 && dQ==0) { isoverlap=true; break; }
-		}
-		if(isoverlap) continue;
-		
-		TLorentzVector vZ, v4th;
-		v4th.SetPtEtaPhiM(tpmu_vd[allowedTP+"_pt"]->at(m),tpmu_vd[allowedTP+"_eta"]->at(m),tpmu_vd[allowedTP+"_phi"]->at(m),muonMassMeV);
-		vZ = psum+v4th;
-		double mQuad = vZ.M();
-		
-		if(fabs(vZ.M()-91.*GeV2MeV)>margins) continue;
-		
-		vfourthtps.push_back(m);
-		
-		histos[name+"_triplet_mQuad_TPa"]->Fill(mQuad,weight);
-		histos[name+"_triplet_mQuad_norm_TPa"]->Fill(mQuad,weight);
-		// if(fabs(vZ.M()-91.*GeV2MeV)<margins/3.) cout << "Event: " << EventNumber << "(" << isrc1 << "," << isrc2 << "," << isrc3 << "+" << m << ") -> with 4th TPa mQuad=" << mQuad << endl;
-	}
-	fourthTPs.insert(make_pair(vtx,vfourthtps));
-}
 
 
 bool acceptTriplet(unsigned int vtx, TString name, TMapTSP2TH1& histos, TMapTSP2TH2& histos2, double weight=1., double mBlindMin=1500., double mBlindMax=2000.)
@@ -7436,11 +7397,6 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 		
 		_DEBUG("");
 		
-		/// clear Z-->4mu maps
-		clearZ4mus();
-		
-		_DEBUG("");
-		
 		// truth matching
 		if(!isdata && issignal)
 		{
@@ -7532,6 +7488,12 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 		
 		_DEBUG("");
 		
+		//// clear the flags telling which 4th track was filled per vertex
+		for(TMapuivi::iterator it=isFourthTrack.begin() ; it!=isFourthTrack.end() ; ++it) it->second.clear();
+		isFourthTrack.clear();
+		
+		_DEBUG("");
+		
 		vector<vertex> vertices;
 		for(unsigned int vtx=0 ; vtx<nvtx ; vtx++)
 		{
@@ -7555,14 +7517,13 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 			//// ignore vertices with m3body>4 GeV
 			// if(m3body>4.*GeV2MeV) continue;
 			
-			countZ4mus(vtx,name,histos,wgt);
-			
 			/////////////////////
 			//// write the vertex
 			vertex v;
 			v.set(vtx);
 			vertices.push_back(v);
 		}
+		
 		////////////////////////////////////////////////////
 		//// write out only in analysis mode ///////////////
 		if(!skim) fillFlatoutTree(vertices,allPassing); ////
