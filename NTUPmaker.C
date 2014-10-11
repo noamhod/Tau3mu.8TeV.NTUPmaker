@@ -122,8 +122,8 @@ string timestr;
 string ftxtname;
 double minpvalOS;
 double mindchi2;
-// TString basepath = "root://eosatlas//eos/atlas/user/h/hod/data/mrg.bphys/"; // periods CGEHIL ONLY !!
-TString basepath = "root://eosatlas//eos/atlas/user/h/hod/data/bphys/"; // all periods
+//TString basepath = "root://eosatlas//eos/atlas/user/h/hod/data/bphys/"; // all periods
+TString basepath = "root://eosatlas//eos/atlas/user/h/hod/data/bphys_d3pd/"; // all periods
 // TString basepath = "root://eosatlas//eos/atlas/user/h/hod/data/tests/overlaps/floatingOverlaps/bout/data/bphys/";
 // TString basepath = "root://eosatlas//eos/atlas/user/h/hod/data/tests/overlaps/fixedOverlaps/bout/data/bphys/";
 // TString basepath = "root://eosatlas//eos/atlas/user/h/hod/data/tests/overlaps/noOverlaps/bout/data/bphys/";
@@ -5434,8 +5434,6 @@ void vertex::set(unsigned int vtx)
 			int itrk = (mastername!="muid") ? muons_inDetTrackIndex->at(m) : muid_inDetTrackIndex->at(m);
 			if(itrk<0 || itrk>=trks_pt->size()) continue;
 			
-			
-			
 			TLorentzVector vZ, v4th;
 			v4th.SetPtEtaPhiM(muons_pt->at(m),muons_eta->at(m),muons_phi->at(m),muonMassMeV);
 			vZ = psum+v4th;
@@ -7494,6 +7492,48 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 		
 		_DEBUG("");
 		
+		//// histos of quadruplets
+		unsigned int nMuons = muons_pt->size();
+		if(nMuons>3)
+		{
+			TLorentzVector m1,m2,m3,m4,p3,p4;
+			m1.SetPtEtaPhiM(muons_pt->at(0),muons_eta->at(0),muons_phi->at(0),muonMassMeV);
+			m2.SetPtEtaPhiM(muons_pt->at(1),muons_eta->at(1),muons_phi->at(1),muonMassMeV);
+			m3.SetPtEtaPhiM(muons_pt->at(2),muons_eta->at(2),muons_phi->at(2),muonMassMeV);
+			m4.SetPtEtaPhiM(muons_pt->at(3),muons_eta->at(3),muons_phi->at(3),muonMassMeV);
+			p3 = m2+m3+m4;
+			p4 = m1+m2+m3+m4;
+		
+			unsigned int nTracks = trks_pt->size();
+			int itrk1 = muons_inDetTrackIndex->at(0);
+			int itrk2 = muons_inDetTrackIndex->at(1);
+			int itrk3 = muons_inDetTrackIndex->at(2);
+			int itrk4 = muons_inDetTrackIndex->at(3);
+		
+			bool ptmu  = (muons_pt->at(0)>4000. && muons_pt->at(1)>4000. && muons_pt->at(2)>4000. && muons_pt->at(3)>4000.);
+			bool zmass = (fabs(p4.M()-91.*GeV2MeV)<30.*GeV2MeV);
+			bool etamu = (fabs(muons_eta->at(0))<2.5 && fabs(muons_eta->at(1))<2.5 && fabs(muons_eta->at(2))<2.5 && fabs(muons_eta->at(3))<2.5);
+			bool itrk  = ((itrk1>=0 && itrk1<nTracks) && (itrk2>=0 && itrk2<nTracks) && (itrk3>=0 && itrk3<nTracks) && (itrk4>=0 && itrk4<nTracks));
+			bool mcp   = (itrk) ? (MCP(itrk1) && MCP(itrk2) && MCP(itrk3) && MCP(itrk4)) : false;
+			
+			if(ptmu && zmass && etamu && mcp)
+			{
+				cout << "m4=" << p4.M() << ", m3=" << p3.M() << endl;
+				
+				histos[name+"_triplet_mQuad_muons"]->Fill(p4.M(),wgt);
+				histos[name+"_triplet_mQuad_norm_muons"]->Fill(p4.M(),wgt);
+				histos[name+"_triplet_mTrip_muons"]->Fill(p3.M(),wgt);
+				histos[name+"_triplet_mTrip_norm_muons"]->Fill(p3.M(),wgt);
+				histos[name+"_triplet_pTQuad_muons"]->Fill(p4.Pt(),wgt);
+				histos[name+"_triplet_pTQuad1_muons"]->Fill(m1.Pt(),wgt);
+				histos[name+"_triplet_pTQuad2_muons"]->Fill(m2.Pt(),wgt);
+				histos[name+"_triplet_pTQuad3_muons"]->Fill(m3.Pt(),wgt);
+				histos[name+"_triplet_pTQuad4_muons"]->Fill(m4.Pt(),wgt);
+			}
+		}
+		
+		_DEBUG("");
+		
 		vector<vertex> vertices;
 		for(unsigned int vtx=0 ; vtx<nvtx ; vtx++)
 		{
@@ -9433,12 +9473,20 @@ void NTUPmaker(TString runType, TString outDir, TString chnl, TString master, TS
 		addHist(histos,name,"triplet_dRmin_2muons_1tpmu", ";min[#DeltaR(3#mu,#mu_{i})];Normalized",labels,  100,0.,0.25);
 		addHist(histos,name,"triplet_dRmin_2muons_1calo", ";min[#DeltaR(3#mu,#mu_{i})];Normalized",labels,  100,0.,0.25);
 		addHist(histos,name,"triplet_dRmin_1muons_2tpmu", ";min[#DeltaR(3#mu,#mu_{i})];Normalized",labels,  100,0.,0.25);
-		addHist(histos,name,"triplet_dRmin_0muons_3tpmu", ";min[#DeltaR(3#mu,#mu_{i})];Normalized",labels,  100,0.,0.25);
+		addHist(histos,name,"triplet_dRmin_0muons_3tpmu", ";min[#DeltaR(3#mu,#mu_{i})];Normalized",labels,  100,0.,0.25);		
 		
-		addHist(histos,name,"triplet_mQuad_muons", ";m(3body+muon);Events",labels,  60,(91.-30.)*GeV2MeV,(91.+30.)*GeV2MeV);
-		addHist(histos,name,"triplet_mQuad_TPa",   ";m(3body+TPa);Events",labels,  60,(91.-30.)*GeV2MeV,(91.+30.)*GeV2MeV);
-		addHist(histos,name,"triplet_mQuad_norm_muons", ";m(3body+muon);Normalized",labels,  60,(91.-30.)*GeV2MeV,(91.+30.)*GeV2MeV);
-		addHist(histos,name,"triplet_mQuad_norm_TPa",   ";m(3body+TPa);Normalized",labels,  60,(91.-30.)*GeV2MeV,(91.+30.)*GeV2MeV);
+		
+		addHist(histos,name,"triplet_mQuad_muons", ";m(4body);Events",labels,  100,(91.-25.)*GeV2MeV,(91.+25.)*GeV2MeV);
+		addHist(histos,name,"triplet_mQuad_norm_muons", ";m(4body);Normalized",labels,  100,(91.-25.)*GeV2MeV,(91.+25.)*GeV2MeV);
+		addHist(histos,name,"triplet_mTrip_muons", ";m(3body);Events",labels,  100,0.,50000.);
+		addHist(histos,name,"triplet_mTrip_norm_muons", ";m(3body);Normalized",labels,  100,0.,50000.);
+		addHist(histos,name,"triplet_pTQuad_muons",  ";p_{T}(4body);Normalized",labels,  150,0.,150000.);
+		addHist(histos,name,"triplet_pTQuad1_muons", ";p_{T}(#mu1);Normalized",labels,  100,0.,100000.);
+		addHist(histos,name,"triplet_pTQuad2_muons", ";p_{T}(#mu2);Normalized",labels,  70,0.,70000.);
+		addHist(histos,name,"triplet_pTQuad3_muons", ";p_{T}(#mu3);Normalized",labels,  50,0.,50000.);
+		addHist(histos,name,"triplet_pTQuad4_muons", ";p_{T}(#mu4);Normalized",labels,  40,0.,40000.);
+		
+		
 		
 		addHist(histos,name,"triplet_dRmin",                  ";min[#DeltaR(3#mu,#mu_{i})];Normalized",labels,  100,0.,0.25);
 		addHist(histos,name,"triplet_dRmax",                  ";max[#DeltaR(3#mu,#mu_{i})];Normalized",labels,  100,0.,0.50);
@@ -9982,9 +10030,21 @@ void NTUPmaker(TString runType, TString outDir, TString chnl, TString master, TS
 	makeCnv(divx,divy,false);
 	pcounter = -1;
 	drawPadAll("triplet_mQuad_muons", pads[increment(pcounter)], channels, histos, leg);
-	drawPadAll("triplet_mQuad_TPa",   pads[increment(pcounter)], channels, histos, leg);
 	drawPadAll("triplet_mQuad_norm_muons", pads[increment(pcounter)], channels, histos, leg);
-	drawPadAll("triplet_mQuad_norm_TPa",   pads[increment(pcounter)], channels, histos, leg);
+	drawPadAll("triplet_mTrip_muons", pads[increment(pcounter)], channels, histos, leg);
+	drawPadAll("triplet_mTrip_norm_muons", pads[increment(pcounter)], channels, histos, leg);
+	closeCnv(pdffilename);
+	/////////////////////////////////////////////////////////
+	
+	_INFO("");
+	divx=2;
+	divy=2;
+	makeCnv(divx,divy,false);
+	pcounter = -1;
+	drawPadAll("triplet_pTQuad1_muons", pads[increment(pcounter)], channels, histos, leg);
+	drawPadAll("triplet_pTQuad2_muons", pads[increment(pcounter)], channels, histos, leg);
+	drawPadAll("triplet_pTQuad3_muons", pads[increment(pcounter)], channels, histos, leg);
+	drawPadAll("triplet_pTQuad4_muons", pads[increment(pcounter)], channels, histos, leg);
 	closeCnv(pdffilename);
 	/////////////////////////////////////////////////////////
 	

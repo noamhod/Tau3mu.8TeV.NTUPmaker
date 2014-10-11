@@ -77,9 +77,9 @@ def makejobfile(jobname,inset,master,method,split)
   jobfile = File.open(jobname,'w') { |f|
     f.puts "#!/bin/bash"
     f.puts "echo \"host = $HOSTNAME\""
-    f.puts "source #{$homedir}/setROOT.sh"
     f.puts "cd #{$thisdir}"
-    f.puts "./execute.sh  loadrun  vtxing  skim  #{$outdir}/  #{inset}  #{master}  #{method}  #{split}"
+    f.puts "source setup.sh"
+    f.puts "./execute.sh  NTUPmaker  vtxing  skim  #{$outdir}/  #{inset}  #{master}  #{method}  #{split}"
     f.puts "echo \"host = $HOSTNAME\""
     f.puts "cd -"
   }
@@ -91,28 +91,29 @@ masters = ["muons"]
 
 insets = Hash.new
 insets = {
-  'periodA' =>     8, # nfiles=29
-  'periodB' =>    22, # nfiles=87
-  'periodC' =>     8, # nfiles=30
-  'periodD' =>    14, # nfiles=55
-  'periodE' =>     9, # nfiles=33
-  'periodG' =>     5, # nfiles=20
-  'periodH' =>     6, # nfiles=22
-  'periodI' =>     4, # nfiles=16
-  'periodJ' =>     9, # nfiles=33 (is 34 but one file is corrupted)
-  'periodL' =>     3, # nfiles=11
+  'periodA' =>     5, # nfiles=41
+  'periodB' =>    14, # nfiles=133
+  'periodC' =>     6, # nfiles=52
+  'periodD' =>    11, # nfiles=104
+  #'periodE' =>     , # nfiles=33
+  'periodG' =>     4, # nfiles=31
+  'periodH' =>     4, # nfiles=39
+  'periodI' =>     3, # nfiles=26
+  #'periodJ' =>     , # nfiles=
+  'periodL' =>     2, # nfiles=18
   
-  'bb_mu4mu4'     => 6, # nfiles=21
-  'bb_Jpsimu4mu4' => 4, # nfiles=14
-  'bbTomu15'      => 1, # nfiles=2
-  'ccTomu15'      => 1, # nfiles=1
+  #'bb_mu4mu4'     => 6, # nfiles=21
+  'pp_Jpsimu4mu4' => 2, # nfiles=15
+  'bb_Jpsimu4mu4' => 3, # nfiles=21
+  'bbTomu15'      => 1, # nfiles=5
+  'ccTomu15'      => 1, # nfiles=4
   
-  'JZ2W' => 1,  # nfiles=4
-  'JZ3W' => 1,  # nfiles=3
+  'JZ2W' => 1,  # nfiles=5
+  'JZ3W' => 1,  # nfiles=4
   
   'bbTotau10_3mu' => 1, # nfiles=2
   'ccTotau10_3mu' => 1, # nfiles=2
-  'Wtaunu_3mu'    => 1  # nfiles=2
+  'Wtaunu_3mu'    => 1  # nfiles=3
   
   # 'ZmumuNp0'  => 1,
   # 'ZmumuNp1'  => 1,
