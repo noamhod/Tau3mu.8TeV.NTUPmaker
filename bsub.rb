@@ -79,7 +79,7 @@ def makejobfile(jobname,inset,master,method,split)
     f.puts "echo \"host = $HOSTNAME\""
     f.puts "cd #{$thisdir}"
     f.puts "source setup.sh"
-    f.puts "./execute.sh  NTUPmaker  vtxing  skim  #{$outdir}/  #{inset}  #{master}  #{method}  #{split}"
+    f.puts "./execute.sh  loadrun  NTUPmaker  skim  #{$outdir}/  #{inset}  #{master}  #{method}  #{split}"
     f.puts "echo \"host = $HOSTNAME\""
     f.puts "cd -"
   }

@@ -764,7 +764,7 @@ int getSrcType(unsigned int vtx, unsigned int index)
 }
 bool isMuonSrc(int srcType)
 {
-	return (srcType<=MUID);
+	return (srcType>CALO && srcType<=MUID);
 }
 bool isCaloSrc(int srcType)
 {
@@ -795,17 +795,32 @@ void getSrc(unsigned int vtx, sources& src)
 	src.vtx       = vtx;
 	src.type      = classifyTriplet(vtx);
 	src.shorttype = classifyTripletShort(vtx);
-	for(int i=0 ; i<3 ; ++i) src.srcName[i]  = vtx_srcName->at(vtx)[i];
-	for(int i=0 ; i<3 ; ++i) src.trkIndex[i] = vtx_trkIndex->at(vtx)[i];
-	for(int i=0 ; i<3 ; ++i) src.srcIndex[i] = vtx_srcIndex->at(vtx)[i];
-	for(int i=0 ; i<3 ; ++i) src.srcType[i]  = getSrcType(vtx,i);
-	for(int i=0 ; i<3 ; ++i) src.isMuon[i]   = isMuonSrc(src.srcType[i]);
-	for(int i=0 ; i<3 ; ++i) src.isCalo[i]   = isCaloSrc(src.srcType[i]);
-	for(int i=0 ; i<3 ; ++i) src.isTPmu[i]   = isTPmuSrc(src.srcType[i]);
-	for(int i=0 ; i<3 ; ++i) src.isTPa[i]    = isTPaSrc(src.srcType[i]);
-	for(int i=0 ; i<3 ; ++i) src.isTPb[i]    = isTPbSrc(src.srcType[i]);
-	for(int i=0 ; i<3 ; ++i) src.srcCode[i]  = getSrcCode(src.srcType[i]);
+
+	//cout << "vtx=" << vtx << ", type=" << src.type << ", src.shorttype=" << src.shorttype << endl;
+	for(int i=0 ; i<3 ; ++i)
+	{
+		src.srcName[i]  = vtx_srcName->at(vtx)[i];
+		src.trkIndex[i] = vtx_trkIndex->at(vtx)[i];
+		src.srcIndex[i] = vtx_srcIndex->at(vtx)[i];
+		src.srcType[i]  = getSrcType(vtx,i);
+		src.isMuon[i]   = isMuonSrc(src.srcType[i]);
+		src.isCalo[i]   = isCaloSrc(src.srcType[i]);
+		src.isTPmu[i]   = isTPmuSrc(src.srcType[i]);
+		src.isTPa[i]    = isTPaSrc(src.srcType[i]);
+		src.isTPb[i]    = isTPbSrc(src.srcType[i]);
+		src.srcCode[i]  = getSrcCode(src.srcType[i]);
 	
+		//cout << "   src.srcName["<<i<<"]=" << src.srcName[i] << endl;
+		//cout << "   src.trkIndex["<<i<<"]=" << src.trkIndex[i] << endl;
+		//cout << "   src.srcIndex["<<i<<"]=" << src.srcIndex[i] << endl;
+		//cout << "   src.srcType["<<i<<"]=" << src.srcType[i] << endl;
+		//cout << "   src.isMuon["<<i<<"]=" << src.isMuon[i] << endl;
+		//cout << "   src.isCalo["<<i<<"]=" << src.isCalo[i] << endl;
+		//cout << "   src.isTPmu["<<i<<"]=" << src.isTPmu[i] << endl;
+		//cout << "   src.isTPa["<<i<<"]=" << src.isTPa[i] << endl;
+		//cout << "   src.isTPb["<<i<<"]=" << src.isTPb[i] << endl;
+		//cout << "   src.srcCode["<<i<<"]=" << src.srcCode[i] << endl;
+	}
 	double px1 = vtx_reftrks_px->at(vtx)[0];
 	double px2 = vtx_reftrks_px->at(vtx)[1];
 	double px3 = vtx_reftrks_px->at(vtx)[2];
@@ -877,12 +892,14 @@ bool validatedVertex(unsigned int vtx)
 	
 	//// restrictions on the calo muons (be only in the crack)
 	bool iscalo   = shorttype.Contains("calo");
-	if(skim  && iscalo && !isCaloCrack(vtx)) return false; // Calo only in the crack (only in skim mode)
-	if(!skim && iscalo)                      return false; // NO calo in the analysis mode (!skim)
+	// if(skim  && iscalo && !isCaloCrack(vtx)) return false; // Calo only in the crack (only in skim mode)
+	// if(!skim && iscalo)                      return false; // NO calo in the analysis mode (!skim)
+	if(iscalo)                                  return false; // NO calo ever !!!
 	
 	//// Do not allow SegmentTagTrackParticles (muons chain only)
 	bool istagged = (shorttype.Contains("muons") && shorttype.Contains("tpmuB"));
-	if(!skim && istagged) return false;
+	// if(!skim && istagged) return false; // NO tagged in the skim level
+	if(istagged)             return false; // NO tagged ever !!!
 	
 	//// if you wish to keep only 3CBmuons vertices
 	// bool is3mu = (shorttype.Contains("3muons") || shorttype.Contains("3muid"));
@@ -2761,6 +2778,15 @@ bool MCP(unsigned int index)
 
 void setBranches(TString tType, TChain* t)
 {
+	if(tType=="physics")
+	{
+		if(skim)
+                {
+		  	t->SetBranchStatus("*_mu18it_*", 0);
+		}
+	}
+	
+
 	if(tType=="MUONS_TRIPLET" || tType=="MUID_TRIPLET")
 	{
 		TString prefix = "VTX_";
@@ -3867,6 +3893,7 @@ void setFriends(TString cname, TMapTSP2TCHAIN& cfriends)
 	name="JET";              cfriends.insert(make_pair(name, new TChain(name)));
 	name="MET";              cfriends.insert(make_pair(name, new TChain(name)));
 	name="TRIG";             cfriends.insert(make_pair(name, new TChain(name)));
+	name="physics";          cfriends.insert(make_pair(name, new TChain(name)));
 	if(!isdata) { name="MC"; cfriends.insert(make_pair(name, new TChain(name))); }
 	for(TMapiTS::iterator it=tpmus.begin() ; it!=tpmus.end() ; ++it)
 	{
@@ -5403,7 +5430,10 @@ void vertex::set(unsigned int vtx)
 	
 	
 	_DEBUG("");
-	
+
+
+if(!skim)
+{	
 	TString master = mastername;
 	
 	//// Fill the 4th tracks, allow only 3 per triplet and fill first the muons
@@ -5703,6 +5733,7 @@ void vertex::set(unsigned int vtx)
 	}
 	// cout << "\tAdded " << nFilled+nTPaFilled << " Muons+TPas" << endl;
 	// cout << "--------------------------------------------" << endl;
+}
 	_DEBUG("");
 	
 	
@@ -5875,9 +5906,17 @@ bool acceptMuons(unsigned int vtx, TString name, TMapTSP2TH1& histos, TMapTSP2TH
 	bool isCB1 = 0;
 	bool isCB2 = 0;
 	bool isCB3 = 0;
+
+	//cout << "isMuon1=" << isMuon1 << ", isMuon2=" << isMuon2 << ", isMuon3=" << isMuon3 << endl;
+	//if(muons_isCombined) cout << "N=" << muons_isCombined->size() << ", isrc1=" << isrc1 << ", isrc2=" << isrc2 << ", isrc3=" << isrc3 << endl;
+	//else cout << "muons_isCombined is NULL" << endl;
+
 	if(isMuon1) isCB1 = (!src1.Contains("Muid")) ? muons_isCombined->at(isrc1) : muid_isCombined->at(isrc1);
 	if(isMuon2) isCB2 = (!src2.Contains("Muid")) ? muons_isCombined->at(isrc2) : muid_isCombined->at(isrc2);
 	if(isMuon3) isCB3 = (!src3.Contains("Muid")) ? muons_isCombined->at(isrc3) : muid_isCombined->at(isrc3);
+
+	_DEBUG("");
+
 	bool isTight1 = true;
 	bool isTight2 = true;
 	bool isTight3 = true;
@@ -5896,6 +5935,9 @@ bool acceptMuons(unsigned int vtx, TString name, TMapTSP2TH1& histos, TMapTSP2TH
 	if(isMuon1) isLoose1 = (!src1.Contains("Muid")) ? muons_isLoose->at(isrc1) : muid_isLoose->at(isrc1);
 	if(isMuon2) isLoose2 = (!src2.Contains("Muid")) ? muons_isLoose->at(isrc2) : muid_isLoose->at(isrc2);
 	if(isMuon3) isLoose3 = (!src3.Contains("Muid")) ? muons_isLoose->at(isrc3) : muid_isLoose->at(isrc3);
+
+	_DEBUG("");
+
 	double sctangsig1 = 999.;
 	double sctangsig2 = 999.;
 	double sctangsig3 = 999.;
@@ -5914,6 +5956,9 @@ bool acceptMuons(unsigned int vtx, TString name, TMapTSP2TH1& histos, TMapTSP2TH
 	if(isMuon1) pbalsig1 = (!src1.Contains("Muid")) ? muons_pbalsig->at(isrc1) : muid_pbalsig->at(isrc1);
 	if(isMuon2) pbalsig2 = (!src2.Contains("Muid")) ? muons_pbalsig->at(isrc2) : muid_pbalsig->at(isrc2);
 	if(isMuon3) pbalsig3 = (!src3.Contains("Muid")) ? muons_pbalsig->at(isrc3) : muid_pbalsig->at(isrc3);
+
+	_DEBUG("");
+
 	double fitchi2mu1 = -999.;
 	double fitchi2mu2 = -999.;
 	double fitchi2mu3 = -999.;
@@ -5932,13 +5977,18 @@ bool acceptMuons(unsigned int vtx, TString name, TMapTSP2TH1& histos, TMapTSP2TH
 	if(isMuon1) fitpvaluemu1 = TMath::Prob(fitchi2mu1,fitndfmu1);
 	if(isMuon2) fitpvaluemu2 = TMath::Prob(fitchi2mu2,fitndfmu2);
 	if(isMuon3) fitpvaluemu3 = TMath::Prob(fitchi2mu3,fitndfmu3);
+
+	_DEBUG("");
 	
 	double pbalsigTP1 = 999.;
 	double pbalsigTP2 = 999.;
 	double pbalsigTP3 = 999.;
-	if(isTPmu1) pbalsigTP1 = momentumBalanceSig(itrk1,isrc1,src1);
-	if(isTPmu2) pbalsigTP2 = momentumBalanceSig(itrk2,isrc2,src2);
-	if(isTPmu3) pbalsigTP3 = momentumBalanceSig(itrk3,isrc3,src3);
+	//if(isTPmu1) pbalsigTP1 = momentumBalanceSig(itrk1,isrc1,src1);
+	//if(isTPmu2) pbalsigTP2 = momentumBalanceSig(itrk2,isrc2,src2);
+	//if(isTPmu3) pbalsigTP3 = momentumBalanceSig(itrk3,isrc3,src3);
+
+	_DEBUG("");
+
 	double fitchi2TP1 = -999.;
 	double fitchi2TP2 = -999.;
 	double fitchi2TP3 = -999.;
@@ -5958,7 +6008,8 @@ bool acceptMuons(unsigned int vtx, TString name, TMapTSP2TH1& histos, TMapTSP2TH
 	if(isTPmu2) fitpvalueTP2 = TMath::Prob(tpmu_vd[src2+"_chi2"]->at(isrc2),tpmu_vi[src2+"_ndf"]->at(isrc2));
 	if(isTPmu3) fitpvalueTP3 = TMath::Prob(tpmu_vd[src3+"_chi2"]->at(isrc3),tpmu_vi[src3+"_ndf"]->at(isrc3));
 	
-	
+	_DEBUG("");	
+
 	int order1 = src.srcOrder[0];
 	int order2 = src.srcOrder[1];
 	int order3 = src.srcOrder[2];
@@ -7493,6 +7544,8 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 		_DEBUG("");
 		
 		//// histos of quadruplets
+	if(!skim)
+	{
 		unsigned int nMuons = muons_pt->size();
 		if(nMuons>3)
 		{
@@ -7531,7 +7584,7 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 				histos[name+"_triplet_pTQuad4_muons"]->Fill(m4.Pt(),wgt);
 			}
 		}
-		
+	}	
 		_DEBUG("");
 		
 		vector<vertex> vertices;
