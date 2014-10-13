@@ -1,15 +1,26 @@
-* to get the trunk:
+to get the Pilup reweighting tool, check the latest tag in:
+	https://svnweb.cern.ch/trac/atlasoff/browser/PhysicsAnalysis/AnalysisCommon/PileupReweighting/tags
+	https://twiki.cern.ch/twiki/bin/view/AtlasProtected/PileupReweighting
+checkout the latest tag and compile it:
+	svn co svn+ssh://svn.cern.ch/reps/atlasoff/PhysicsAnalysis/AnalysisCommon/PileupReweighting/tags/PileupReweighting-XX-YY-ZZ PileupReweighting
+        cd PileupReweighting/cmt
+	gmake -f Makefile.Standalone
+the library is in:
+	PileupReweighting/Standalone/libPileupReweighting.so	
+
+
+to get the trunk:
 	svn co svn+ssh://svn.cern.ch/reps/atlasphys/Physics/Exotic/Analysis/TauToMuX/ThreeMu/NTUPmaker/trunk NTUPmaker
-* to tag a version in svn:
+to tag a version in svn:
+	See the latest tag in: https://svnweb.cern.ch/trac/atlasphys/browser/Physics/Exotic/Analysis/TauToMuX
         svn cp svn+ssh://svn.cern.ch/reps/atlasphys/Physics/Exotic/Analysis/TauToMuX/ThreeMu/NTUPmaker/{trunk,tags/NTUPmaker-XX-YY-ZZ} -m "tagname"
 
 
-* source init.sh (will start screen sessions) or source setup.sh
 
-
+source init.sh (will start screen sessions) or source setup.sh
 Build/Run the vertexing singularily:
 	./execute.sh
-and follow the instructions
+	and follow the instructions
 
 
 

@@ -92,7 +92,7 @@ masters = ["muons"]
 insets = Hash.new
 insets = {
   'periodA' =>     5, # nfiles=41
-  'periodB' =>    14, # nfiles=133
+  'periodB' =>    14, # nfiles=132 (133 with one corrupted, available in $EOSHOME/data/backup/user.hod.4143407.d3pdstream._000078.root)
   'periodC' =>     6, # nfiles=52
   'periodD' =>    11, # nfiles=104
   #'periodE' =>     , # nfiles=33
@@ -102,7 +102,7 @@ insets = {
   #'periodJ' =>     , # nfiles=
   'periodL' =>     2, # nfiles=18
   
-  #'bb_mu4mu4'     => 6, # nfiles=21
+  'bb_mu4mu4'     => 5, # nfiles=46
   'pp_Jpsimu4mu4' => 2, # nfiles=15
   'bb_Jpsimu4mu4' => 3, # nfiles=21
   'bbTomu15'      => 1, # nfiles=5

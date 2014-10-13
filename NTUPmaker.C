@@ -3,6 +3,8 @@
 //// the instructions ////////////////////////
 //////////////////////////////////////////////
 
+#include "../PileupReweighting/PileupReweightingTool.h"
+
 #include "rawStd.h"
 #include "rawROOT.h"
 #include "types.h"
@@ -16,6 +18,59 @@
 #include "vertex.h"
 #include "signalmc.h"
 #include "tmva.h"
+
+
+Root::TPileupReweighting* pileupTool;
+float averageIntPerXing_fixed;
+
+void initPU(bool makepufile)
+{
+	if(!isSignal(name)) return;
+
+	pileupTool = new Root::TPileupReweighting("pileuptool");
+	if(makepufile)
+	{
+		_INFO("making pileup file");
+		pileupTool->UsePeriodConfig("MC12ab");
+	}
+	else
+	{
+		_INFO("reading pileup file");
+		pileupTool->AddConfigFile("mc.prw.root");
+ 		pileupTool->AddLumiCalcFile("ilumicalc_histograms_None_207447-209025.root");
+	}
+	pileupTool->Initialize();
+}
+float getPU(TString name)
+{
+	if(!isSignal(name)) return 1.;
+
+	/////////////////////////////
+	float pileup_weight = 1.; ///
+	/////////////////////////////
+
+	// NOTE (23/01/2013): A bug has been found in the d3pd making code,
+	// causing all MC12 samples to have a few of the averageIntPerXing
+	// values incorrectly set (some should be 0 but are set to 1).
+	// The bug does not affect data. To resolve this, when reading this branch,
+	// for both prw file generating and for when retrieving pileup weights,
+	// you should amend the value with the following line of code:
+	averageIntPerXing_fixed = (isMC && lbn==1 && int(averageIntPerXing+0.5)==1) ? 0. : averageIntPerXing;
+
+	// now proceed to using the pileup tool
+	// either to fill the config file
+	// or to get the pileup weight by event
+	if(conf->makepufile) pileupTool->Fill(RunNumber,mc_channel_number,mc_event_weight,averageIntPerXing_fixed);
+	else                 pileup_weight = pileupTool->GetCombinedWeight(RunNumber,mc_channel_number,averageIntPerXing_fixed);
+
+	return pileup_weight;
+}
+void finPU(TString name, bool makepufile)
+{
+	if(!isSignal(name)) return;
+	if(makepufile) pileupTool->WriteToFile(conf->pufilename);
+}
+
 
 struct sources
 {
@@ -898,8 +953,8 @@ bool validatedVertex(unsigned int vtx)
 	
 	//// Do not allow SegmentTagTrackParticles (muons chain only)
 	bool istagged = (shorttype.Contains("muons") && shorttype.Contains("tpmuB"));
-	// if(!skim && istagged) return false; // NO tagged in the skim level
-	if(istagged)             return false; // NO tagged ever !!!
+	if(!skim && istagged) return false; // NO tagged in the skim level
+	// if(istagged)             return false; // NO tagged ever !!!
 	
 	//// if you wish to keep only 3CBmuons vertices
 	// bool is3mu = (shorttype.Contains("3muons") || shorttype.Contains("3muid"));
@@ -2782,7 +2837,18 @@ void setBranches(TString tType, TChain* t)
 	{
 		if(skim)
                 {
-		  	t->SetBranchStatus("*_mu18it_*", 0);
+		  	t->SetBranchStatus("trig_*_mu18it_*", 0);
+		  	t->SetBranchStatus("trig_*_mu4T_j*",  0);
+		  	t->SetBranchStatus("trig_*_mu6i*",  0);
+		  	t->SetBranchStatus("trig_*_Jpsi*",  0);
+		  	t->SetBranchStatus("trig_*_a4tchad*",  0);
+		  	t->SetBranchStatus("trig_*2mu8_EFxe40*",  0);
+		  	t->SetBranchStatus("trig_*l2muonSA*",  0);
+		  	t->SetBranchStatus("trig_*_Trk_*",  0);
+		  	t->SetBranchStatus("trig_*Upsi*",  0);
+		  	t->SetBranchStatus("trig_*Bmumux*",  0);
+		  	t->SetBranchStatus("trig_*_c4cchad_*",  0);
+		  	t->SetBranchStatus("AntiKt4TopoEMJets_ptconst_default*",  0);
 		}
 	}
 	
@@ -7701,7 +7767,7 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 				TLorentzVector pMuSum = getTlv3mu(vtx);
 				double mt = mT(met_RefFinal_et,met_RefFinal_phi,pMuSum.Pt(),pMuSum.Phi());
 				
-				if(isCounter("nPassing_skim2_m3mu") && mass>4.0*GeV2MeV) continue;
+				if(isCounter("nPassing_skim2_m3mu") && mass>5.*GeV2MeV) continue;
 				incrementCounter("nPassing_skim2_m3mu",wgt);
 
 				if(isCounter("nPassing_skim2_pT3mu") && vtx_pt->at(vtx)<7.*GeV2MeV) continue;
@@ -9895,6 +9961,9 @@ void NTUPmaker(TString runType, TString outDir, TString chnl, TString master, TS
 	if(!skim) flatout_finit(olddir); ////////
 	/////////////////////////////////////////
 	
+	int nProcessed = getCounter("nPassing_evt_all");
+	if(nProcessed) cout << nProcessed << " EVENTS PROCESSED" << endl;
+	else           cout << "NONE PROCESSED" << endl;
 	_INFO("<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>");
 	_INFO("<<<<<<<<<<<< ALL DONE CORRECTLY >>>>>>>>>>>");
 	_INFO("<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>");
