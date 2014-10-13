@@ -3,7 +3,7 @@
 //// the instructions ////////////////////////
 //////////////////////////////////////////////
 
-#include "../PileupReweighting/PileupReweightingTool.h"
+#include "../PileupReweighting/PileupReweighting/TPileupReweighting.h"
 
 #include "rawStd.h"
 #include "rawROOT.h"
@@ -19,58 +19,7 @@
 #include "signalmc.h"
 #include "tmva.h"
 
-
-Root::TPileupReweighting* pileupTool;
-float averageIntPerXing_fixed;
-
-void initPU(bool makepufile)
-{
-	if(!isSignal(name)) return;
-
-	pileupTool = new Root::TPileupReweighting("pileuptool");
-	if(makepufile)
-	{
-		_INFO("making pileup file");
-		pileupTool->UsePeriodConfig("MC12ab");
-	}
-	else
-	{
-		_INFO("reading pileup file");
-		pileupTool->AddConfigFile("mc.prw.root");
- 		pileupTool->AddLumiCalcFile("ilumicalc_histograms_None_207447-209025.root");
-	}
-	pileupTool->Initialize();
-}
-float getPU(TString name)
-{
-	if(!isSignal(name)) return 1.;
-
-	/////////////////////////////
-	float pileup_weight = 1.; ///
-	/////////////////////////////
-
-	// NOTE (23/01/2013): A bug has been found in the d3pd making code,
-	// causing all MC12 samples to have a few of the averageIntPerXing
-	// values incorrectly set (some should be 0 but are set to 1).
-	// The bug does not affect data. To resolve this, when reading this branch,
-	// for both prw file generating and for when retrieving pileup weights,
-	// you should amend the value with the following line of code:
-	averageIntPerXing_fixed = (isMC && lbn==1 && int(averageIntPerXing+0.5)==1) ? 0. : averageIntPerXing;
-
-	// now proceed to using the pileup tool
-	// either to fill the config file
-	// or to get the pileup weight by event
-	if(conf->makepufile) pileupTool->Fill(RunNumber,mc_channel_number,mc_event_weight,averageIntPerXing_fixed);
-	else                 pileup_weight = pileupTool->GetCombinedWeight(RunNumber,mc_channel_number,averageIntPerXing_fixed);
-
-	return pileup_weight;
-}
-void finPU(TString name, bool makepufile)
-{
-	if(!isSignal(name)) return;
-	if(makepufile) pileupTool->WriteToFile(conf->pufilename);
-}
-
+bool makepufile = true;
 
 struct sources
 {
@@ -493,42 +442,6 @@ double met_RefFinal_etY;
 double met_RefFinal_sumet;
 double met_RefFinal_et;
 double met_RefFinal_phi;
-int met_RefMuons_source;
-double met_RefMuons_etX;
-double met_RefMuons_etY;
-double met_RefMuons_sumET;
-double met_RefMuons_et;
-double met_RefMuons_phi;
-int met_Track_source;
-double met_Track_etX;
-double met_Track_etY;
-double met_Track_sumET;
-double met_Track_et;
-double met_Track_phi;
-int met_CellOut_em_source;
-double met_CellOut_em_etX;
-double met_CellOut_em_etY;
-double met_CellOut_em_sumET;
-double met_CellOut_em_et;
-double met_CellOut_em_phi;
-int met_CellOut_Eflow_source;
-double met_CellOut_Eflow_etX;
-double met_CellOut_Eflow_etY;
-double met_CellOut_Eflow_sumET;
-double met_CellOut_Eflow_et;
-double met_CellOut_Eflow_phi;
-int met_MuonMuons_source;
-double met_MuonMuons_etX;
-double met_MuonMuons_etY;
-double met_MuonMuons_sumET;
-double met_MuonMuons_et;
-double met_MuonMuons_phi;
-int met_Muon_source;
-double met_Muon_etX;
-double met_Muon_etY;
-double met_Muon_sumET;
-double met_Muon_et;
-double met_Muon_phi;
 
 vector<vector<int> >*    muons_cal_subCalo_subCaloId;
 vector<vector<double> >* muons_cal_subCalo_energyDeposited;
@@ -540,7 +453,333 @@ vector<double>*          muons_cal_fsrCandidateEnergy;
 vector<double>*          muons_cal_etCore;
 
 
+UInt_t   phys_RunNumber;
+UInt_t   phys_EventNumber;
+UInt_t   phys_mc_channel_number;
+UInt_t   phys_mc_event_number;
+Float_t  phys_mc_event_weight;
+UInt_t   phys_lbn;
+Float_t  phys_actualIntPerXing;
+Float_t  phys_averageIntPerXing;
 
+/*
+Int_t           AntiKt4TopoEMJets_n;
+vector<float>   *AntiKt4TopoEMJets_E;
+vector<float>   *AntiKt4TopoEMJets_pt;
+vector<float>   *AntiKt4TopoEMJets_m;
+vector<float>   *AntiKt4TopoEMJets_eta;
+vector<float>   *AntiKt4TopoEMJets_phi;
+vector<float>   *AntiKt4TopoEMJets_EtaOrigin;
+vector<float>   *AntiKt4TopoEMJets_PhiOrigin;
+vector<float>   *AntiKt4TopoEMJets_MOrigin;
+vector<float>   *AntiKt4TopoEMJets_WIDTH;
+vector<float>   *AntiKt4TopoEMJets_n90;
+vector<float>   *AntiKt4TopoEMJets_Timing;
+vector<float>   *AntiKt4TopoEMJets_LArQuality;
+vector<float>   *AntiKt4TopoEMJets_nTrk;
+vector<float>   *AntiKt4TopoEMJets_sumPtTrk;
+vector<float>   *AntiKt4TopoEMJets_OriginIndex;
+vector<float>   *AntiKt4TopoEMJets_HECQuality;
+vector<float>   *AntiKt4TopoEMJets_NegativeE;
+vector<float>   *AntiKt4TopoEMJets_AverageLArQF;
+vector<float>   *AntiKt4TopoEMJets_BCH_CORR_CELL;
+vector<float>   *AntiKt4TopoEMJets_BCH_CORR_DOTX;
+vector<float>   *AntiKt4TopoEMJets_BCH_CORR_JET;
+vector<float>   *AntiKt4TopoEMJets_BCH_CORR_JET_FORCELL;
+vector<float>   *AntiKt4TopoEMJets_ENG_BAD_CELLS;
+vector<float>   *AntiKt4TopoEMJets_N_BAD_CELLS;
+vector<float>   *AntiKt4TopoEMJets_N_BAD_CELLS_CORR;
+vector<float>   *AntiKt4TopoEMJets_BAD_CELLS_CORR_E;
+vector<float>   *AntiKt4TopoEMJets_NumTowers;
+vector<float>   *AntiKt4TopoEMJets_ootFracCells5;
+vector<float>   *AntiKt4TopoEMJets_ootFracCells10;
+vector<float>   *AntiKt4TopoEMJets_ootFracClusters5;
+vector<float>   *AntiKt4TopoEMJets_ootFracClusters10;
+vector<int>     *AntiKt4TopoEMJets_SamplingMax;
+vector<float>   *AntiKt4TopoEMJets_fracSamplingMax;
+vector<float>   *AntiKt4TopoEMJets_hecf;
+vector<float>   *AntiKt4TopoEMJets_tgap3f;
+vector<int>     *AntiKt4TopoEMJets_isUgly;
+vector<int>     *AntiKt4TopoEMJets_isBadLooseMinus;
+vector<int>     *AntiKt4TopoEMJets_isBadLoose;
+vector<int>     *AntiKt4TopoEMJets_isBadMedium;
+vector<int>     *AntiKt4TopoEMJets_isBadTight;
+vector<float>   *AntiKt4TopoEMJets_emfrac;
+vector<float>   *AntiKt4TopoEMJets_Offset;
+vector<float>   *AntiKt4TopoEMJets_EMJES;
+vector<float>   *AntiKt4TopoEMJets_EMJES_EtaCorr;
+vector<float>   *AntiKt4TopoEMJets_EMJESnooffset;
+vector<float>   *AntiKt4TopoEMJets_LCJES;
+vector<float>   *AntiKt4TopoEMJets_LCJES_EtaCorr;
+vector<float>   *AntiKt4TopoEMJets_emscale_E;
+vector<float>   *AntiKt4TopoEMJets_emscale_pt;
+vector<float>   *AntiKt4TopoEMJets_emscale_m;
+vector<float>   *AntiKt4TopoEMJets_emscale_eta;
+vector<float>   *AntiKt4TopoEMJets_emscale_phi;
+vector<float>   *AntiKt4TopoEMJets_jvtx_x;
+vector<float>   *AntiKt4TopoEMJets_jvtx_y;
+vector<float>   *AntiKt4TopoEMJets_jvtx_z;
+vector<float>   *AntiKt4TopoEMJets_jvtxf;
+vector<float>   *AntiKt4TopoEMJets_GSCFactorF;
+vector<float>   *AntiKt4TopoEMJets_WidthFraction;
+vector<float>   *AntiKt4TopoEMJets_e_PreSamplerB;
+vector<float>   *AntiKt4TopoEMJets_e_EMB1;
+vector<float>   *AntiKt4TopoEMJets_e_EMB2;
+vector<float>   *AntiKt4TopoEMJets_e_EMB3;
+vector<float>   *AntiKt4TopoEMJets_e_PreSamplerE;
+vector<float>   *AntiKt4TopoEMJets_e_EME1;
+vector<float>   *AntiKt4TopoEMJets_e_EME2;
+vector<float>   *AntiKt4TopoEMJets_e_EME3;
+vector<float>   *AntiKt4TopoEMJets_e_HEC0;
+vector<float>   *AntiKt4TopoEMJets_e_HEC1;
+vector<float>   *AntiKt4TopoEMJets_e_HEC2;
+vector<float>   *AntiKt4TopoEMJets_e_HEC3;
+vector<float>   *AntiKt4TopoEMJets_e_TileBar0;
+vector<float>   *AntiKt4TopoEMJets_e_TileBar1;
+vector<float>   *AntiKt4TopoEMJets_e_TileBar2;
+vector<float>   *AntiKt4TopoEMJets_e_TileGap1;
+vector<float>   *AntiKt4TopoEMJets_e_TileGap2;
+vector<float>   *AntiKt4TopoEMJets_e_TileGap3;
+vector<float>   *AntiKt4TopoEMJets_e_TileExt0;
+vector<float>   *AntiKt4TopoEMJets_e_TileExt1;
+vector<float>   *AntiKt4TopoEMJets_e_TileExt2;
+vector<float>   *AntiKt4TopoEMJets_e_FCAL0;
+vector<float>   *AntiKt4TopoEMJets_e_FCAL1;
+vector<float>   *AntiKt4TopoEMJets_e_FCAL2;
+vector<vector<float> > *AntiKt4TopoEMJets_shapeBins;
+vector<int>     *AntiKt4TopoEMJets_Nconst;
+vector<vector<float> > *AntiKt4TopoEMJets_ptconst_default;
+vector<vector<float> > *AntiKt4TopoEMJets_econst_default;
+vector<vector<float> > *AntiKt4TopoEMJets_etaconst_default;
+vector<vector<float> > *AntiKt4TopoEMJets_phiconst_default;
+vector<vector<float> > *AntiKt4TopoEMJets_weightconst_default;
+vector<float>   *AntiKt4TopoEMJets_constscale_E;
+vector<float>   *AntiKt4TopoEMJets_constscale_pt;
+vector<float>   *AntiKt4TopoEMJets_constscale_m;
+vector<float>   *AntiKt4TopoEMJets_constscale_eta;
+vector<float>   *AntiKt4TopoEMJets_constscale_phi;
+vector<float>   *AntiKt4TopoEMJets_LArBadHVEnergy;
+vector<float>   *AntiKt4TopoEMJets_LArBadHVRatio;
+vector<float>   *AntiKt4TopoEMJets_flavor_weight_Comb;
+vector<float>   *AntiKt4TopoEMJets_flavor_weight_IP2D;
+vector<float>   *AntiKt4TopoEMJets_flavor_weight_IP3D;
+vector<float>   *AntiKt4TopoEMJets_flavor_weight_SV0;
+vector<float>   *AntiKt4TopoEMJets_flavor_weight_SV1;
+vector<float>   *AntiKt4TopoEMJets_flavor_weight_SV2;
+vector<float>   *AntiKt4TopoEMJets_flavor_weight_SoftMuonTagChi2;
+vector<float>   *AntiKt4TopoEMJets_flavor_weight_SecondSoftMuonTagChi2;
+vector<float>   *AntiKt4TopoEMJets_flavor_weight_JetFitterTagNN;
+vector<float>   *AntiKt4TopoEMJets_flavor_weight_JetFitterCOMBNN;
+vector<float>   *AntiKt4TopoEMJets_flavor_weight_MV1;
+vector<float>   *AntiKt4TopoEMJets_flavor_weight_MV2;
+vector<float>   *AntiKt4TopoEMJets_flavor_weight_GbbNN;
+vector<int>     *AntiKt4TopoEMJets_flavor_truth_label;
+vector<float>   *AntiKt4TopoEMJets_flavor_truth_dRminToB;
+vector<float>   *AntiKt4TopoEMJets_flavor_truth_dRminToC;
+vector<float>   *AntiKt4TopoEMJets_flavor_truth_dRminToT;
+vector<int>     *AntiKt4TopoEMJets_flavor_truth_BHadronpdg;
+vector<float>   *AntiKt4TopoEMJets_flavor_truth_vx_x;
+vector<float>   *AntiKt4TopoEMJets_flavor_truth_vx_y;
+vector<float>   *AntiKt4TopoEMJets_flavor_truth_vx_z;
+vector<int>     *AntiKt4TopoEMJets_flavor_putruth_label;
+vector<float>   *AntiKt4TopoEMJets_flavor_putruth_dRminToB;
+vector<float>   *AntiKt4TopoEMJets_flavor_putruth_dRminToC;
+vector<float>   *AntiKt4TopoEMJets_flavor_putruth_dRminToT;
+vector<int>     *AntiKt4TopoEMJets_flavor_putruth_BHadronpdg;
+vector<float>   *AntiKt4TopoEMJets_flavor_putruth_vx_x;
+vector<float>   *AntiKt4TopoEMJets_flavor_putruth_vx_y;
+vector<float>   *AntiKt4TopoEMJets_flavor_putruth_vx_z;
+vector<float>   *AntiKt4TopoEMJets_flavor_component_ip2d_pu;
+vector<float>   *AntiKt4TopoEMJets_flavor_component_ip2d_pb;
+vector<int>     *AntiKt4TopoEMJets_flavor_component_ip2d_isValid;
+vector<int>     *AntiKt4TopoEMJets_flavor_component_ip2d_ntrk;
+vector<float>   *AntiKt4TopoEMJets_flavor_component_ip3d_pu;
+vector<float>   *AntiKt4TopoEMJets_flavor_component_ip3d_pb;
+vector<int>     *AntiKt4TopoEMJets_flavor_component_ip3d_isValid;
+vector<int>     *AntiKt4TopoEMJets_flavor_component_ip3d_ntrk;
+vector<int>     *AntiKt4TopoEMJets_flavor_component_jetprob_ntrk;
+vector<float>   *AntiKt4TopoEMJets_flavor_component_sv1_pu;
+vector<float>   *AntiKt4TopoEMJets_flavor_component_sv1_pb;
+vector<int>     *AntiKt4TopoEMJets_flavor_component_sv1_isValid;
+vector<float>   *AntiKt4TopoEMJets_flavor_component_sv2_pu;
+vector<float>   *AntiKt4TopoEMJets_flavor_component_sv2_pb;
+vector<int>     *AntiKt4TopoEMJets_flavor_component_sv2_isValid;
+vector<float>   *AntiKt4TopoEMJets_flavor_component_jfit_pu;
+vector<float>   *AntiKt4TopoEMJets_flavor_component_jfit_pb;
+vector<float>   *AntiKt4TopoEMJets_flavor_component_jfit_pc;
+vector<int>     *AntiKt4TopoEMJets_flavor_component_jfit_isValid;
+vector<float>   *AntiKt4TopoEMJets_flavor_component_jfitcomb_pu;
+vector<float>   *AntiKt4TopoEMJets_flavor_component_jfitcomb_pb;
+vector<float>   *AntiKt4TopoEMJets_flavor_component_jfitcomb_pc;
+vector<int>     *AntiKt4TopoEMJets_flavor_component_jfitcomb_isValid;
+vector<int>     *AntiKt4TopoEMJets_flavor_component_gbbnn_nMatchingTracks;
+vector<double>  *AntiKt4TopoEMJets_flavor_component_gbbnn_trkJetWidth;
+vector<double>  *AntiKt4TopoEMJets_flavor_component_gbbnn_trkJetMaxDeltaR;
+vector<int>     *AntiKt4TopoEMJets_flavor_component_jfit_nvtx;
+vector<int>     *AntiKt4TopoEMJets_flavor_component_jfit_nvtx1t;
+vector<int>     *AntiKt4TopoEMJets_flavor_component_jfit_ntrkAtVx;
+vector<float>   *AntiKt4TopoEMJets_flavor_component_jfit_efrc;
+vector<float>   *AntiKt4TopoEMJets_flavor_component_jfit_mass;
+vector<float>   *AntiKt4TopoEMJets_flavor_component_jfit_sig3d;
+vector<float>   *AntiKt4TopoEMJets_flavor_component_jfit_deltaPhi;
+vector<float>   *AntiKt4TopoEMJets_flavor_component_jfit_deltaEta;
+vector<vector<float> > *AntiKt4TopoEMJets_flavor_component_ipplus_trk_d0val;
+vector<vector<float> > *AntiKt4TopoEMJets_flavor_component_ipplus_trk_d0sig;
+vector<vector<float> > *AntiKt4TopoEMJets_flavor_component_ipplus_trk_z0val;
+vector<vector<float> > *AntiKt4TopoEMJets_flavor_component_ipplus_trk_z0sig;
+vector<vector<float> > *AntiKt4TopoEMJets_flavor_component_ipplus_trk_w2D;
+vector<vector<float> > *AntiKt4TopoEMJets_flavor_component_ipplus_trk_w3D;
+vector<vector<float> > *AntiKt4TopoEMJets_flavor_component_ipplus_trk_pJP;
+vector<vector<float> > *AntiKt4TopoEMJets_flavor_component_ipplus_trk_pJPneg;
+   vector<vector<int> > *AntiKt4TopoEMJets_flavor_component_ipplus_trk_grade;
+   vector<vector<int> > *AntiKt4TopoEMJets_flavor_component_ipplus_trk_isFromV0;
+   vector<int>     *AntiKt4TopoEMJets_flavor_component_svp_isValid;
+   vector<int>     *AntiKt4TopoEMJets_flavor_component_svp_ntrkv;
+   vector<int>     *AntiKt4TopoEMJets_flavor_component_svp_ntrkj;
+   vector<int>     *AntiKt4TopoEMJets_flavor_component_svp_n2t;
+   vector<float>   *AntiKt4TopoEMJets_flavor_component_svp_mass;
+   vector<float>   *AntiKt4TopoEMJets_flavor_component_svp_efrc;
+   vector<float>   *AntiKt4TopoEMJets_flavor_component_svp_x;
+   vector<float>   *AntiKt4TopoEMJets_flavor_component_svp_y;
+   vector<float>   *AntiKt4TopoEMJets_flavor_component_svp_z;
+   vector<float>   *AntiKt4TopoEMJets_flavor_component_svp_err_x;
+   vector<float>   *AntiKt4TopoEMJets_flavor_component_svp_err_y;
+   vector<float>   *AntiKt4TopoEMJets_flavor_component_svp_err_z;
+   vector<float>   *AntiKt4TopoEMJets_flavor_component_svp_cov_xy;
+   vector<float>   *AntiKt4TopoEMJets_flavor_component_svp_cov_xz;
+   vector<float>   *AntiKt4TopoEMJets_flavor_component_svp_cov_yz;
+   vector<float>   *AntiKt4TopoEMJets_flavor_component_svp_chi2;
+   vector<int>     *AntiKt4TopoEMJets_flavor_component_svp_ndof;
+   vector<int>     *AntiKt4TopoEMJets_flavor_component_svp_ntrk;
+   vector<int>     *AntiKt4TopoEMJets_flavor_component_sv0p_isValid;
+   vector<int>     *AntiKt4TopoEMJets_flavor_component_sv0p_ntrkv;
+   vector<int>     *AntiKt4TopoEMJets_flavor_component_sv0p_ntrkj;
+   vector<int>     *AntiKt4TopoEMJets_flavor_component_sv0p_n2t;
+   vector<float>   *AntiKt4TopoEMJets_flavor_component_sv0p_mass;
+   vector<float>   *AntiKt4TopoEMJets_flavor_component_sv0p_efrc;
+   vector<float>   *AntiKt4TopoEMJets_flavor_component_sv0p_x;
+   vector<float>   *AntiKt4TopoEMJets_flavor_component_sv0p_y;
+   vector<float>   *AntiKt4TopoEMJets_flavor_component_sv0p_z;
+   vector<float>   *AntiKt4TopoEMJets_flavor_component_sv0p_err_x;
+   vector<float>   *AntiKt4TopoEMJets_flavor_component_sv0p_err_y;
+   vector<float>   *AntiKt4TopoEMJets_flavor_component_sv0p_err_z;
+   vector<float>   *AntiKt4TopoEMJets_flavor_component_sv0p_cov_xy;
+   vector<float>   *AntiKt4TopoEMJets_flavor_component_sv0p_cov_xz;
+   vector<float>   *AntiKt4TopoEMJets_flavor_component_sv0p_cov_yz;
+   vector<float>   *AntiKt4TopoEMJets_flavor_component_sv0p_chi2;
+   vector<int>     *AntiKt4TopoEMJets_flavor_component_sv0p_ndof;
+   vector<int>     *AntiKt4TopoEMJets_flavor_component_sv0p_ntrk;
+   vector<vector<float> > *AntiKt4TopoEMJets_flavor_component_softmuoninfo_muon_w;
+   vector<vector<float> > *AntiKt4TopoEMJets_flavor_component_softmuoninfo_muon_pTRel;
+   vector<vector<float> > *AntiKt4TopoEMJets_flavor_component_softmuoninfo_muon_dRJet;
+   vector<vector<float> > *AntiKt4TopoEMJets_flavor_component_softmuonchi2info_muon_w;
+   vector<vector<float> > *AntiKt4TopoEMJets_flavor_component_softmuonchi2info_muon_pTRel;
+   vector<vector<float> > *AntiKt4TopoEMJets_flavor_component_softmuonchi2info_muon_dRJet;
+   vector<float>   *AntiKt4TopoEMJets_el_dr;
+   vector<int>     *AntiKt4TopoEMJets_el_matched;
+   vector<float>   *AntiKt4TopoEMJets_mu_dr;
+   vector<int>     *AntiKt4TopoEMJets_mu_matched;
+   vector<float>   *AntiKt4TopoEMJets_L1_dr;
+   vector<int>     *AntiKt4TopoEMJets_L1_matched;
+   vector<float>   *AntiKt4TopoEMJets_L2_dr;
+   vector<int>     *AntiKt4TopoEMJets_L2_matched;
+   vector<float>   *AntiKt4TopoEMJets_EF_dr;
+   vector<int>     *AntiKt4TopoEMJets_EF_matched;
+   vector<float>   *AntiKt4TopoEMJets_LikeLihood_0;
+   vector<float>   *AntiKt4TopoEMJets_ActiveArea;
+   vector<float>   *AntiKt4TopoEMJets_ActiveAreaPx;
+   vector<float>   *AntiKt4TopoEMJets_ActiveAreaPy;
+   vector<float>   *AntiKt4TopoEMJets_ActiveAreaPz;
+   vector<float>   *AntiKt4TopoEMJets_ActiveAreaE;
+   vector<float>   *AntiKt4TopoEMJets_VoronoiArea;
+   vector<float>   *AntiKt4TopoEMJets_VoronoiAreaPx;
+   vector<float>   *AntiKt4TopoEMJets_VoronoiAreaPy;
+   vector<float>   *AntiKt4TopoEMJets_VoronoiAreaPz;
+   vector<float>   *AntiKt4TopoEMJets_VoronoiAreaE;
+   vector<float>   *AntiKt4TopoEMJets_LowEtConstituentsFrac;
+   vector<float>   *AntiKt4TopoEMJets_pt_truth;
+   vector<float>   *AntiKt4TopoEMJets_IsoKR20Perp;
+   vector<float>   *AntiKt4TopoEMJets_IsoKR20Par;
+   vector<float>   *AntiKt4TopoEMJets_IsoKR20SumPt;
+   vector<float>   *AntiKt4TopoEMJets_IsoDelta2Perp;
+   vector<float>   *AntiKt4TopoEMJets_IsoDelta2Par;
+   vector<float>   *AntiKt4TopoEMJets_IsoDelta2SumPt;
+   vector<float>   *AntiKt4TopoEMJets_IsoFixedCone8Perp;
+   vector<float>   *AntiKt4TopoEMJets_IsoFixedCone8Par;
+   vector<float>   *AntiKt4TopoEMJets_IsoFixedCone8SumPt;
+   vector<float>   *AntiKt4TopoEMJets_IsoFixedArea13Perp;
+   vector<float>   *AntiKt4TopoEMJets_IsoFixedArea13Par;
+   vector<float>   *AntiKt4TopoEMJets_IsoFixedArea13SumPt;
+   vector<float>   *AntiKt4TopoEMJets_Iso6To88Perp;
+   vector<float>   *AntiKt4TopoEMJets_Iso6To88Par;
+   vector<float>   *AntiKt4TopoEMJets_Iso6To88SumPt;
+   vector<float>   *AntiKt4TopoEMJets_KtDr;
+   vector<float>   *AntiKt4TopoEMJets_Centroid_r;
+   vector<float>   *AntiKt4TopoEMJets_nTrk_pv0_1GeV;
+   vector<float>   *AntiKt4TopoEMJets_sumPtTrk_pv0_1GeV;
+   vector<float>   *AntiKt4TopoEMJets_nTrk_allpv_1GeV;
+   vector<float>   *AntiKt4TopoEMJets_sumPtTrk_allpv_1GeV;
+   vector<float>   *AntiKt4TopoEMJets_nTrk_pv0_500MeV;
+   vector<float>   *AntiKt4TopoEMJets_sumPtTrk_pv0_500MeV;
+   vector<float>   *AntiKt4TopoEMJets_trackWIDTH_pv0_1GeV;
+   vector<float>   *AntiKt4TopoEMJets_trackWIDTH_allpv_1GeV;
+   vector<float>   *AntiKt4TopoEMJets_TrackMFindex;
+   vector<float>   *AntiKt4TopoEMJets_TrackMFPt;
+   vector<float>   *AntiKt4TopoEMJets_TruthMFindex;
+   vector<float>   *AntiKt4TopoEMJets_TruthMFPt;
+*/
+
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+
+Root::TPileupReweighting* pileupTool;
+void initializePileup(bool issignal, TString name)
+{
+        if(!issignal) return;
+
+        pileupTool = new Root::TPileupReweighting("pileuptool");
+        if(makepufile)
+        {
+                _INFO("making pileup file");
+                pileupTool->UsePeriodConfig("MC12ab");
+        }
+        else
+        {
+                _INFO("reading pileup file");
+                pileupTool->AddConfigFile(name+".prw.root");
+                pileupTool->AddLumiCalcFile("ilumicalc_histograms_None_200842-215643.root");
+        }
+        pileupTool->Initialize();
+}
+float getPileupWeight(bool issignal)
+{
+        if(!issignal) return 1.;
+
+        /////////////////////////////
+        float pileup_weight = 1.; ///
+        /////////////////////////////
+
+        // NOTE (23/01/2013): A bug has been found in the d3pd making code,
+        // causing all MC12 samples to have a few of the averageIntPerXing
+        // values incorrectly set (some should be 0 but are set to 1).
+        // The bug does not affect data. To resolve this, when reading this branch,
+        // for both prw file generating and for when retrieving pileup weights,
+        // you should amend the value with the following line of code:
+        float averageIntPerXing_fixed = (lbn==1 && int(phys_averageIntPerXing+0.5)==1) ? 0. : phys_averageIntPerXing;
+        if(makepufile) pileupTool->Fill(phys_RunNumber,phys_mc_channel_number,phys_mc_event_weight,averageIntPerXing_fixed);
+        else           pileup_weight = pileupTool->GetCombinedWeight(phys_RunNumber,phys_mc_channel_number,averageIntPerXing_fixed);
+        return pileup_weight;
+}
+void finalizePileup(bool issignal, TString name)
+{
+        if(!issignal) return;
+        if(makepufile) pileupTool->WriteToFile(name+".prw.root");
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
 
 // void atlstyle()
@@ -2835,6 +3074,17 @@ void setBranches(TString tType, TChain* t)
 {
 	if(tType=="physics")
 	{
+
+		t->SetBranchAddress("RunNumber",&phys_RunNumber);
+		t->SetBranchAddress("EventNumber",&phys_EventNumber);
+		if(isMC) t->SetBranchAddress("mc_channel_number",&phys_mc_channel_number);
+		if(isMC) t->SetBranchAddress("mc_event_number",&phys_mc_event_number);
+		if(isMC) t->SetBranchAddress("mc_event_weight",&phys_mc_event_weight);
+		t->SetBranchAddress("lbn",&phys_lbn);
+		t->SetBranchAddress("actualIntPerXing",&phys_actualIntPerXing);
+		t->SetBranchAddress("averageIntPerXing",&phys_averageIntPerXing);
+
+
 		if(skim)
                 {
 		  	t->SetBranchStatus("trig_*_mu18it_*", 0);
@@ -3429,12 +3679,6 @@ void setBranches(TString tType, TChain* t)
 		t->SetBranchAddress(prefix+"RefFinal_sumET",&met_RefFinal_sumet);
 		t->SetBranchAddress(prefix+"RefFinal_et",&met_RefFinal_et);
 		t->SetBranchAddress(prefix+"RefFinal_phi",&met_RefFinal_phi);
-		t->SetBranchAddress(prefix+"Track_source",&met_Track_source);
-		t->SetBranchAddress(prefix+"Track_etX",&met_Track_etX);
-		t->SetBranchAddress(prefix+"Track_etY",&met_Track_etY);
-		t->SetBranchAddress(prefix+"Track_sumET",&met_Track_sumET);
-		t->SetBranchAddress(prefix+"Track_et",&met_Track_et);
-		t->SetBranchAddress(prefix+"Track_phi",&met_Track_phi);
 		
 		///////////////////////////////////
 		// disable unnecessary branches ///
@@ -7445,6 +7689,9 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 	mBlindMaxGlob = mBlindMaxInitial;
 	
 	
+	initializePileup(issignal,name);
+
+	
 	
 	/////////////////////////////////////////////////////////////////////////////////
 	// The only place where "bname" is used inside analysis() is here: //////////////
@@ -7486,6 +7733,7 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 		double wLumi       = (!isdata)                                                ? getSampleWeight(bname)    : 1.;
 		double wKfac       = (name.Contains("NpX"))                                   ? getKfactorWeight(name)    : 1.;
 		double wDijet      = (name.Contains("JZ"))                                    ? getDijetWeight(name)      : 1.;
+		double pileup      = (issignal)                                               ? getPileupWeight(issignal) : 1.;
 		wgt *= wFONLLshape;
 		wgt *= wFONLLflat;
 		wgt *= wLumi;
@@ -7960,6 +8208,8 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 	scounters = printCounters("objects",pname);
 	writeCoutners(ftxtname,scounters);
 	writeCoutners(ftxtname,"\n\n"); // add 2 blanc lines at the end
+
+	finalizePileup(issignal,name);
 }
 
 // ///////////////////////////////////////////
