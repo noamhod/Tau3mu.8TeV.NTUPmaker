@@ -1,4 +1,4 @@
-to get the Pilup reweighting tool, check the latest tag in:
+to get the pileup reweighting tool, check the latest tag in:
 	https://svnweb.cern.ch/trac/atlasoff/browser/PhysicsAnalysis/AnalysisCommon/PileupReweighting/tags
 	https://twiki.cern.ch/twiki/bin/view/AtlasProtected/PileupReweighting
 checkout the latest tag and compile it:
@@ -7,6 +7,16 @@ checkout the latest tag and compile it:
 	gmake -f Makefile.Standalone
 the library is in:
 	PileupReweighting/Standalone/libPileupReweighting.so	
+
+
+to get the jet cleaning tool:
+	https://svnweb.cern.ch/trac/atlasoff/browser/PhysicsAnalysis/JetMissingEtID/JetSelectorTools/tags/JetSelectorTools-00-01-01
+	https://twiki.cern.ch/twiki/bin/viewauth/AtlasProtected/HowToCleanJets2012	
+checkuot the tag and compile it:
+	svn co svn+ssh://svn.cern.ch/reps/atlasoff/PhysicsAnalysis/JetMissingEtID/JetSelectorTools/tags/JetSelectorTools-00-01-01 JetSelectorTools
+	cd JetSelectorTools/cmt
+	gmake -f Makefile.Standalone
+		
 
 
 to get the trunk:

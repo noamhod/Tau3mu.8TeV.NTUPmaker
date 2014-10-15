@@ -20,29 +20,32 @@ masters = ['muons']
 
 insets = Hash.new
 insets = {
-  'periodA' =>     5, # nfiles=41
-  'periodB' =>    14, # nfiles=132 (133 with one corrupted, available in $EOSHOME/data/backup/user.hod.4143407.d3pdstream._000078.root)
-  'periodC' =>     6, # nfiles=52
-  'periodD' =>    11, # nfiles=104
-  #'periodE' =>     , # nfiles=33
-  'periodG' =>     4, # nfiles=31
-  'periodH' =>     4, # nfiles=39
-  'periodI' =>     3, # nfiles=26
-  #'periodJ' =>     , # nfiles=
-  'periodL' =>     2, # nfiles=18
+  'periodJ' =>     6, # nfiles=51
+  'bb_mu4mu4'     => 5 # nfiles=46
+
+#  'periodA' =>     5, # nfiles=41
+#  'periodB' =>    14, # nfiles=132 (133 with one corrupted, available in $EOSHOME/data/backup/user.hod.4143407.d3pdstream._000078.root)
+#  'periodC' =>     6, # nfiles=52
+#  'periodD' =>    11, # nfiles=104
+#  #'periodE' =>     , # nfiles=33
+#  'periodG' =>     4, # nfiles=31
+#  'periodH' =>     4, # nfiles=39
+#  'periodI' =>     3, # nfiles=26
+#  'periodJ' =>     6, # nfiles=51
+#  'periodL' =>     2, # nfiles=18
   
-  'bb_mu4mu4'     => 5, # nfiles=46
-  'pp_Jpsimu4mu4' => 2, # nfiles=15
-  'bb_Jpsimu4mu4' => 3, # nfiles=21
-  'bbTomu15'      => 1, # nfiles=5
-  'ccTomu15'      => 1, # nfiles=4
+#  'bb_mu4mu4'     => 5, # nfiles=46
+#  'pp_Jpsimu4mu4' => 2, # nfiles=15
+#  'bb_Jpsimu4mu4' => 3, # nfiles=21
+#  'bbTomu15'      => 1, # nfiles=5
+#  'ccTomu15'      => 1, # nfiles=4
   
-  'JZ2W' => 1,  # nfiles=5
-  'JZ3W' => 1,  # nfiles=4
+#  'JZ2W' => 1,  # nfiles=5
+#  'JZ3W' => 1,  # nfiles=4
   
-  'bbTotau10_3mu' => 1, # nfiles=2
-  'ccTotau10_3mu' => 1, # nfiles=2
-  'Wtaunu_3mu'    => 1  # nfiles=3
+#  'bbTotau10_3mu' => 1, # nfiles=2
+#  'ccTotau10_3mu' => 1, # nfiles=2
+#  'Wtaunu_3mu'    => 1  # nfiles=3
 
   # 'ZmumuNp0'  => 1,
   # 'ZmumuNp1'  => 1,
