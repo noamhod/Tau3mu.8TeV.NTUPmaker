@@ -20,7 +20,7 @@
 #include "tmva.h"
 
 bool makepufile = false;
-bool glob_isMC  = false;
+bool glob_isMC  = true;
 
 struct sources
 {
@@ -91,6 +91,7 @@ TMapTSb  binnedmcenable;
 TMapTSd  weights;
 double totalLumi;
 TMapuivi isFourthTrack;
+TString JetQuality = "LooseBad";
 
 double isolation;
 vector<double> iso10;
@@ -316,6 +317,32 @@ vector<double>* muons_e_ie;
 vector<bool>*   muons_isLoose;
 vector<bool>*   muons_isMedium;
 vector<bool>*   muons_isTight;
+vector<int>* muons_numberOfMdtHits;
+vector<int>* muons_numberOfTgcPhiHits;
+vector<int>* muons_numberOfTgcEtaHits;
+vector<int>* muons_numberOfCscPhiHits;
+vector<int>* muons_numberOfCscEtaHits;
+vector<int>* muons_numberOfRpcPhiHits;
+vector<int>* muons_numberOfRpcEtaHits;
+vector<int>* muons_numberOfCscEtaHoles;
+vector<int>* muons_numberOfCscPhiHoles;
+vector<int>* muons_numberOfRpcEtaHoles;
+vector<int>* muons_numberOfRpcPhiHoles;
+vector<int>* muons_numberOfMdtHoles;
+vector<int>* muons_numberOfTgcEtaHoles;
+vector<int>* muons_numberOfTgcPhiHoles;
+vector<int>* muons_numberOfOutliersOnTrack;
+vector<int>* muons_standardDeviationOfChi2OS;
+vector<vector<int> >* muons_sectors;
+vector<vector<int> >* muons_nprecisionHits;
+vector<vector<int> >* muons_nphiLayers;
+vector<vector<int> >* muons_netaPhiLayers;
+vector<vector<int> >* muons_nprecisionHoles;
+vector<vector<int> >* muons_netaTriggerHoleLayers;
+vector<vector<int> >* muons_nphiHoleLayers;
+vector<vector<int> >* muons_nprecisionOutliers;
+vector<vector<string> >* muons_stationName;
+vector<vector<string> >* muons_phiName;
 
 vector<int>* muid_charge;
 vector<double>* muid_ptcone10;
@@ -364,6 +391,33 @@ vector<double>* muid_e_ie;
 vector<bool>*   muid_isLoose;
 vector<bool>*   muid_isMedium;
 vector<bool>*   muid_isTight;
+vector<int>* muid_numberOfMdtHits;
+vector<int>* muid_numberOfTgcPhiHits;
+vector<int>* muid_numberOfTgcEtaHits;
+vector<int>* muid_numberOfCscPhiHits;
+vector<int>* muid_numberOfCscEtaHits;
+vector<int>* muid_numberOfRpcPhiHits;
+vector<int>* muid_numberOfRpcEtaHits;
+vector<int>* muid_numberOfCscEtaHoles;
+vector<int>* muid_numberOfCscPhiHoles;
+vector<int>* muid_numberOfRpcEtaHoles;
+vector<int>* muid_numberOfRpcPhiHoles;
+vector<int>* muid_numberOfMdtHoles;
+vector<int>* muid_numberOfTgcEtaHoles;
+vector<int>* muid_numberOfTgcPhiHoles;
+vector<int>* muid_numberOfOutliersOnTrack;
+vector<int>* muid_standardDeviationOfChi2OS;
+vector<vector<int> >* muid_sectors;
+vector<vector<int> >* muid_nprecisionHits;
+vector<vector<int> >* muid_nphiLayers;
+vector<vector<int> >* muid_netaPhiLayers;
+vector<vector<int> >* muid_nprecisionHoles;
+vector<vector<int> >* muid_netaTriggerHoleLayers;
+vector<vector<int> >* muid_nphiHoleLayers;
+vector<vector<int> >* muid_nprecisionOutliers;
+vector<vector<string> >* muid_stationName;
+vector<vector<string> >* muid_phiName;
+
 
 vector<int>*    calo_muons_charge;
 vector<double>* calo_muons_ptcone10;
@@ -412,6 +466,7 @@ vector<double>* calo_muons_e_ie;
 vector<bool>*   calo_muons_isLoose;
 vector<bool>*   calo_muons_isMedium;
 vector<bool>*   calo_muons_isTight;
+
 
 int aux_nTriplets;
 int aux_nDoublets;
@@ -473,7 +528,6 @@ vector<float>* AntiKt4TopoEMJets_EtaOrigin;
 vector<float>* AntiKt4TopoEMJets_PhiOrigin;
 vector<float>* AntiKt4TopoEMJets_MOrigin;
 vector<float>* AntiKt4TopoEMJets_WIDTH;
-
 vector<float>* AntiKt4TopoEMJets_n90;
 vector<float>* AntiKt4TopoEMJets_Timing;
 vector<float>* AntiKt4TopoEMJets_LArQuality;
@@ -732,6 +786,77 @@ vector<float>* AntiKt4TopoEMJets_TruthMFPt;
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
+float MET_RefFinal_etx;
+float MET_RefFinal_ety;
+float MET_RefFinal_phi;
+float MET_RefFinal_et;
+float MET_RefFinal_sumet;
+float MET_RefFinal_etx_CentralReg;
+float MET_RefFinal_ety_CentralReg;
+float MET_RefFinal_sumet_CentralReg;
+float MET_RefFinal_phi_CentralReg;
+float MET_RefFinal_etx_EndcapRegion;
+float MET_RefFinal_ety_EndcapRegion;
+float MET_RefFinal_sumet_EndcapRegion;
+float MET_RefFinal_phi_EndcapRegion;
+float MET_RefFinal_etx_ForwardReg;
+float MET_RefFinal_ety_ForwardReg;
+float MET_RefFinal_sumet_ForwardReg;
+float MET_RefFinal_phi_ForwardReg;
+
+int  el_MET_n;
+vector<vector<float> > *el_MET_wpx;
+vector<vector<float> > *el_MET_wpy;
+vector<vector<float> > *el_MET_wet;
+vector<vector<unsigned int> > *el_MET_statusWord;
+int           ph_MET_n;
+vector<vector<float> > *ph_MET_wpx;
+vector<vector<float> > *ph_MET_wpy;
+vector<vector<float> > *ph_MET_wet;
+vector<vector<unsigned int> > *ph_MET_statusWord;
+int           mu_staco_MET_n;
+vector<vector<float> > *mu_staco_MET_wpx;
+vector<vector<float> > *mu_staco_MET_wpy;
+vector<vector<float> > *mu_staco_MET_wet;
+vector<vector<unsigned int> > *mu_staco_MET_statusWord;
+int           mu_muid_MET_n;
+vector<vector<float> > *mu_muid_MET_wpx;
+vector<vector<float> > *mu_muid_MET_wpy;
+vector<vector<float> > *mu_muid_MET_wet;
+vector<vector<unsigned int> > *mu_muid_MET_statusWord;
+int           mu_MET_n;
+vector<vector<float> > *mu_MET_wpx;
+vector<vector<float> > *mu_MET_wpy;
+vector<vector<float> > *mu_MET_wet;
+vector<vector<unsigned int> > *mu_MET_statusWord;
+int           tau_MET_n;
+vector<vector<float> > *tau_MET_wpx;
+vector<vector<float> > *tau_MET_wpy;
+vector<vector<float> > *tau_MET_wet;
+vector<vector<unsigned int> > *tau_MET_statusWord;
+int           jet_antikt4LCtopo_MET_n;
+vector<vector<float> > *jet_antikt4LCtopo_MET_wpx;
+vector<vector<float> > *jet_antikt4LCtopo_MET_wpy;
+vector<vector<float> > *jet_antikt4LCtopo_MET_wet;
+vector<vector<unsigned int> > *jet_antikt4LCtopo_MET_statusWord;
+int           cl_MET_n;
+vector<vector<float> > *cl_MET_wpx;
+vector<vector<float> > *cl_MET_wpy;
+vector<vector<float> > *cl_MET_wet;
+vector<vector<unsigned int> > *cl_MET_statusWord;
+int           trk_MET_n;
+vector<vector<float> > *trk_MET_wpx;
+vector<vector<float> > *trk_MET_wpy;
+vector<vector<float> > *trk_MET_wet;
+vector<vector<unsigned int> > *trk_MET_statusWord;
+
+float rhorhoKt3EM;
+float rhorhoKt4EM;
+float rhorhoKt3LC;
+float rhorhoKt4LC;
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
 
 Root::TPileupReweighting* pileupTool;
 void initializePileup()
@@ -778,24 +903,23 @@ void finalizePileup()
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
 
-/*
+
 //=============================================================================
-const Root::TAccept& Root::TJetCleaningTool::accept( double emf,
-                                                     double hecf,
-                                                     double larq,
-                                                     double hecq,
-                                                     double time,     //in ns
-                                                     double sumpttrk, //in MeV, same as sumpttrk
-                                                     double eta,      //emscale Eta
-                                                     double pt,       //in GeV, same as sumpttrk
-                                                     double fmax,
-                                                     double negE ,     //in MeV
-                                                     double AverageLArQF
-                                                     )
+bool isGoodJet(unsigned int jet, TString configuration = "VeryLooseBad")
 {
-	// Reset the cut result bits to zero (= fail cut)
-	m_accept.clear();
-	m_accept.setCutResult( m_cutPosition , true); // Default passing
+	bool isGood = true;
+	
+	double emf          = AntiKt4TopoEMJets_emfrac->at(jet);
+	double hecf         = AntiKt4TopoEMJets_hecf->at(jet);
+	double larq         = AntiKt4TopoEMJets_LArQuality->at(jet);
+	double hecq         = AntiKt4TopoEMJets_HECQuality->at(jet);
+	double time         = AntiKt4TopoEMJets_Timing->at(jet); //in ns
+	double sumpttrk     = AntiKt4TopoEMJets_sumPtTrk_pv0_500MeV->at(jet); //in MeV, same as sumpttrk
+	double eta          = AntiKt4TopoEMJets_eta->at(jet); //emscale Eta
+	double pt           = AntiKt4TopoEMJets_pt->at(jet);  //in MeV, same as sumpttrk
+	double fmax         = AntiKt4TopoEMJets_fracSamplingMax->at(jet);
+	double negE         = AntiKt4TopoEMJets_NegativeE->at(jet); //in MeV
+	double AverageLArQF = AntiKt4TopoEMJets_AverageLArQF->at(jet);
 	
 	// -----------------------------------------------------------
 	// Do the actual selection
@@ -805,60 +929,58 @@ const Root::TAccept& Root::TJetCleaningTool::accept( double emf,
 	//VeryLoose cuts
 	//=============================================================
 	//Non-collision background & cosmics
-	if(emf<0.05 && chf<0.05 && fabs(eta)<2)            m_accept.setCutResult( m_cutPosition , false);
-	if(emf<0.05 && fabs(eta)>=2)                       m_accept.setCutResult( m_cutPosition , false);
-	if(fmax>0.99 && fabs(eta)<2)                       m_accept.setCutResult( m_cutPosition , false);
+	if(emf<0.05 && chf<0.05 && fabs(eta)<2)                                   isGood = false;
+	if(emf<0.05 && fabs(eta)>=2)                                              isGood = false;
+	if(fmax>0.99 && fabs(eta)<2)                                              isGood = false;
 	//HEC spike
-	if(fabs(negE/1000.)>60)                            m_accept.setCutResult( m_cutPosition , false);
-	if(hecf>0.5 && fabs(hecq)>0.5 && AverageLArQF/65535>0.8)                     m_accept.setCutResult( m_cutPosition , false);
+	if(fabs(negE/1000.)>60)                                                   isGood = false;
+	if(hecf>0.5 && fabs(hecq)>0.5 && AverageLArQF/65535>0.8)                  isGood = false;
 	//EM calo noise
-	if(emf>0.95 && fabs(larq)>0.8 && fabs(eta)<2.8 && AverageLArQF/65535>0.8)    m_accept.setCutResult( m_cutPosition , false);
-	if ("VeryLooseBad"==cutName) return m_accept;
+	if(emf>0.95 && fabs(larq)>0.8 && fabs(eta)<2.8 && AverageLArQF/65535>0.8) isGood = false;
+	if ("VeryLooseBad"==configuration) return isGood;
 	
-	/=============================================================
+	//=============================================================
 	//Loose cuts
 	//=============================================================
 	//Non-collision background & cosmics
-	if(fabs(time)>25)                                  m_accept.setCutResult( m_cutPosition , false);
+	if(fabs(time)>25)                                  isGood = false;
 	//HEC spike
-	if(hecf>0.5 && fabs(hecq)>0.5)                     m_accept.setCutResult( m_cutPosition , false);
+	if(hecf>0.5 && fabs(hecq)>0.5)                     isGood = false;
 	//EM calo noise
-	if(emf>0.95 && fabs(larq)>0.8 && fabs(eta)<2.8)    m_accept.setCutResult( m_cutPosition , false);
-	if ("LooseBad"==cutName) return m_accept;
+	if(emf>0.95 && fabs(larq)>0.8 && fabs(eta)<2.8)    isGood = false;
+	if ("LooseBad"==configuration) return isGood;
 
 	//=============================================================
 	//Additionnal medium cuts
 	//=============================================================
 	//Non-collision background & cosmics
-	if(fabs(time)>10)                                m_accept.setCutResult( m_cutPosition , false);
-	if(emf<0.05 && chf<0.1  && fabs(eta)<2)          m_accept.setCutResult( m_cutPosition , false);
-	if(emf>0.95 && chf<0.05 && fabs(eta)<2)          m_accept.setCutResult( m_cutPosition , false);
+	if(fabs(time)>10)                                isGood = false;
+	if(emf<0.05 && chf<0.1  && fabs(eta)<2)          isGood = false;
+	if(emf>0.95 && chf<0.05 && fabs(eta)<2)          isGood = false;
 	//HEC spike
-	if(hecf>1-fabs(hecq))                            m_accept.setCutResult( m_cutPosition , false);
+	if(hecf>1-fabs(hecq))                            isGood = false;
 	//EM calo noise
-	if(emf>0.9 && fabs(larq)>0.8 && fabs(eta)<2.8)   m_accept.setCutResult( m_cutPosition , false);
-	if ("MediumBad"==cutName) return m_accept;
+	if(emf>0.9 && fabs(larq)>0.8 && fabs(eta)<2.8)   isGood = false;
+	if ("MediumBad"==configuration) return isGood;
 	
 	//=============================================================
 	//Additionnal tight cuts
 	//=============================================================
 	//Non-collision background & cosmics
-	if(emf<0.1 && chf<0.2 && fabs(eta)<2.5)          m_accept.setCutResult( m_cutPosition , false);
-	if(emf<0.1 && fabs(eta)>2.5 )                    m_accept.setCutResult( m_cutPosition , false);
-	if(emf>0.9 && chf<0.1 && fabs(eta)<2.5)          m_accept.setCutResult( m_cutPosition , false);
+	if(emf<0.1 && chf<0.2 && fabs(eta)<2.5)          isGood = false;
+	if(emf<0.1 && fabs(eta)>2.5 )                    isGood = false;
+	if(emf>0.9 && chf<0.1 && fabs(eta)<2.5)          isGood = false;
 	//EM calo noise
-	if(fabs(larq)>0.95)                              m_accept.setCutResult( m_cutPosition , false);
-	if(emf>0.98 && fabs(larq)>0.05)                  m_accept.setCutResult( m_cutPosition , false);
-	if(chf<0.01 && fabs(eta)<2.5 )                   m_accept.setCutResult( m_cutPosition , false);
-	if ("TightBad"==cutName) return m_accept;
+	if(fabs(larq)>0.95)                              isGood = false;
+	if(emf>0.98 && fabs(larq)>0.05)                  isGood = false;
+	if(chf<0.01 && fabs(eta)<2.5 )                   isGood = false;
+	if ("TightBad"==configuration) return isGood;
 	
 	// We should never arrive here!
-	std::cerr << "ERROR: Unknown cut name: " << cutName << " in JetCleaningTool" << std::endl;
+	_FATAL("Unknown configuration: "+(string)configuration+" in jet cleaning");
 
-	return m_accept;
+	return isGood;
 }
-
-*/
 
 
 //////////////////////////////////////////////////////////////////////
@@ -2277,6 +2399,10 @@ void fillFlatoutTree(vector<vertex>& vertices, int allPassing)
 		flatout_vfloats["jet_MV1w2"]    ->push_back( v.jetMV1(1));
 		flatout_vfloats["jet_MV1w3"]    ->push_back( v.jetMV1(2));
 		flatout_vfloats["jet_MV1w4"]    ->push_back( v.jetMV1(3));
+		flatout_vfloats["jet_vtxf1"]    ->push_back( v.jetVtxFrac(0));
+		flatout_vfloats["jet_vtxf2"]    ->push_back( v.jetVtxFrac(1));
+		flatout_vfloats["jet_vtxf3"]    ->push_back( v.jetVtxFrac(2));
+		flatout_vfloats["jet_vtxf4"]    ->push_back( v.jetVtxFrac(3));
 		flatout_vfloats["jet_sumpt12"]  ->push_back( v.jetSumPt());
 		flatout_vfloats["jet_dphi3muJ1"]->push_back( v.jetDphi3body());
 		flatout_vfloats["jet_dR3muJ1"]  ->push_back( v.jetDR3body());
@@ -2352,6 +2478,7 @@ void fillFlatoutTree(vector<vertex>& vertices, int allPassing)
 	flatout_floats["wgt_luminosity"] = weights["wLumi"];
 	flatout_floats["wgt_kfactor"]    = weights["wKfac"];
 	flatout_floats["wgt_dijets"]     = weights["wDijet"];
+	flatout_floats["wgt_pileup"]     = weights["wPileup"];
 	flatout_floats["wgt_total"]      = weights["wgt"];
 	
 	_DEBUG("");
@@ -2399,12 +2526,20 @@ bool isTightBtag(float flavor_weight_MV1)
 }
 bool isMV1btag(bool isTight=true)
 {
-	for(unsigned int i=0 ; i<jets_pt->size() ; ++i)
+	// for(unsigned int i=0 ; i<jets_pt->size() ; ++i)
+	// {
+	// 	bool isUgly = (jets_isUgly->at(i));
+	// 	if(isUgly)  continue;
+	// 	
+	// 	bool isBtag = (isTight) ? isTightBtag(jets_flwgt_MV1->at(i)) : isStandardBtag(jets_flwgt_MV1->at(i));
+	// 	if(isBtag) return true;
+	// }
+	// return false;
+
+	for(int i=0 ; i<AntiKt4TopoEMJets_n ; i++)
 	{
-		bool isUgly = (jets_isUgly->at(i));
-		if(isUgly)  continue;
-		
-		bool isBtag = (isTight) ? isTightBtag(jets_flwgt_MV1->at(i)) : isStandardBtag(jets_flwgt_MV1->at(i));
+		if(!isGoodJet(i,JetQuality))  continue;
+		bool isBtag = (isTight) ? isTightBtag(AntiKt4TopoEMJets_flavor_weight_MV1->at(i)) : isStandardBtag(AntiKt4TopoEMJets_flavor_weight_MV1->at(i));
 		if(isBtag) return true;
 	}
 	return false;
@@ -2415,12 +2550,21 @@ int bestOverlapingJet(TLorentzVector lvX)
 	float dRmin = +1.e20;
 	int   idRmin = -1;
 	
-	for(unsigned int i=0 ; i<jets_pt->size() ; ++i)
+	// for(unsigned int i=0 ; i<jets_pt->size() ; ++i)
+	// {
+	// 	bool isUgly = (jets_isUgly->at(i));
+	// 	if(isUgly)  continue;
+	// 	
+	// 	lvJet.SetPtEtaPhiE(jets_pt->at(i),jets_eta->at(i),jets_phi->at(i),jets_e->at(i));
+	// 	float dR = lvJet.DeltaR(lvX);
+	// 	if(dR<dRmin) { dRmin=dR; idRmin=i; }
+	// }
+	// return idRmin;
+	
+	for(int i=0 ; i<AntiKt4TopoEMJets_n ; i++)
 	{
-		bool isUgly = (jets_isUgly->at(i));
-		if(isUgly)  continue;
-		
-		lvJet.SetPtEtaPhiE(jets_pt->at(i),jets_eta->at(i),jets_phi->at(i),jets_e->at(i));
+		if(!isGoodJet(i,JetQuality))  continue;
+		lvJet.SetPtEtaPhiE(AntiKt4TopoEMJets_pt->at(i),AntiKt4TopoEMJets_eta->at(i),AntiKt4TopoEMJets_phi->at(i),AntiKt4TopoEMJets_E->at(i));
 		float dR = lvJet.DeltaR(lvX);
 		if(dR<dRmin) { dRmin=dR; idRmin=i; }
 	}
@@ -3157,7 +3301,6 @@ void setBranches(TString tType, TChain* t)
 {
 	if(tType=="physics")
 	{
-
 		t->SetBranchAddress("RunNumber",&phys_RunNumber);
 		t->SetBranchAddress("EventNumber",&phys_EventNumber);
 		if(glob_isMC) t->SetBranchAddress("mc_channel_number",&phys_mc_channel_number);
@@ -3172,7 +3315,151 @@ void setBranches(TString tType, TChain* t)
 		t->SetBranchAddress("AntiKt4TopoEMJets_pt", &AntiKt4TopoEMJets_pt);
 		t->SetBranchAddress("AntiKt4TopoEMJets_m", &AntiKt4TopoEMJets_m);
 		t->SetBranchAddress("AntiKt4TopoEMJets_eta", &AntiKt4TopoEMJets_eta);
-		t->SetBranchAddress("AntiKt4TopoEMJets_phi", &AntiKt4TopoEMJets_phi);		
+		t->SetBranchAddress("AntiKt4TopoEMJets_phi", &AntiKt4TopoEMJets_phi);
+		
+		t->SetBranchAddress("AntiKt4TopoEMJets_emfrac", &AntiKt4TopoEMJets_emfrac);
+		t->SetBranchAddress("AntiKt4TopoEMJets_hecf", &AntiKt4TopoEMJets_hecf);
+		t->SetBranchAddress("AntiKt4TopoEMJets_LArQuality", &AntiKt4TopoEMJets_LArQuality);
+		t->SetBranchAddress("AntiKt4TopoEMJets_HECQuality", &AntiKt4TopoEMJets_HECQuality);
+		t->SetBranchAddress("AntiKt4TopoEMJets_Timing", &AntiKt4TopoEMJets_Timing);
+		t->SetBranchAddress("AntiKt4TopoEMJets_sumPtTrk_pv0_500MeV", &AntiKt4TopoEMJets_sumPtTrk_pv0_500MeV);
+		t->SetBranchAddress("AntiKt4TopoEMJets_eta", &AntiKt4TopoEMJets_eta);
+		t->SetBranchAddress("AntiKt4TopoEMJets_pt", &AntiKt4TopoEMJets_pt);
+		t->SetBranchAddress("AntiKt4TopoEMJets_fracSamplingMax", &AntiKt4TopoEMJets_fracSamplingMax);
+		t->SetBranchAddress("AntiKt4TopoEMJets_NegativeE", &AntiKt4TopoEMJets_NegativeE);
+		t->SetBranchAddress("AntiKt4TopoEMJets_AverageLArQF", &AntiKt4TopoEMJets_AverageLArQF);
+		
+		t->SetBranchAddress("AntiKt4TopoEMJets_EtaOrigin", &AntiKt4TopoEMJets_EtaOrigin);
+		t->SetBranchAddress("AntiKt4TopoEMJets_PhiOrigin", &AntiKt4TopoEMJets_PhiOrigin);
+		t->SetBranchAddress("AntiKt4TopoEMJets_MOrigin", &AntiKt4TopoEMJets_MOrigin);
+		t->SetBranchAddress("AntiKt4TopoEMJets_WIDTH", &AntiKt4TopoEMJets_WIDTH);
+		t->SetBranchAddress("AntiKt4TopoEMJets_n90", &AntiKt4TopoEMJets_n90);
+		t->SetBranchAddress("AntiKt4TopoEMJets_nTrk", &AntiKt4TopoEMJets_nTrk);
+		t->SetBranchAddress("AntiKt4TopoEMJets_sumPtTrk", &AntiKt4TopoEMJets_sumPtTrk);
+		t->SetBranchAddress("AntiKt4TopoEMJets_OriginIndex", &AntiKt4TopoEMJets_OriginIndex);
+
+		t->SetBranchAddress("AntiKt4TopoEMJets_BCH_CORR_CELL", &AntiKt4TopoEMJets_BCH_CORR_CELL);
+		t->SetBranchAddress("AntiKt4TopoEMJets_BCH_CORR_DOTX", &AntiKt4TopoEMJets_BCH_CORR_DOTX);
+		t->SetBranchAddress("AntiKt4TopoEMJets_BCH_CORR_JET", &AntiKt4TopoEMJets_BCH_CORR_JET);
+		t->SetBranchAddress("AntiKt4TopoEMJets_BCH_CORR_JET_FORCELL", &AntiKt4TopoEMJets_BCH_CORR_JET_FORCELL);
+		t->SetBranchAddress("AntiKt4TopoEMJets_ENG_BAD_CELLS", &AntiKt4TopoEMJets_ENG_BAD_CELLS);
+		t->SetBranchAddress("AntiKt4TopoEMJets_N_BAD_CELLS", &AntiKt4TopoEMJets_N_BAD_CELLS);
+		t->SetBranchAddress("AntiKt4TopoEMJets_N_BAD_CELLS_CORR", &AntiKt4TopoEMJets_N_BAD_CELLS_CORR);
+		t->SetBranchAddress("AntiKt4TopoEMJets_BAD_CELLS_CORR_E", &AntiKt4TopoEMJets_BAD_CELLS_CORR_E);
+
+		t->SetBranchAddress("AntiKt4TopoEMJets_isUgly", &AntiKt4TopoEMJets_isUgly);
+		t->SetBranchAddress("AntiKt4TopoEMJets_isBadLooseMinus", &AntiKt4TopoEMJets_isBadLooseMinus);
+		t->SetBranchAddress("AntiKt4TopoEMJets_isBadLoose", &AntiKt4TopoEMJets_isBadLoose);
+		t->SetBranchAddress("AntiKt4TopoEMJets_isBadMedium", &AntiKt4TopoEMJets_isBadMedium);
+		t->SetBranchAddress("AntiKt4TopoEMJets_isBadTight", &AntiKt4TopoEMJets_isBadTight);
+
+		t->SetBranchAddress("AntiKt4TopoEMJets_Offset", &AntiKt4TopoEMJets_Offset);
+		t->SetBranchAddress("AntiKt4TopoEMJets_EMJES", &AntiKt4TopoEMJets_EMJES);
+		t->SetBranchAddress("AntiKt4TopoEMJets_EMJES_EtaCorr", &AntiKt4TopoEMJets_EMJES_EtaCorr);
+		t->SetBranchAddress("AntiKt4TopoEMJets_EMJESnooffset", &AntiKt4TopoEMJets_EMJESnooffset);
+
+		t->SetBranchAddress("AntiKt4TopoEMJets_emscale_E", &AntiKt4TopoEMJets_emscale_E);
+		t->SetBranchAddress("AntiKt4TopoEMJets_emscale_pt", &AntiKt4TopoEMJets_emscale_pt);
+		t->SetBranchAddress("AntiKt4TopoEMJets_emscale_m", &AntiKt4TopoEMJets_emscale_m);
+		t->SetBranchAddress("AntiKt4TopoEMJets_emscale_eta", &AntiKt4TopoEMJets_emscale_eta);
+		t->SetBranchAddress("AntiKt4TopoEMJets_emscale_phi", &AntiKt4TopoEMJets_emscale_phi);
+		
+		t->SetBranchAddress("AntiKt4TopoEMJets_jvtx_x", &AntiKt4TopoEMJets_jvtx_x);
+		t->SetBranchAddress("AntiKt4TopoEMJets_jvtx_y", &AntiKt4TopoEMJets_jvtx_y);
+		t->SetBranchAddress("AntiKt4TopoEMJets_jvtx_z", &AntiKt4TopoEMJets_jvtx_z);
+		t->SetBranchAddress("AntiKt4TopoEMJets_jvtxf", &AntiKt4TopoEMJets_jvtxf);
+		
+		t->SetBranchAddress("AntiKt4TopoEMJets_LikeLihood_0", &AntiKt4TopoEMJets_LikeLihood_0);
+		t->SetBranchAddress("AntiKt4TopoEMJets_ActiveArea", &AntiKt4TopoEMJets_ActiveArea);
+		t->SetBranchAddress("AntiKt4TopoEMJets_ActiveAreaPx", &AntiKt4TopoEMJets_ActiveAreaPx);
+		t->SetBranchAddress("AntiKt4TopoEMJets_ActiveAreaPy", &AntiKt4TopoEMJets_ActiveAreaPy);
+		t->SetBranchAddress("AntiKt4TopoEMJets_ActiveAreaPz", &AntiKt4TopoEMJets_ActiveAreaPz);
+		t->SetBranchAddress("AntiKt4TopoEMJets_ActiveAreaE", &AntiKt4TopoEMJets_ActiveAreaE);
+		t->SetBranchAddress("AntiKt4TopoEMJets_VoronoiArea", &AntiKt4TopoEMJets_VoronoiArea);
+		t->SetBranchAddress("AntiKt4TopoEMJets_VoronoiAreaPx", &AntiKt4TopoEMJets_VoronoiAreaPx);
+		t->SetBranchAddress("AntiKt4TopoEMJets_VoronoiAreaPy", &AntiKt4TopoEMJets_VoronoiAreaPy);
+		t->SetBranchAddress("AntiKt4TopoEMJets_VoronoiAreaPz", &AntiKt4TopoEMJets_VoronoiAreaPz);
+		t->SetBranchAddress("AntiKt4TopoEMJets_VoronoiAreaE", &AntiKt4TopoEMJets_VoronoiAreaE);
+		t->SetBranchAddress("AntiKt4TopoEMJets_LowEtConstituentsFrac", &AntiKt4TopoEMJets_LowEtConstituentsFrac);
+		
+		t->SetBranchAddress("AntiKt4TopoEMJets_constscale_E", &AntiKt4TopoEMJets_constscale_E);
+		t->SetBranchAddress("AntiKt4TopoEMJets_constscale_pt", &AntiKt4TopoEMJets_constscale_pt);
+		t->SetBranchAddress("AntiKt4TopoEMJets_constscale_m", &AntiKt4TopoEMJets_constscale_m);
+		t->SetBranchAddress("AntiKt4TopoEMJets_constscale_eta", &AntiKt4TopoEMJets_constscale_eta);
+		t->SetBranchAddress("AntiKt4TopoEMJets_constscale_phi", &AntiKt4TopoEMJets_constscale_phi);
+		t->SetBranchAddress("AntiKt4TopoEMJets_LArBadHVEnergy", &AntiKt4TopoEMJets_LArBadHVEnergy);
+		t->SetBranchAddress("AntiKt4TopoEMJets_LArBadHVRatio", &AntiKt4TopoEMJets_LArBadHVRatio);
+		
+		t->SetBranchAddress("AntiKt4TopoEMJets_flavor_weight_MV1", &AntiKt4TopoEMJets_flavor_weight_MV1);
+		
+		t->SetBranchAddress("MET_RefFinal_etx", &MET_RefFinal_etx);
+		t->SetBranchAddress("MET_RefFinal_ety", &MET_RefFinal_ety);
+		t->SetBranchAddress("MET_RefFinal_phi", &MET_RefFinal_phi);
+		t->SetBranchAddress("MET_RefFinal_et", &MET_RefFinal_et);
+		t->SetBranchAddress("MET_RefFinal_sumet", &MET_RefFinal_sumet);
+		t->SetBranchAddress("MET_RefFinal_etx_CentralReg", &MET_RefFinal_etx_CentralReg);
+		t->SetBranchAddress("MET_RefFinal_ety_CentralReg", &MET_RefFinal_ety_CentralReg);
+		t->SetBranchAddress("MET_RefFinal_sumet_CentralReg", &MET_RefFinal_sumet_CentralReg);
+		t->SetBranchAddress("MET_RefFinal_phi_CentralReg", &MET_RefFinal_phi_CentralReg);
+		t->SetBranchAddress("MET_RefFinal_etx_EndcapRegion", &MET_RefFinal_etx_EndcapRegion);
+		t->SetBranchAddress("MET_RefFinal_ety_EndcapRegion", &MET_RefFinal_ety_EndcapRegion);
+		t->SetBranchAddress("MET_RefFinal_sumet_EndcapRegion", &MET_RefFinal_sumet_EndcapRegion);
+		t->SetBranchAddress("MET_RefFinal_phi_EndcapRegion", &MET_RefFinal_phi_EndcapRegion);
+		t->SetBranchAddress("MET_RefFinal_etx_ForwardReg", &MET_RefFinal_etx_ForwardReg);
+		t->SetBranchAddress("MET_RefFinal_ety_ForwardReg", &MET_RefFinal_ety_ForwardReg);
+		t->SetBranchAddress("MET_RefFinal_sumet_ForwardReg", &MET_RefFinal_sumet_ForwardReg);
+		t->SetBranchAddress("MET_RefFinal_phi_ForwardReg", &MET_RefFinal_phi_ForwardReg);
+
+		t->SetBranchAddress("el_MET_n", &el_MET_n);
+		t->SetBranchAddress("el_MET_wpx", &el_MET_wpx);
+		t->SetBranchAddress("el_MET_wpy", &el_MET_wpy);
+		t->SetBranchAddress("el_MET_wet", &el_MET_wet);
+		t->SetBranchAddress("el_MET_statusWord", &el_MET_statusWord);
+		t->SetBranchAddress("ph_MET_n", &ph_MET_n);
+		t->SetBranchAddress("ph_MET_wpx", &ph_MET_wpx);
+		t->SetBranchAddress("ph_MET_wpy", &ph_MET_wpy);
+		t->SetBranchAddress("ph_MET_wet", &ph_MET_wet);
+		t->SetBranchAddress("ph_MET_statusWord", &ph_MET_statusWord);
+		t->SetBranchAddress("mu_staco_MET_n", &mu_staco_MET_n);
+		t->SetBranchAddress("mu_staco_MET_wpx", &mu_staco_MET_wpx);
+		t->SetBranchAddress("mu_staco_MET_wpy", &mu_staco_MET_wpy);
+		t->SetBranchAddress("mu_staco_MET_wet", &mu_staco_MET_wet);
+		t->SetBranchAddress("mu_staco_MET_statusWord", &mu_staco_MET_statusWord);
+		t->SetBranchAddress("mu_muid_MET_n", &mu_muid_MET_n);
+		t->SetBranchAddress("mu_muid_MET_wpx", &mu_muid_MET_wpx);
+		t->SetBranchAddress("mu_muid_MET_wpy", &mu_muid_MET_wpy);
+		t->SetBranchAddress("mu_muid_MET_wet", &mu_muid_MET_wet);
+		t->SetBranchAddress("mu_muid_MET_statusWord", &mu_muid_MET_statusWord);
+		t->SetBranchAddress("mu_MET_n", &mu_MET_n);
+		t->SetBranchAddress("mu_MET_wpx", &mu_MET_wpx);
+		t->SetBranchAddress("mu_MET_wpy", &mu_MET_wpy);
+		t->SetBranchAddress("mu_MET_wet", &mu_MET_wet);
+		t->SetBranchAddress("mu_MET_statusWord", &mu_MET_statusWord);
+		t->SetBranchAddress("tau_MET_n", &tau_MET_n);
+		t->SetBranchAddress("tau_MET_wpx", &tau_MET_wpx);
+		t->SetBranchAddress("tau_MET_wpy", &tau_MET_wpy);
+		t->SetBranchAddress("tau_MET_wet", &tau_MET_wet);
+		t->SetBranchAddress("tau_MET_statusWord", &tau_MET_statusWord);
+		t->SetBranchAddress("jet_antikt4LCtopo_MET_n", &jet_antikt4LCtopo_MET_n);
+		t->SetBranchAddress("jet_antikt4LCtopo_MET_wpx", &jet_antikt4LCtopo_MET_wpx);
+		t->SetBranchAddress("jet_antikt4LCtopo_MET_wpy", &jet_antikt4LCtopo_MET_wpy);
+		t->SetBranchAddress("jet_antikt4LCtopo_MET_wet", &jet_antikt4LCtopo_MET_wet);
+		t->SetBranchAddress("jet_antikt4LCtopo_MET_statusWord", &jet_antikt4LCtopo_MET_statusWord);
+		t->SetBranchAddress("cl_MET_n", &cl_MET_n);
+		t->SetBranchAddress("cl_MET_wpx", &cl_MET_wpx);
+		t->SetBranchAddress("cl_MET_wpy", &cl_MET_wpy);
+		t->SetBranchAddress("cl_MET_wet", &cl_MET_wet);
+		t->SetBranchAddress("cl_MET_statusWord", &cl_MET_statusWord);
+		t->SetBranchAddress("trk_MET_n", &trk_MET_n);
+		t->SetBranchAddress("trk_MET_wpx", &trk_MET_wpx);
+		t->SetBranchAddress("trk_MET_wpy", &trk_MET_wpy);
+		t->SetBranchAddress("trk_MET_wet", &trk_MET_wet);
+		t->SetBranchAddress("trk_MET_statusWord", &trk_MET_statusWord);
+
+		t->SetBranchAddress("rhorhoKt3EM", &rhorhoKt3EM);
+		t->SetBranchAddress("rhorhoKt4EM", &rhorhoKt4EM);
+		t->SetBranchAddress("rhorhoKt3LC", &rhorhoKt3LC);
+		t->SetBranchAddress("rhorhoKt4LC", &rhorhoKt4LC);
 
 		if(skim)
 		{
@@ -3830,6 +4117,36 @@ void setBranches(TString tType, TChain* t)
 		muons_isMedium = 0;
 		muons_isTight = 0;
 		
+		muons_numberOfMdtHits = 0;
+		muons_numberOfTgcPhiHits = 0;
+		muons_numberOfTgcEtaHits = 0;
+		muons_numberOfCscPhiHits = 0;
+		muons_numberOfCscEtaHits = 0;
+		muons_numberOfRpcPhiHits = 0;
+		muons_numberOfRpcEtaHits = 0;
+		muons_numberOfCscEtaHoles = 0;
+		muons_numberOfCscPhiHoles = 0;
+		muons_numberOfRpcEtaHoles = 0;
+		muons_numberOfRpcPhiHoles = 0;
+		muons_numberOfMdtHoles = 0;
+		muons_numberOfTgcEtaHoles = 0;
+		muons_numberOfTgcPhiHoles = 0;
+		muons_numberOfOutliersOnTrack = 0;
+		muons_standardDeviationOfChi2OS = 0;
+
+		muons_sectors = 0;
+		muons_nprecisionHits = 0;
+		muons_nphiLayers = 0;
+		muons_netaPhiLayers = 0;
+		muons_nprecisionHoles = 0;
+		muons_netaTriggerHoleLayers = 0;
+		muons_nphiHoleLayers = 0;
+		muons_nprecisionOutliers = 0;
+
+		muons_stationName = 0;
+		muons_phiName = 0;
+		
+			
 		t->SetBranchAddress(prefix+"ptcone10", &muons_ptcone10);
 		t->SetBranchAddress(prefix+"ptcone20", &muons_ptcone20);
 		t->SetBranchAddress(prefix+"ptcone30", &muons_ptcone30);
@@ -3877,6 +4194,35 @@ void setBranches(TString tType, TChain* t)
 		t->SetBranchAddress(prefix+"trkInnerExtr_py", &muons_py_ie);
 		t->SetBranchAddress(prefix+"trkInnerExtr_pz", &muons_pz_ie);
 		t->SetBranchAddress(prefix+"trkInnerExtr_e", &muons_e_ie);
+		
+		t->SetBranchAddress(prefix+"numberOfMDTHits",            &muons_numberOfMdtHits);
+		t->SetBranchAddress(prefix+"numberOfTGCPhiHits",         &muons_numberOfTgcPhiHits);
+		t->SetBranchAddress(prefix+"numberOfTGCEtaHits",         &muons_numberOfTgcEtaHits);
+		t->SetBranchAddress(prefix+"numberOfCSCPhiHits",         &muons_numberOfCscPhiHits);
+		t->SetBranchAddress(prefix+"numberOfCSCEtaHits",         &muons_numberOfCscEtaHits);
+		t->SetBranchAddress(prefix+"numberOfRPCPhiHits",         &muons_numberOfRpcPhiHits);
+		t->SetBranchAddress(prefix+"numberOfRPCEtaHits",         &muons_numberOfRpcEtaHits);
+		t->SetBranchAddress(prefix+"numberOfCscEtaHoles",        &muons_numberOfCscEtaHoles);
+		t->SetBranchAddress(prefix+"numberOfCscPhiHoles",        &muons_numberOfCscPhiHoles);
+		t->SetBranchAddress(prefix+"numberOfRpcEtaHoles",        &muons_numberOfRpcEtaHoles);
+		t->SetBranchAddress(prefix+"numberOfRpcPhiHoles",        &muons_numberOfRpcPhiHoles);
+		t->SetBranchAddress(prefix+"numberOfMdtHoles",           &muons_numberOfMdtHoles);
+		t->SetBranchAddress(prefix+"numberOfTgcEtaHoles",        &muons_numberOfTgcEtaHoles);
+		t->SetBranchAddress(prefix+"numberOfTgcPhiHoles",        &muons_numberOfTgcPhiHoles);
+		t->SetBranchAddress(prefix+"numberOfOutliersOnTrack",    &muons_numberOfOutliersOnTrack);
+		t->SetBranchAddress(prefix+"standardDeviationOfChi2OS",  &muons_standardDeviationOfChi2OS);
+		
+		t->SetBranchAddress(prefix+"sectors",                &muons_sectors);
+		t->SetBranchAddress(prefix+"nprecisionHits",         &muons_nprecisionHits);
+		t->SetBranchAddress(prefix+"nphiLayers",             &muons_nphiLayers);
+		t->SetBranchAddress(prefix+"netaPhiLayers",          &muons_netaPhiLayers);
+		t->SetBranchAddress(prefix+"nprecisionHoles",        &muons_nprecisionHoles);
+		t->SetBranchAddress(prefix+"netaTriggerHoleLayers",  &muons_netaTriggerHoleLayers);
+		t->SetBranchAddress(prefix+"nphiHoleLayers",         &muons_nphiHoleLayers);
+		t->SetBranchAddress(prefix+"nprecisionOutliers",     &muons_nprecisionOutliers);
+		
+		t->SetBranchAddress(prefix+"stationName",            &muons_stationName);
+		t->SetBranchAddress(prefix+"phiName",                &muons_phiName);
 		
 		
 		///////////////////////////////////
@@ -3972,6 +4318,35 @@ void setBranches(TString tType, TChain* t)
 		muid_isMedium = 0;
 		muid_isTight = 0;
 		
+		muid_numberOfMdtHits = 0;
+		muid_numberOfTgcPhiHits = 0;
+		muid_numberOfTgcEtaHits = 0;
+		muid_numberOfCscPhiHits = 0;
+		muid_numberOfCscEtaHits = 0;
+		muid_numberOfRpcPhiHits = 0;
+		muid_numberOfRpcEtaHits = 0;
+		muid_numberOfCscEtaHoles = 0;
+		muid_numberOfCscPhiHoles = 0;
+		muid_numberOfRpcEtaHoles = 0;
+		muid_numberOfRpcPhiHoles = 0;
+		muid_numberOfMdtHoles = 0;
+		muid_numberOfTgcEtaHoles = 0;
+		muid_numberOfTgcPhiHoles = 0;
+		muid_numberOfOutliersOnTrack = 0;
+		muid_standardDeviationOfChi2OS = 0;
+
+		muid_sectors = 0;
+		muid_nprecisionHits = 0;
+		muid_nphiLayers = 0;
+		muid_netaPhiLayers = 0;
+		muid_nprecisionHoles = 0;
+		muid_netaTriggerHoleLayers = 0;
+		muid_nphiHoleLayers = 0;
+		muid_nprecisionOutliers = 0;
+
+		muid_stationName = 0;
+		muid_phiName = 0;
+		
 		t->SetBranchAddress(prefix+"ptcone10", &muid_ptcone10);
 		t->SetBranchAddress(prefix+"ptcone20", &muid_ptcone20);
 		t->SetBranchAddress(prefix+"ptcone30", &muid_ptcone30);
@@ -4019,6 +4394,35 @@ void setBranches(TString tType, TChain* t)
 		t->SetBranchAddress(prefix+"trkInnerExtr_py", &muid_py_ie);
 		t->SetBranchAddress(prefix+"trkInnerExtr_pz", &muid_pz_ie);
 		t->SetBranchAddress(prefix+"trkInnerExtr_e", &muid_e_ie);
+		
+		t->SetBranchAddress(prefix+"numberOfMDTHits",            &muid_numberOfMdtHits);
+		t->SetBranchAddress(prefix+"numberOfTGCPhiHits",         &muid_numberOfTgcPhiHits);
+		t->SetBranchAddress(prefix+"numberOfTGCEtaHits",         &muid_numberOfTgcEtaHits);
+		t->SetBranchAddress(prefix+"numberOfCSCPhiHits",         &muid_numberOfCscPhiHits);
+		t->SetBranchAddress(prefix+"numberOfCSCEtaHits",         &muid_numberOfCscEtaHits);
+		t->SetBranchAddress(prefix+"numberOfRPCPhiHits",         &muid_numberOfRpcPhiHits);
+		t->SetBranchAddress(prefix+"numberOfRPCEtaHits",         &muid_numberOfRpcEtaHits);
+		t->SetBranchAddress(prefix+"numberOfCscEtaHoles",        &muid_numberOfCscEtaHoles);
+		t->SetBranchAddress(prefix+"numberOfCscPhiHoles",        &muid_numberOfCscPhiHoles);
+		t->SetBranchAddress(prefix+"numberOfRpcEtaHoles",        &muid_numberOfRpcEtaHoles);
+		t->SetBranchAddress(prefix+"numberOfRpcPhiHoles",        &muid_numberOfRpcPhiHoles);
+		t->SetBranchAddress(prefix+"numberOfMdtHoles",           &muid_numberOfMdtHoles);
+		t->SetBranchAddress(prefix+"numberOfTgcEtaHoles",        &muid_numberOfTgcEtaHoles);
+		t->SetBranchAddress(prefix+"numberOfTgcPhiHoles",        &muid_numberOfTgcPhiHoles);
+		t->SetBranchAddress(prefix+"numberOfOutliersOnTrack",    &muid_numberOfOutliersOnTrack);
+		t->SetBranchAddress(prefix+"standardDeviationOfChi2OS",  &muid_standardDeviationOfChi2OS);
+		
+		t->SetBranchAddress(prefix+"sectors",                &muid_sectors);
+		t->SetBranchAddress(prefix+"nprecisionHits",         &muid_nprecisionHits);
+		t->SetBranchAddress(prefix+"nphiLayers",             &muid_nphiLayers);
+		t->SetBranchAddress(prefix+"netaPhiLayers",          &muid_netaPhiLayers);
+		t->SetBranchAddress(prefix+"nprecisionHoles",        &muid_nprecisionHoles);
+		t->SetBranchAddress(prefix+"netaTriggerHoleLayers",  &muid_netaTriggerHoleLayers);
+		t->SetBranchAddress(prefix+"nphiHoleLayers",         &muid_nphiHoleLayers);
+		t->SetBranchAddress(prefix+"nprecisionOutliers",     &muid_nprecisionOutliers);
+		
+		t->SetBranchAddress(prefix+"stationName",            &muid_stationName);
+		t->SetBranchAddress(prefix+"phiName",                &muid_phiName);
 		
 		///////////////////////////////////
 		// disable unnecessary branches ///
@@ -4429,12 +4833,23 @@ bool isBtaggedEvent(int& btagj1, int& btagj2)
 	btagj2 = -1;
 	float btagwgt1 = -999;
 	float btagwgt2 = -999;
-	for(unsigned int i=0 ; i<jets_pt->size() ; ++i)
+	// for(unsigned int i=0 ; i<jets_pt->size() ; ++i)
+	// {
+	// 	bool isUgly = (jets_isUgly->at(i));
+	// 	if(isUgly)  continue;
+	// 	
+	// 	float thisbtagwgt = jets_flwgt_MV1->at(i);
+	// 
+	// 	// highest and second highest flavor weight MV1
+	// 	if(thisbtagwgt>btagwgt1)                         { btagwgt1=thisbtagwgt;  btagj1=i; } // highest flavor weight
+	// 	if(thisbtagwgt>btagwgt2 && thisbtagwgt<btagwgt1) { btagwgt2=thisbtagwgt;  btagj2=i; } // second highest flavor weight
+	// }
+	
+	for(int i=0 ; i<AntiKt4TopoEMJets_n ; i++)
 	{
-		bool isUgly = (jets_isUgly->at(i));
-		if(isUgly)  continue;
+		if(!isGoodJet(i,JetQuality))  continue;
 		
-		float thisbtagwgt = jets_flwgt_MV1->at(i);
+		float thisbtagwgt = AntiKt4TopoEMJets_flavor_weight_MV1->at(i);
 
 		// highest and second highest flavor weight MV1
 		if(thisbtagwgt>btagwgt1)                         { btagwgt1=thisbtagwgt;  btagj1=i; } // highest flavor weight
@@ -4494,45 +4909,49 @@ void bTagging(TString name, TMapTSP2TH1& histos, TMapTSP2TH2& histos2, double we
 	
 	int iOvlpJet = bestOverlapingJet(pMuSum);
 	
-	for(int i=0 ; i<(int)jets_pt->size() ; ++i)
+	// for(int i=0 ; i<(int)jets_pt->size() ; ++i)
+	// {
+	// 	bool isUgly = (jets_isUgly->at(i));
+	// 	if(isUgly)  continue;
+	for(int i=0 ; i<AntiKt4TopoEMJets_n ; i++)
 	{
-		bool isUgly = (jets_isUgly->at(i));
-		if(isUgly)  continue;
+		if(!isGoodJet(i,JetQuality))  continue;
+		
 		nJet++;
 
-		bool isBtagS = isStandardBtag(jets_flwgt_MV1->at(i));
-		bool isBtagT = isTightBtag(jets_flwgt_MV1->at(i));
+		bool isBtagS = isStandardBtag(AntiKt4TopoEMJets_flavor_weight_MV1->at(i));
+		bool isBtagT = isTightBtag(AntiKt4TopoEMJets_flavor_weight_MV1->at(i));
 		if(isBtagT) nBtag++;
 		
 		// different pT thresholds
-		if(jets_pt->at(i)>10*GeV2MeV) nJet10++;
-		if(jets_pt->at(i)>20*GeV2MeV) nJet20++;
+		if(AntiKt4TopoEMJets_pt->at(i)>10*GeV2MeV) nJet10++;
+		if(AntiKt4TopoEMJets_pt->at(i)>20*GeV2MeV) nJet20++;
 		if(isBtagT)
 		{
-			if(jets_pt->at(i)>10*GeV2MeV) nBtag10++;
-			if(jets_pt->at(i)>20*GeV2MeV) nBtag20++;
+			if(AntiKt4TopoEMJets_pt->at(i)>10*GeV2MeV) nBtag10++;
+			if(AntiKt4TopoEMJets_pt->at(i)>20*GeV2MeV) nBtag20++;
 		}
 		
 		// some histos
-		histos[name+"_jet_E"]->Fill(jets_e->at(i),weight);
-		histos[name+"_jet_pt"]->Fill(jets_pt->at(i),weight);
-		histos[name+"_jet_m"]->Fill(jets_m->at(i),weight);
-		histos[name+"_jet_eta"]->Fill(jets_eta->at(i),weight);
-		histos[name+"_jet_phi"]->Fill(jets_phi->at(i),weight);
+		histos[name+"_jet_E"]->Fill(AntiKt4TopoEMJets_E->at(i),weight);
+		histos[name+"_jet_pt"]->Fill(AntiKt4TopoEMJets_pt->at(i),weight);
+		histos[name+"_jet_m"]->Fill(AntiKt4TopoEMJets_m->at(i),weight);
+		histos[name+"_jet_eta"]->Fill(AntiKt4TopoEMJets_eta->at(i),weight);
+		histos[name+"_jet_phi"]->Fill(AntiKt4TopoEMJets_phi->at(i),weight);
 		if(isBtagT)
 		{
-			histos[name+"_bjet_E"]->Fill(jets_e->at(i),weight);
-			histos[name+"_bjet_pt"]->Fill(jets_pt->at(i),weight);
-			histos[name+"_bjet_m"]->Fill(jets_m->at(i),weight);
-			histos[name+"_bjet_eta"]->Fill(jets_eta->at(i),weight);
-			histos[name+"_bjet_phi"]->Fill(jets_phi->at(i),weight);
+			histos[name+"_bjet_E"]->Fill(AntiKt4TopoEMJets_E->at(i),weight);
+			histos[name+"_bjet_pt"]->Fill(AntiKt4TopoEMJets_pt->at(i),weight);
+			histos[name+"_bjet_m"]->Fill(AntiKt4TopoEMJets_m->at(i),weight);
+			histos[name+"_bjet_eta"]->Fill(AntiKt4TopoEMJets_eta->at(i),weight);
+			histos[name+"_bjet_phi"]->Fill(AntiKt4TopoEMJets_phi->at(i),weight);
 		}
 		
 		// find the different tagger MAX weights
-		maxflwgt["MV1"] = (jets_flwgt_MV1->at(i)>maxflwgt["MV1"]) ? jets_flwgt_MV1->at(i) : maxflwgt["MV1"];
+		maxflwgt["MV1"] = (AntiKt4TopoEMJets_flavor_weight_MV1->at(i)>maxflwgt["MV1"]) ? AntiKt4TopoEMJets_flavor_weight_MV1->at(i) : maxflwgt["MV1"];
 		
-		float thisbtagwgt = jets_flwgt_MV1->at(i);
-		float thisjetpt   = jets_pt->at(i);
+		float thisbtagwgt = AntiKt4TopoEMJets_flavor_weight_MV1->at(i);
+		float thisjetpt   = AntiKt4TopoEMJets_pt->at(i);
 		
 		// leading and subleading jet pT
 		if(thisjetpt>=pTjet1)
@@ -4606,12 +5025,12 @@ void bTagging(TString name, TMapTSP2TH1& histos, TMapTSP2TH2& histos2, double we
 	// the pT leading jet flavor weight per tagger
 	if(ipTjet1!=-1)
 	{		
-		histos[name+"_jet_leadingJetFlvWgt_MV1"]->Fill(jets_flwgt_MV1->at(ipTjet1), weight);
+		histos[name+"_jet_leadingJetFlvWgt_MV1"]->Fill(AntiKt4TopoEMJets_flavor_weight_MV1->at(ipTjet1), weight);
 	}
 	// the pT subleading jet flavor weight per tagger
 	if(ipTjet2!=-1)
 	{		
-		histos[name+"_jet_subleadingJetFlvWgt_MV1"]->Fill(                  jets_flwgt_MV1->at(ipTjet2), weight);
+		histos[name+"_jet_subleadingJetFlvWgt_MV1"]->Fill(AntiKt4TopoEMJets_flavor_weight_MV1->at(ipTjet2), weight);
 	}
 		
 	TLorentzVector lvJet, lvJet1;
@@ -4621,10 +5040,10 @@ void bTagging(TString name, TMapTSP2TH1& histos, TMapTSP2TH2& histos2, double we
 	float wj2  = -1; 
 	if(ipTjet1!=-1)
 	{
-		lvJet.SetPtEtaPhiE(jets_pt->at(ipTjet1),
-						   jets_eta->at(ipTjet1),
-						   jets_phi->at(ipTjet1),
-						   jets_e->at(ipTjet1));
+		lvJet.SetPtEtaPhiE(AntiKt4TopoEMJets_pt->at(ipTjet1),
+						   AntiKt4TopoEMJets_eta->at(ipTjet1),
+						   AntiKt4TopoEMJets_phi->at(ipTjet1),
+						   AntiKt4TopoEMJets_E->at(ipTjet1));
 		dR   = lvJet.DeltaR(pMuSum);
 		dphi = fabs(lvJet.DeltaPhi(pMuSum));
 		histos[name+"_bjet_dR3muLeadingJet"]->Fill(dR,weight);
@@ -4632,31 +5051,31 @@ void bTagging(TString name, TMapTSP2TH1& histos, TMapTSP2TH2& histos2, double we
 	}
 	if(ipTjet2!=-1)
 	{
-		lvJet.SetPtEtaPhiE(jets_pt->at(ipTjet2),
-						   jets_eta->at(ipTjet2),
-						   jets_phi->at(ipTjet2),
-						   jets_e->at(ipTjet2));
+		lvJet.SetPtEtaPhiE(AntiKt4TopoEMJets_pt->at(ipTjet2),
+						   AntiKt4TopoEMJets_eta->at(ipTjet2),
+						   AntiKt4TopoEMJets_phi->at(ipTjet2),
+						   AntiKt4TopoEMJets_E->at(ipTjet2));
 		dR   = lvJet.DeltaR(pMuSum);
 		dphi = fabs(lvJet.DeltaPhi(pMuSum));
 		histos[name+"_bjet_dR3muSubleadingJet"]->Fill(dR,weight);
 		histos[name+"_bjet_dPhi3muSubleadingJet"]->Fill(dphi,weight);
 		
-		wj1 = jets_flwgt_MV1->at(ipTjet1);
-		wj2 = jets_flwgt_MV1->at(ipTjet2);
+		wj1 = AntiKt4TopoEMJets_flavor_weight_MV1->at(ipTjet1);
+		wj2 = AntiKt4TopoEMJets_flavor_weight_MV1->at(ipTjet2);
 		histos2[name+"_jet_wj1_vs_wj2"]->Fill(wj2,wj1,weight);
-		lvJet1.SetPtEtaPhiE(jets_pt->at(ipTjet1),
-						   jets_eta->at(ipTjet1),
-						   jets_phi->at(ipTjet1),
-						   jets_e->at(ipTjet1));
+		lvJet1.SetPtEtaPhiE(AntiKt4TopoEMJets_pt->at(ipTjet1),
+						   AntiKt4TopoEMJets_eta->at(ipTjet1),
+						   AntiKt4TopoEMJets_phi->at(ipTjet1),
+						   AntiKt4TopoEMJets_E->at(ipTjet1));
 		dphi = fabs(lvJet.DeltaPhi(lvJet1));
 		histos[name+"_bjet_dPhi_jet1_jet2"]->Fill(dphi,weight);
 	}
 	if(btagj1!=-1)
 	{
-		lvJet.SetPtEtaPhiE(jets_pt->at(btagj1),
-						   jets_eta->at(btagj1),
-						   jets_phi->at(btagj1),
-						   jets_e->at(btagj1));
+		lvJet.SetPtEtaPhiE(AntiKt4TopoEMJets_pt->at(btagj1),
+						   AntiKt4TopoEMJets_eta->at(btagj1),
+						   AntiKt4TopoEMJets_phi->at(btagj1),
+						   AntiKt4TopoEMJets_E->at(btagj1));
 		dR   = lvJet.DeltaR(pMuSum);
 		dphi = fabs(lvJet.DeltaPhi(pMuSum));
 		histos[name+"_bjet_dR3muBjet_btagwgt1"]->Fill(dR,weight);
@@ -4666,20 +5085,20 @@ void bTagging(TString name, TMapTSP2TH1& histos, TMapTSP2TH2& histos2, double we
 	}
 	if(btagj2!=-1)
 	{
-		lvJet.SetPtEtaPhiE(jets_pt->at(btagj2),
-						   jets_eta->at(btagj2),
-						   jets_phi->at(btagj2),
-						   jets_e->at(btagj2));
+		lvJet.SetPtEtaPhiE(AntiKt4TopoEMJets_pt->at(btagj2),
+						   AntiKt4TopoEMJets_eta->at(btagj2),
+						   AntiKt4TopoEMJets_phi->at(btagj2),
+						   AntiKt4TopoEMJets_E->at(btagj2));
 		dR   = lvJet.DeltaR(pMuSum);
 		dphi = fabs(lvJet.DeltaPhi(pMuSum));
 		histos[name+"_bjet_dR3muBjet_btagwgt2"]->Fill(dR,weight);
 		histos[name+"_bjet_dPhi3muBjet_btagwgt2"]->Fill(dphi,weight);
 		histos2[name+"_bjet_dR3muBjet_btagwgt2_vs_btagwgt2"]->Fill(btagwgt2,dR,weight);
 		histos2[name+"_bjet_dPhi3muBjet_btagwgt2_vs_btagwgt2"]->Fill(btagwgt2,dphi,weight);
-		lvJet1.SetPtEtaPhiE(jets_pt->at(btagj1),
-						   jets_eta->at(btagj1),
-						   jets_phi->at(btagj1),
-						   jets_e->at(btagj1));
+		lvJet1.SetPtEtaPhiE(AntiKt4TopoEMJets_pt->at(btagj1),
+						   AntiKt4TopoEMJets_eta->at(btagj1),
+						   AntiKt4TopoEMJets_phi->at(btagj1),
+						   AntiKt4TopoEMJets_E->at(btagj1));
 		dphi = fabs(lvJet.DeltaPhi(lvJet1));
 		histos[name+"_bjet_dPhi_btagwgt1_btagwgt2"]->Fill(dphi,weight);
 		histos2[name+"_bjet_dPhib1b2_vs_b1"]->Fill(btagwgt1,dphi,weight);
@@ -4689,10 +5108,10 @@ void bTagging(TString name, TMapTSP2TH1& histos, TMapTSP2TH2& histos2, double we
 		
 	if(ipTjet1_noOvrlp!=-1)
 	{
-		lvJet.SetPtEtaPhiE(jets_pt->at(ipTjet1_noOvrlp),
-						   jets_eta->at(ipTjet1_noOvrlp),
-						   jets_phi->at(ipTjet1_noOvrlp),
-						   jets_e->at(ipTjet1_noOvrlp));
+		lvJet.SetPtEtaPhiE(AntiKt4TopoEMJets_pt->at(ipTjet1_noOvrlp),
+						   AntiKt4TopoEMJets_eta->at(ipTjet1_noOvrlp),
+						   AntiKt4TopoEMJets_phi->at(ipTjet1_noOvrlp),
+						   AntiKt4TopoEMJets_E->at(ipTjet1_noOvrlp));
 		dR   = lvJet.DeltaR(pMuSum);
 		dphi = fabs(lvJet.DeltaPhi(pMuSum));
 		histos[name+"_bjet_dR3muLeadingJet_noOvrlp"]->Fill(dR,weight);
@@ -4700,31 +5119,31 @@ void bTagging(TString name, TMapTSP2TH1& histos, TMapTSP2TH2& histos2, double we
 	}
 	if(ipTjet2_noOvrlp!=-1)
 	{
-		lvJet.SetPtEtaPhiE(jets_pt->at(ipTjet2_noOvrlp),
-						   jets_eta->at(ipTjet2_noOvrlp),
-						   jets_phi->at(ipTjet2_noOvrlp),
-						   jets_e->at(ipTjet2_noOvrlp));
+		lvJet.SetPtEtaPhiE(AntiKt4TopoEMJets_pt->at(ipTjet2_noOvrlp),
+						   AntiKt4TopoEMJets_eta->at(ipTjet2_noOvrlp),
+						   AntiKt4TopoEMJets_phi->at(ipTjet2_noOvrlp),
+						   AntiKt4TopoEMJets_E->at(ipTjet2_noOvrlp));
 		dR   = lvJet.DeltaR(pMuSum);
 		dphi = fabs(lvJet.DeltaPhi(pMuSum));
 		histos[name+"_bjet_dR3muSubleadingJet_noOvrlp"]->Fill(dR,weight);
 		histos[name+"_bjet_dPhi3muSubleadingJet_noOvrlp"]->Fill(dphi,weight);
 		
-		wj1 = jets_flwgt_MV1->at(ipTjet1_noOvrlp);
-		wj2 = jets_flwgt_MV1->at(ipTjet2_noOvrlp);
+		wj1 = AntiKt4TopoEMJets_flavor_weight_MV1->at(ipTjet1_noOvrlp);
+		wj2 = AntiKt4TopoEMJets_flavor_weight_MV1->at(ipTjet2_noOvrlp);
 		histos2[name+"_jet_wj1_vs_wj2_noOvrlp"]->Fill(wj2,wj1,weight);
-		lvJet1.SetPtEtaPhiE(jets_pt->at(ipTjet1_noOvrlp),
-						   jets_eta->at(ipTjet1_noOvrlp),
-						   jets_phi->at(ipTjet1_noOvrlp),
-						   jets_e->at(ipTjet1_noOvrlp));
+		lvJet1.SetPtEtaPhiE(AntiKt4TopoEMJets_pt->at(ipTjet1_noOvrlp),
+						   AntiKt4TopoEMJets_eta->at(ipTjet1_noOvrlp),
+						   AntiKt4TopoEMJets_phi->at(ipTjet1_noOvrlp),
+						   AntiKt4TopoEMJets_E->at(ipTjet1_noOvrlp));
 		dphi = fabs(lvJet.DeltaPhi(lvJet1));
 		histos[name+"_bjet_dPhi_jet1_jet2_noOvrlp"]->Fill(dphi,weight);
 	}
 	if(btagj1_noOvrlp!=-1)
 	{
-		lvJet.SetPtEtaPhiE(jets_pt->at(btagj1_noOvrlp),
-						   jets_eta->at(btagj1_noOvrlp),
-						   jets_phi->at(btagj1_noOvrlp),
-						   jets_e->at(btagj1_noOvrlp));
+		lvJet.SetPtEtaPhiE(AntiKt4TopoEMJets_pt->at(btagj1_noOvrlp),
+						   AntiKt4TopoEMJets_eta->at(btagj1_noOvrlp),
+						   AntiKt4TopoEMJets_phi->at(btagj1_noOvrlp),
+						   AntiKt4TopoEMJets_E->at(btagj1_noOvrlp));
 		dR   = lvJet.DeltaR(pMuSum);
 		dphi = fabs(lvJet.DeltaPhi(pMuSum));
 		histos[name+"_bjet_dR3muBjet_btagwgt1_noOvrlp"]->Fill(dR,weight);
@@ -4734,20 +5153,20 @@ void bTagging(TString name, TMapTSP2TH1& histos, TMapTSP2TH2& histos2, double we
 	}
 	if(btagj2_noOvrlp!=-1)
 	{
-		lvJet.SetPtEtaPhiE(jets_pt->at(btagj2_noOvrlp),
-						   jets_eta->at(btagj2_noOvrlp),
-						   jets_phi->at(btagj2_noOvrlp),
-						   jets_e->at(btagj2_noOvrlp));
+		lvJet.SetPtEtaPhiE(AntiKt4TopoEMJets_pt->at(btagj2_noOvrlp),
+						   AntiKt4TopoEMJets_eta->at(btagj2_noOvrlp),
+						   AntiKt4TopoEMJets_phi->at(btagj2_noOvrlp),
+						   AntiKt4TopoEMJets_E->at(btagj2_noOvrlp));
 		dR   = lvJet.DeltaR(pMuSum);
 		dphi = fabs(lvJet.DeltaPhi(pMuSum));
 		histos[name+"_bjet_dR3muBjet_btagwgt2_noOvrlp"]->Fill(dR,weight);
 		histos[name+"_bjet_dPhi3muBjet_btagwgt2_noOvrlp"]->Fill(dphi,weight);
 		histos2[name+"_bjet_dR3muBjet_btagwgt2_vs_btagwgt2_noOvrlp"]->Fill(btagwgt2_noOvrlp,dR,weight);
 		histos2[name+"_bjet_dPhi3muBjet_btagwgt2_vs_btagwgt2_noOvrlp"]->Fill(btagwgt2_noOvrlp,dphi,weight);
-		lvJet1.SetPtEtaPhiE(jets_pt->at(btagj1_noOvrlp),
-						   jets_eta->at(btagj1_noOvrlp),
-						   jets_phi->at(btagj1_noOvrlp),
-						   jets_e->at(btagj1_noOvrlp));
+		lvJet1.SetPtEtaPhiE(AntiKt4TopoEMJets_pt->at(btagj1_noOvrlp),
+						   AntiKt4TopoEMJets_eta->at(btagj1_noOvrlp),
+						   AntiKt4TopoEMJets_phi->at(btagj1_noOvrlp),
+						   AntiKt4TopoEMJets_E->at(btagj1_noOvrlp));
 		dphi = fabs(lvJet.DeltaPhi(lvJet1));
 		histos[name+"_bjet_dPhi_btagwgt1_btagwgt2_noOvrlp"]->Fill(dphi,weight);
 		histos2[name+"_bjet_dPhib1b2_vs_b1_noOvrlp"]->Fill(btagwgt1_noOvrlp,dphi,weight);
@@ -4757,10 +5176,10 @@ void bTagging(TString name, TMapTSP2TH1& histos, TMapTSP2TH2& histos2, double we
 	
 	if(ipTjet1_stdMV1!=-1)
 	{
-		lvJet.SetPtEtaPhiE(jets_pt->at(ipTjet1_stdMV1),
-						   jets_eta->at(ipTjet1_stdMV1),
-						   jets_phi->at(ipTjet1_stdMV1),
-						   jets_e->at(ipTjet1_stdMV1));
+		lvJet.SetPtEtaPhiE(AntiKt4TopoEMJets_pt->at(ipTjet1_stdMV1),
+						   AntiKt4TopoEMJets_eta->at(ipTjet1_stdMV1),
+						   AntiKt4TopoEMJets_phi->at(ipTjet1_stdMV1),
+						   AntiKt4TopoEMJets_E->at(ipTjet1_stdMV1));
 		dR   = lvJet.DeltaR(pMuSum);
 		dphi = fabs(lvJet.DeltaPhi(pMuSum));
 		histos[name+"_bjet_dR3muLeadingJet_stdMV1"]->Fill(dR,weight);
@@ -4768,31 +5187,31 @@ void bTagging(TString name, TMapTSP2TH1& histos, TMapTSP2TH2& histos2, double we
 	}
 	if(ipTjet2_stdMV1!=-1)
 	{
-		lvJet.SetPtEtaPhiE(jets_pt->at(ipTjet2_stdMV1),
-						   jets_eta->at(ipTjet2_stdMV1),
-						   jets_phi->at(ipTjet2_stdMV1),
-						   jets_e->at(ipTjet2_stdMV1));
+		lvJet.SetPtEtaPhiE(AntiKt4TopoEMJets_pt->at(ipTjet2_stdMV1),
+						   AntiKt4TopoEMJets_eta->at(ipTjet2_stdMV1),
+						   AntiKt4TopoEMJets_phi->at(ipTjet2_stdMV1),
+						   AntiKt4TopoEMJets_E->at(ipTjet2_stdMV1));
 		dR   = lvJet.DeltaR(pMuSum);
 		dphi = fabs(lvJet.DeltaPhi(pMuSum));
 		histos[name+"_bjet_dR3muSubleadingJet_stdMV1"]->Fill(dR,weight);
 		histos[name+"_bjet_dPhi3muSubleadingJet_stdMV1"]->Fill(dphi,weight);
 		
-		wj1 = jets_flwgt_MV1->at(ipTjet1_stdMV1);
-		wj2 = jets_flwgt_MV1->at(ipTjet2_stdMV1);
+		wj1 = AntiKt4TopoEMJets_flavor_weight_MV1->at(ipTjet1_stdMV1);
+		wj2 = AntiKt4TopoEMJets_flavor_weight_MV1->at(ipTjet2_stdMV1);
 		histos2[name+"_jet_wj1_vs_wj2_stdMV1"]->Fill(wj2,wj1,weight);
-		lvJet1.SetPtEtaPhiE(jets_pt->at(ipTjet1_stdMV1),
-						   jets_eta->at(ipTjet1_stdMV1),
-						   jets_phi->at(ipTjet1_stdMV1),
-						   jets_e->at(ipTjet1_stdMV1));
+		lvJet1.SetPtEtaPhiE(AntiKt4TopoEMJets_pt->at(ipTjet1_stdMV1),
+						   AntiKt4TopoEMJets_eta->at(ipTjet1_stdMV1),
+						   AntiKt4TopoEMJets_phi->at(ipTjet1_stdMV1),
+						   AntiKt4TopoEMJets_E->at(ipTjet1_stdMV1));
 		dphi = fabs(lvJet.DeltaPhi(lvJet1));
 		histos[name+"_bjet_dPhi_jet1_jet2_stdMV1"]->Fill(dphi,weight);
 	}
 	if(btagj1_stdMV1!=-1)
 	{
-		lvJet.SetPtEtaPhiE(jets_pt->at(btagj1_stdMV1),
-						   jets_eta->at(btagj1_stdMV1),
-						   jets_phi->at(btagj1_stdMV1),
-						   jets_e->at(btagj1_stdMV1));
+		lvJet.SetPtEtaPhiE(AntiKt4TopoEMJets_pt->at(btagj1_stdMV1),
+						   AntiKt4TopoEMJets_eta->at(btagj1_stdMV1),
+						   AntiKt4TopoEMJets_phi->at(btagj1_stdMV1),
+						   AntiKt4TopoEMJets_E->at(btagj1_stdMV1));
 		dR   = lvJet.DeltaR(pMuSum);
 		dphi = fabs(lvJet.DeltaPhi(pMuSum));
 		histos[name+"_bjet_dR3muBjet_btagwgt1_stdMV1"]->Fill(dR,weight);
@@ -4802,20 +5221,20 @@ void bTagging(TString name, TMapTSP2TH1& histos, TMapTSP2TH2& histos2, double we
 	}
 	if(btagj2_stdMV1!=-1)
 	{
-		lvJet.SetPtEtaPhiE(jets_pt->at(btagj2_stdMV1),
-						   jets_eta->at(btagj2_stdMV1),
-						   jets_phi->at(btagj2_stdMV1),
-						   jets_e->at(btagj2_stdMV1));
+		lvJet.SetPtEtaPhiE(AntiKt4TopoEMJets_pt->at(btagj2_stdMV1),
+						   AntiKt4TopoEMJets_eta->at(btagj2_stdMV1),
+						   AntiKt4TopoEMJets_phi->at(btagj2_stdMV1),
+						   AntiKt4TopoEMJets_E->at(btagj2_stdMV1));
 		dR   = lvJet.DeltaR(pMuSum);
 		dphi = fabs(lvJet.DeltaPhi(pMuSum));
 		histos[name+"_bjet_dR3muBjet_btagwgt2_stdMV1"]->Fill(dR,weight);
 		histos[name+"_bjet_dPhi3muBjet_btagwgt2_stdMV1"]->Fill(dphi,weight);
 		histos2[name+"_bjet_dR3muBjet_btagwgt2_vs_btagwgt2_stdMV1"]->Fill(btagwgt2_stdMV1,dR,weight);
 		histos2[name+"_bjet_dPhi3muBjet_btagwgt2_vs_btagwgt2_stdMV1"]->Fill(btagwgt2_stdMV1,dphi,weight);
-		lvJet1.SetPtEtaPhiE(jets_pt->at(btagj1_stdMV1),
-						   jets_eta->at(btagj1_stdMV1),
-						   jets_phi->at(btagj1_stdMV1),
-						   jets_e->at(btagj1_stdMV1));
+		lvJet1.SetPtEtaPhiE(AntiKt4TopoEMJets_pt->at(btagj1_stdMV1),
+						   AntiKt4TopoEMJets_eta->at(btagj1_stdMV1),
+						   AntiKt4TopoEMJets_phi->at(btagj1_stdMV1),
+						   AntiKt4TopoEMJets_E->at(btagj1_stdMV1));
 		dphi = fabs(lvJet.DeltaPhi(lvJet1));
 		histos[name+"_bjet_dPhi_btagwgt1_btagwgt2_stdMV1"]->Fill(dphi,weight);
 		histos2[name+"_bjet_dPhib1b2_vs_b1_stdMV1"]->Fill(btagwgt1_stdMV1,dphi,weight);
@@ -4826,11 +5245,11 @@ void bTagging(TString name, TMapTSP2TH1& histos, TMapTSP2TH2& histos2, double we
 	// kinematics of the jet with the maximum flavor weight
 	if(btagj1!=-1)
 	{
-		histos[name+"_bjet_maxFlvWgt_E"]->Fill(jets_e->at(btagj1),weight);
-		histos[name+"_bjet_maxFlvWgt_pt"]->Fill(jets_pt->at(btagj1),weight);
-		histos[name+"_bjet_maxFlvWgt_m"]->Fill(jets_m->at(btagj1),weight);
-		histos[name+"_bjet_maxFlvWgt_eta"]->Fill(jets_eta->at(btagj1),weight);
-		histos[name+"_bjet_maxFlvWgt_phi"]->Fill(jets_phi->at(btagj1),weight);
+		histos[name+"_bjet_maxFlvWgt_E"]->Fill(AntiKt4TopoEMJets_E->at(btagj1),weight);
+		histos[name+"_bjet_maxFlvWgt_pt"]->Fill(AntiKt4TopoEMJets_pt->at(btagj1),weight);
+		histos[name+"_bjet_maxFlvWgt_m"]->Fill(AntiKt4TopoEMJets_m->at(btagj1),weight);
+		histos[name+"_bjet_maxFlvWgt_eta"]->Fill(AntiKt4TopoEMJets_eta->at(btagj1),weight);
+		histos[name+"_bjet_maxFlvWgt_phi"]->Fill(AntiKt4TopoEMJets_phi->at(btagj1),weight);
 	}
 }
 
@@ -5673,160 +6092,323 @@ void vertex::set(unsigned int vtx)
 	m_trkMDThits[0] = (isTPmu1) ?  tpmu_vi[src1+"_numberOfMdtHits"]->at(isrc1) : -1;
 	m_trkMDThits[1] = (isTPmu2) ?  tpmu_vi[src2+"_numberOfMdtHits"]->at(isrc2) : -1;
 	m_trkMDThits[2] = (isTPmu3) ?  tpmu_vi[src3+"_numberOfMdtHits"]->at(isrc3) : -1;
+	if(isMuon1) m_trkMDThits[0] = (!src1.Contains("Muid")) ?  muons_numberOfMdtHits->at(isrc1) : muid_numberOfMdtHits->at(isrc1);
+	if(isMuon2) m_trkMDThits[1] = (!src2.Contains("Muid")) ?  muons_numberOfMdtHits->at(isrc2) : muid_numberOfMdtHits->at(isrc2);
+	if(isMuon3) m_trkMDThits[2] = (!src3.Contains("Muid")) ?  muons_numberOfMdtHits->at(isrc3) : muid_numberOfMdtHits->at(isrc3);
 	
 	_DEBUG("");
 	
 	m_trkTGCPhiHits[0] = (isTPmu1) ?  tpmu_vi[src1+"_numberOfTgcPhiHits"]->at(isrc1) : -1;
 	m_trkTGCPhiHits[1] = (isTPmu2) ?  tpmu_vi[src2+"_numberOfTgcPhiHits"]->at(isrc2) : -1;
 	m_trkTGCPhiHits[2] = (isTPmu3) ?  tpmu_vi[src3+"_numberOfTgcPhiHits"]->at(isrc3) : -1;
+	if(isMuon1) m_trkTGCPhiHits[0] = (!src1.Contains("Muid")) ?  muons_numberOfTgcPhiHits->at(isrc1) : muid_numberOfTgcPhiHits->at(isrc1);
+	if(isMuon2) m_trkTGCPhiHits[1] = (!src2.Contains("Muid")) ?  muons_numberOfTgcPhiHits->at(isrc2) : muid_numberOfTgcPhiHits->at(isrc2);
+	if(isMuon3) m_trkTGCPhiHits[2] = (!src3.Contains("Muid")) ?  muons_numberOfTgcPhiHits->at(isrc3) : muid_numberOfTgcPhiHits->at(isrc3);
 	
 	_DEBUG("");
 	
 	m_trkTGCEtaHits[0] = (isTPmu1) ?  tpmu_vi[src1+"_numberOfTgcEtaHits"]->at(isrc1) : -1;
 	m_trkTGCEtaHits[1] = (isTPmu2) ?  tpmu_vi[src2+"_numberOfTgcEtaHits"]->at(isrc2) : -1;
 	m_trkTGCEtaHits[2] = (isTPmu3) ?  tpmu_vi[src3+"_numberOfTgcEtaHits"]->at(isrc3) : -1;
+	if(isMuon1) m_trkTGCEtaHits[0] = (!src1.Contains("Muid")) ?  muons_numberOfTgcEtaHits->at(isrc1) : muid_numberOfTgcEtaHits->at(isrc1);
+	if(isMuon2) m_trkTGCEtaHits[1] = (!src2.Contains("Muid")) ?  muons_numberOfTgcEtaHits->at(isrc2) : muid_numberOfTgcEtaHits->at(isrc2);
+	if(isMuon3) m_trkTGCEtaHits[2] = (!src3.Contains("Muid")) ?  muons_numberOfTgcEtaHits->at(isrc3) : muid_numberOfTgcEtaHits->at(isrc3);
 	
 	_DEBUG("");
 	
 	m_trkCSCPhiHits[0] = (isTPmu1) ?  tpmu_vi[src1+"_numberOfCscPhiHits"]->at(isrc1) : -1;
 	m_trkCSCPhiHits[1] = (isTPmu2) ?  tpmu_vi[src2+"_numberOfCscPhiHits"]->at(isrc2) : -1;
 	m_trkCSCPhiHits[2] = (isTPmu3) ?  tpmu_vi[src3+"_numberOfCscPhiHits"]->at(isrc3) : -1;
+	if(isMuon1) m_trkCSCPhiHits[0] = (!src1.Contains("Muid")) ?  muons_numberOfCscPhiHits->at(isrc1) : muid_numberOfCscPhiHits->at(isrc1);
+	if(isMuon2) m_trkCSCPhiHits[1] = (!src2.Contains("Muid")) ?  muons_numberOfCscPhiHits->at(isrc2) : muid_numberOfCscPhiHits->at(isrc2);
+	if(isMuon3) m_trkCSCPhiHits[2] = (!src3.Contains("Muid")) ?  muons_numberOfCscPhiHits->at(isrc3) : muid_numberOfCscPhiHits->at(isrc3);
+	
 	
 	_DEBUG("");
 	
 	m_trkCSCEtaHits[0] = (isTPmu1) ?  tpmu_vi[src1+"_numberOfCscEtaHits"]->at(isrc1) : -1;
 	m_trkCSCEtaHits[1] = (isTPmu2) ?  tpmu_vi[src2+"_numberOfCscEtaHits"]->at(isrc2) : -1;
 	m_trkCSCEtaHits[2] = (isTPmu3) ?  tpmu_vi[src3+"_numberOfCscEtaHits"]->at(isrc3) : -1;
+	if(isMuon1) m_trkCSCEtaHits[0] = (!src1.Contains("Muid")) ?  muons_numberOfCscEtaHits->at(isrc1) : muid_numberOfCscEtaHits->at(isrc1);
+	if(isMuon2) m_trkCSCEtaHits[1] = (!src2.Contains("Muid")) ?  muons_numberOfCscEtaHits->at(isrc2) : muid_numberOfCscEtaHits->at(isrc2);
+	if(isMuon3) m_trkCSCEtaHits[2] = (!src3.Contains("Muid")) ?  muons_numberOfCscEtaHits->at(isrc3) : muid_numberOfCscEtaHits->at(isrc3);
 	
 	_DEBUG("");
 	
 	m_trkRPCPhiHits[0] = (isTPmu1) ?  tpmu_vi[src1+"_numberOfRpcPhiHits"]->at(isrc1) : -1;
 	m_trkRPCPhiHits[1] = (isTPmu2) ?  tpmu_vi[src2+"_numberOfRpcPhiHits"]->at(isrc2) : -1;
 	m_trkRPCPhiHits[2] = (isTPmu3) ?  tpmu_vi[src3+"_numberOfRpcPhiHits"]->at(isrc3) : -1;
+	if(isMuon1) m_trkRPCPhiHits[0] = (!src1.Contains("Muid")) ?  muons_numberOfRpcPhiHits->at(isrc1) : muid_numberOfRpcPhiHits->at(isrc1);
+	if(isMuon2) m_trkRPCPhiHits[1] = (!src2.Contains("Muid")) ?  muons_numberOfRpcPhiHits->at(isrc2) : muid_numberOfRpcPhiHits->at(isrc2);
+	if(isMuon3) m_trkRPCPhiHits[2] = (!src3.Contains("Muid")) ?  muons_numberOfRpcPhiHits->at(isrc3) : muid_numberOfRpcPhiHits->at(isrc3);
 	
 	_DEBUG("");
 	
 	m_trkRPCEtaHits[0] = (isTPmu1) ?  tpmu_vi[src1+"_numberOfRpcEtaHits"]->at(isrc1) : -1;
 	m_trkRPCEtaHits[1] = (isTPmu2) ?  tpmu_vi[src2+"_numberOfRpcEtaHits"]->at(isrc2) : -1;
 	m_trkRPCEtaHits[2] = (isTPmu3) ?  tpmu_vi[src3+"_numberOfRpcEtaHits"]->at(isrc3) : -1;
+	if(isMuon1) m_trkRPCEtaHits[0] = (!src1.Contains("Muid")) ?  muons_numberOfRpcEtaHits->at(isrc1) : muid_numberOfRpcEtaHits->at(isrc1);
+	if(isMuon2) m_trkRPCEtaHits[1] = (!src2.Contains("Muid")) ?  muons_numberOfRpcEtaHits->at(isrc2) : muid_numberOfRpcEtaHits->at(isrc2);
+	if(isMuon3) m_trkRPCEtaHits[2] = (!src3.Contains("Muid")) ?  muons_numberOfRpcEtaHits->at(isrc3) : muid_numberOfRpcEtaHits->at(isrc3);
 	
 	_DEBUG("");
 	
 	m_trkCSCEtaHoles[0] = (isTPmu1) ?  tpmu_vi[src1+"_numberOfCscEtaHoles"]->at(isrc1) : -1;
 	m_trkCSCEtaHoles[1] = (isTPmu2) ?  tpmu_vi[src2+"_numberOfCscEtaHoles"]->at(isrc2) : -1;
 	m_trkCSCEtaHoles[2] = (isTPmu3) ?  tpmu_vi[src3+"_numberOfCscEtaHoles"]->at(isrc3) : -1;
+	if(isMuon1) m_trkCSCEtaHoles[0] = (!src1.Contains("Muid")) ?  muons_numberOfCscEtaHoles->at(isrc1) : muid_numberOfCscEtaHoles->at(isrc1);
+	if(isMuon2) m_trkCSCEtaHoles[1] = (!src2.Contains("Muid")) ?  muons_numberOfCscEtaHoles->at(isrc2) : muid_numberOfCscEtaHoles->at(isrc2);
+	if(isMuon3) m_trkCSCEtaHoles[2] = (!src3.Contains("Muid")) ?  muons_numberOfCscEtaHoles->at(isrc3) : muid_numberOfCscEtaHoles->at(isrc3);
 	
 	_DEBUG("");
 	
 	m_trkCSCPhiHoles[0] = (isTPmu1) ?  tpmu_vi[src1+"_numberOfCscPhiHoles"]->at(isrc1) : -1;
 	m_trkCSCPhiHoles[1] = (isTPmu2) ?  tpmu_vi[src2+"_numberOfCscPhiHoles"]->at(isrc2) : -1;
 	m_trkCSCPhiHoles[2] = (isTPmu3) ?  tpmu_vi[src3+"_numberOfCscPhiHoles"]->at(isrc3) : -1;
+	if(isMuon1) m_trkCSCPhiHoles[0] = (!src1.Contains("Muid")) ?  muons_numberOfCscPhiHoles->at(isrc1) : muid_numberOfCscPhiHoles->at(isrc1);
+	if(isMuon2) m_trkCSCPhiHoles[1] = (!src2.Contains("Muid")) ?  muons_numberOfCscPhiHoles->at(isrc2) : muid_numberOfCscPhiHoles->at(isrc2);
+	if(isMuon3) m_trkCSCPhiHoles[2] = (!src3.Contains("Muid")) ?  muons_numberOfCscPhiHoles->at(isrc3) : muid_numberOfCscPhiHoles->at(isrc3);
 	
 	_DEBUG("");
 	
 	m_trkRPCEtaHoles[0] = (isTPmu1) ?  tpmu_vi[src1+"_numberOfRpcEtaHoles"]->at(isrc1) : -1;
 	m_trkRPCEtaHoles[1] = (isTPmu2) ?  tpmu_vi[src2+"_numberOfRpcEtaHoles"]->at(isrc2) : -1;
 	m_trkRPCEtaHoles[2] = (isTPmu3) ?  tpmu_vi[src3+"_numberOfRpcEtaHoles"]->at(isrc3) : -1;
+	if(isMuon1) m_trkRPCEtaHoles[0] = (!src1.Contains("Muid")) ?  muons_numberOfRpcEtaHoles->at(isrc1) : muid_numberOfRpcEtaHoles->at(isrc1);
+	if(isMuon2) m_trkRPCEtaHoles[1] = (!src2.Contains("Muid")) ?  muons_numberOfRpcEtaHoles->at(isrc2) : muid_numberOfRpcEtaHoles->at(isrc2);
+	if(isMuon3) m_trkRPCEtaHoles[2] = (!src3.Contains("Muid")) ?  muons_numberOfRpcEtaHoles->at(isrc3) : muid_numberOfRpcEtaHoles->at(isrc3);
 	
 	_DEBUG("");
 	
 	m_trkRPCPhiHoles[0] = (isTPmu1) ?  tpmu_vi[src1+"_numberOfRpcPhiHoles"]->at(isrc1) : -1;
 	m_trkRPCPhiHoles[1] = (isTPmu2) ?  tpmu_vi[src2+"_numberOfRpcPhiHoles"]->at(isrc2) : -1;
 	m_trkRPCPhiHoles[2] = (isTPmu3) ?  tpmu_vi[src3+"_numberOfRpcPhiHoles"]->at(isrc3) : -1;
+	if(isMuon1) m_trkRPCPhiHoles[0] = (!src1.Contains("Muid")) ?  muons_numberOfRpcPhiHoles->at(isrc1) : muid_numberOfRpcPhiHoles->at(isrc1);
+	if(isMuon2) m_trkRPCPhiHoles[1] = (!src2.Contains("Muid")) ?  muons_numberOfRpcPhiHoles->at(isrc2) : muid_numberOfRpcPhiHoles->at(isrc2);
+	if(isMuon3) m_trkRPCPhiHoles[2] = (!src3.Contains("Muid")) ?  muons_numberOfRpcPhiHoles->at(isrc3) : muid_numberOfRpcPhiHoles->at(isrc3);
 	
 	_DEBUG("");
 	
 	m_trkTGCEtaHoles[0] = (isTPmu1) ?  tpmu_vi[src1+"_numberOfTgcEtaHoles"]->at(isrc1) : -1;
 	m_trkTGCEtaHoles[1] = (isTPmu2) ?  tpmu_vi[src2+"_numberOfTgcEtaHoles"]->at(isrc2) : -1;
 	m_trkTGCEtaHoles[2] = (isTPmu3) ?  tpmu_vi[src3+"_numberOfTgcEtaHoles"]->at(isrc3) : -1;
+	if(isMuon1) m_trkTGCEtaHoles[0] = (!src1.Contains("Muid")) ?  muons_numberOfTgcEtaHoles->at(isrc1) : muid_numberOfTgcEtaHoles->at(isrc1);
+	if(isMuon2) m_trkTGCEtaHoles[1] = (!src2.Contains("Muid")) ?  muons_numberOfTgcEtaHoles->at(isrc2) : muid_numberOfTgcEtaHoles->at(isrc2);
+	if(isMuon3) m_trkTGCEtaHoles[2] = (!src3.Contains("Muid")) ?  muons_numberOfTgcEtaHoles->at(isrc3) : muid_numberOfTgcEtaHoles->at(isrc3);
 	
 	_DEBUG("");
 	
 	m_trkTGCPhiHoles[0] = (isTPmu1) ?  tpmu_vi[src1+"_numberOfTgcPhiHoles"]->at(isrc1) : -1;
 	m_trkTGCPhiHoles[1] = (isTPmu2) ?  tpmu_vi[src2+"_numberOfTgcPhiHoles"]->at(isrc2) : -1;
 	m_trkTGCPhiHoles[2] = (isTPmu3) ?  tpmu_vi[src3+"_numberOfTgcPhiHoles"]->at(isrc3) : -1;
+	if(isMuon1) m_trkTGCPhiHoles[0] = (!src1.Contains("Muid")) ?  muons_numberOfTgcPhiHoles->at(isrc1) : muid_numberOfTgcPhiHoles->at(isrc1);
+	if(isMuon2) m_trkTGCPhiHoles[1] = (!src2.Contains("Muid")) ?  muons_numberOfTgcPhiHoles->at(isrc2) : muid_numberOfTgcPhiHoles->at(isrc2);
+	if(isMuon3) m_trkTGCPhiHoles[2] = (!src3.Contains("Muid")) ?  muons_numberOfTgcPhiHoles->at(isrc3) : muid_numberOfTgcPhiHoles->at(isrc3);
 	
 	_DEBUG("");
 	
 	m_trkMDTholes[0] = (isTPmu1) ?  tpmu_vi[src1+"_numberOfMdtHoles"]->at(isrc1) : -1;
 	m_trkMDTholes[1] = (isTPmu2) ?  tpmu_vi[src2+"_numberOfMdtHoles"]->at(isrc2) : -1;
 	m_trkMDTholes[2] = (isTPmu3) ?  tpmu_vi[src3+"_numberOfMdtHoles"]->at(isrc3) : -1;
+	if(isMuon1) m_trkMDTholes[0] = (!src1.Contains("Muid")) ?  muons_numberOfMdtHoles->at(isrc1) : muid_numberOfMdtHoles->at(isrc1);
+	if(isMuon2) m_trkMDTholes[1] = (!src2.Contains("Muid")) ?  muons_numberOfMdtHoles->at(isrc2) : muid_numberOfMdtHoles->at(isrc2);
+	if(isMuon3) m_trkMDTholes[2] = (!src3.Contains("Muid")) ?  muons_numberOfMdtHoles->at(isrc3) : muid_numberOfMdtHoles->at(isrc3);
 	
 	_DEBUG("");
 	
 	m_trkOutliersOnTrack[0] = (isTPmu1) ?  tpmu_vi[src1+"_numberOfOutliersOnTrack"]->at(isrc1) : -1;
 	m_trkOutliersOnTrack[1] = (isTPmu2) ?  tpmu_vi[src2+"_numberOfOutliersOnTrack"]->at(isrc2) : -1;
 	m_trkOutliersOnTrack[2] = (isTPmu3) ?  tpmu_vi[src3+"_numberOfOutliersOnTrack"]->at(isrc3) : -1;
+	if(isMuon1) m_trkOutliersOnTrack[0] = (!src1.Contains("Muid")) ?  muons_numberOfOutliersOnTrack->at(isrc1) : muid_numberOfOutliersOnTrack->at(isrc1);
+	if(isMuon2) m_trkOutliersOnTrack[1] = (!src2.Contains("Muid")) ?  muons_numberOfOutliersOnTrack->at(isrc2) : muid_numberOfOutliersOnTrack->at(isrc2);
+	if(isMuon3) m_trkOutliersOnTrack[2] = (!src3.Contains("Muid")) ?  muons_numberOfOutliersOnTrack->at(isrc3) : muid_numberOfOutliersOnTrack->at(isrc3);
 	
 	_DEBUG("");
 	
 	m_trkStdDevOfChi2OS[0] = (isTPmu1) ?  tpmu_vi[src1+"_standardDeviationOfChi2OS"]->at(isrc1) : -1;
 	m_trkStdDevOfChi2OS[1] = (isTPmu2) ?  tpmu_vi[src2+"_standardDeviationOfChi2OS"]->at(isrc2) : -1;
 	m_trkStdDevOfChi2OS[2] = (isTPmu3) ?  tpmu_vi[src3+"_standardDeviationOfChi2OS"]->at(isrc3) : -1;
+	if(isMuon1) m_trkStdDevOfChi2OS[0] = (!src1.Contains("Muid")) ?  muons_standardDeviationOfChi2OS->at(isrc1) : muid_standardDeviationOfChi2OS->at(isrc1);
+	if(isMuon2) m_trkStdDevOfChi2OS[1] = (!src2.Contains("Muid")) ?  muons_standardDeviationOfChi2OS->at(isrc2) : muid_standardDeviationOfChi2OS->at(isrc2);
+	if(isMuon3) m_trkStdDevOfChi2OS[2] = (!src3.Contains("Muid")) ?  muons_standardDeviationOfChi2OS->at(isrc3) : muid_standardDeviationOfChi2OS->at(isrc3);
 	
 	_DEBUG("");
 	
-	unsigned int N1 = (isTPmu1) ? tpmu_vvi[src1+"_nprecisionHits"]->at(isrc1).size() : 0;
-	unsigned int N2 = (isTPmu2) ? tpmu_vvi[src2+"_nprecisionHits"]->at(isrc2).size() : 0;
-	unsigned int N3 = (isTPmu3) ? tpmu_vvi[src3+"_nprecisionHits"]->at(isrc3).size() : 0;
-	m_trkPrecisionHits[0] = 0; if(isTPmu1) { for(unsigned int i=0 ; i<N1 ; ++i) m_trkPrecisionHits[0] += tpmu_vvi[src1+"_nprecisionHits"]->at(isrc1)[i]; }
-	m_trkPrecisionHits[1] = 0; if(isTPmu2) { for(unsigned int i=0 ; i<N2 ; ++i) m_trkPrecisionHits[1] += tpmu_vvi[src2+"_nprecisionHits"]->at(isrc2)[i]; }
-	m_trkPrecisionHits[2] = 0; if(isTPmu3) { for(unsigned int i=0 ; i<N3 ; ++i) m_trkPrecisionHits[2] += tpmu_vvi[src3+"_nprecisionHits"]->at(isrc3)[i]; }
+	
+	
+	//////////////////////////////////////////////////////////////////////
+	/////////////////
+	//// BUG fix ////
+	/////////////////
+	TMapII bugMU;
+	for(unsigned int i=0 ; i<muons_numberOfCscEtaHoles->size() ;  ++i)
+	{
+		if(muons_numberOfCscEtaHoles->at(i)<0) continue;
+		else
+		{
+			unsigned int index = bugMU.size(); // 1st iteration size=0, 2nd iteration size=1,...
+			bugMU.insert(make_pair(i,index));
+		}
+	}
+	bool bugMU_doExsit1 = (isMuon1 && bugMU.find(isrc1)!=bugMU.end());
+	bool bugMU_doExsit2 = (isMuon2 && bugMU.find(isrc2)!=bugMU.end());
+	bool bugMU_doExsit3 = (isMuon3 && bugMU.find(isrc3)!=bugMU.end());
+	_DEBUG("");
+	// if(isTPmu1 && tpmu_vi[src1+"_numberOfCscEtaHoles"]->size()!=tpmu_vvi[src1+"_nprecisionHits"]->size()) cout << "sizeCsc=" << tpmu_vi[src1+"_numberOfCscEtaHoles"]->size() << ", sizePcn=" << tpmu_vvi[src1+"_nprecisionHits"]->size() << endl;
+	// if(isTPmu2 && tpmu_vi[src2+"_numberOfCscEtaHoles"]->size()!=tpmu_vvi[src2+"_nprecisionHits"]->size()) cout << "sizeCsc=" << tpmu_vi[src2+"_numberOfCscEtaHoles"]->size() << ", sizePcn=" << tpmu_vvi[src2+"_nprecisionHits"]->size() << endl;
+	// if(isTPmu3 && tpmu_vi[src3+"_numberOfCscEtaHoles"]->size()!=tpmu_vvi[src3+"_nprecisionHits"]->size()) cout << "sizeCsc=" << tpmu_vi[src3+"_numberOfCscEtaHoles"]->size() << ", sizePcn=" << tpmu_vvi[src3+"_nprecisionHits"]->size() << endl;	
+	// cout << "muons_pt->size()=" << muons_pt->size() << endl;
+	// cout << "muons_numberOfCscEtaHoles->size()=" << muons_numberOfCscEtaHoles->size() << endl;
+	// for(unsigned int i=0 ; i<muons_numberOfCscEtaHoles->size() ;  ++i)
+	// {
+	// 	int x = (bugMU.find(i)!=bugMU.end()) ? bugMU[i] : -1;
+	// 	cout << "["<<i<<"]: " << "bugMU["<< x <<"]" << muons_numberOfCscEtaHoles->at(i) << endl;
+	// }
+	// cout << "muons_nprecisionHits->size()=" << muons_nprecisionHits->size() << endl;
+	// cout << "muons_nphiLayers->size()=" << muons_nphiLayers->size() << endl;
+	// cout << "muons_netaPhiLayers->size()=" << muons_netaPhiLayers->size() << endl;
+	// cout << "src1=" << src1 << ", isrc1=" << isrc1 << endl;
+	// cout << "src2=" << src2 << ", isrc2=" << isrc2 << endl;
+	// cout << "src3=" << src3 << ", isrc3=" << isrc3 << endl;
+	//////////////////////////////////////////////////////////////////////
+	
+	
+	_DEBUG("");
+	unsigned int N1 = 0;
+	unsigned int N2 = 0;
+	unsigned int N3 = 0;
+	N1 = (isTPmu1) ? tpmu_vvi[src1+"_nprecisionHits"]->at(isrc1).size() : 0;
+	N2 = (isTPmu2) ? tpmu_vvi[src2+"_nprecisionHits"]->at(isrc2).size() : 0;
+	N3 = (isTPmu3) ? tpmu_vvi[src3+"_nprecisionHits"]->at(isrc3).size() : 0;
+	_DEBUG("");
+	// cout << "muons_nprecisionHits->size()=" << muons_nprecisionHits->size() << ", muons_pt->size()=" << muons_pt->size() << endl;
+	// for(TMapII::iterator it=bugMU.begin() ; it!=bugMU.end() ; ++it) cout << "bug["<<it->first<<"]=" << it->second << endl;
+	if(isMuon1 && bugMU_doExsit1) N1 = (!src1.Contains("Muid")) ? muons_nprecisionHits->at(bugMU[isrc1]).size() : muid_nprecisionHits->at(bugMU[isrc1]).size();
+	_DEBUG("");
+	if(isMuon2 && bugMU_doExsit2) N2 = (!src2.Contains("Muid")) ? muons_nprecisionHits->at(bugMU[isrc2]).size() : muid_nprecisionHits->at(bugMU[isrc2]).size();
+	_DEBUG("");
+	if(isMuon3 && bugMU_doExsit3) N3 = (!src3.Contains("Muid")) ? muons_nprecisionHits->at(bugMU[isrc3]).size() : muid_nprecisionHits->at(bugMU[isrc3]).size();
+	_DEBUG("");
+	m_trkPrecisionHits[0] = 0;
+	m_trkPrecisionHits[1] = 0;
+	m_trkPrecisionHits[2] = 0;
+	_DEBUG("");
+	if(isTPmu1) { for(unsigned int i=0 ; i<N1 ; ++i) m_trkPrecisionHits[0] += tpmu_vvi[src1+"_nprecisionHits"]->at(isrc1)[i]; }
+	if(isTPmu2) { for(unsigned int i=0 ; i<N2 ; ++i) m_trkPrecisionHits[1] += tpmu_vvi[src2+"_nprecisionHits"]->at(isrc2)[i]; }
+	if(isTPmu3) { for(unsigned int i=0 ; i<N3 ; ++i) m_trkPrecisionHits[2] += tpmu_vvi[src3+"_nprecisionHits"]->at(isrc3)[i]; }
+	_DEBUG("");
+	if(isMuon1 && bugMU_doExsit1) { for(unsigned int i=0 ; i<N1 ; ++i) m_trkPrecisionHits[0] += (!src1.Contains("Muid")) ? muons_nprecisionHits->at(bugMU[isrc1])[i] : muid_nprecisionHits->at(bugMU[isrc1])[i]; }
+	if(isMuon2 && bugMU_doExsit2) { for(unsigned int i=0 ; i<N2 ; ++i) m_trkPrecisionHits[1] += (!src2.Contains("Muid")) ? muons_nprecisionHits->at(bugMU[isrc2])[i] : muid_nprecisionHits->at(bugMU[isrc2])[i]; }
+	if(isMuon3 && bugMU_doExsit3) { for(unsigned int i=0 ; i<N3 ; ++i) m_trkPrecisionHits[2] += (!src3.Contains("Muid")) ? muons_nprecisionHits->at(bugMU[isrc3])[i] : muid_nprecisionHits->at(bugMU[isrc3])[i]; }
 
 	_DEBUG("");
 
 	N1 = (isTPmu1) ? tpmu_vvi[src1+"_nphiLayers"]->at(isrc1).size() : 0;
 	N2 = (isTPmu2) ? tpmu_vvi[src2+"_nphiLayers"]->at(isrc2).size() : 0;
 	N3 = (isTPmu3) ? tpmu_vvi[src3+"_nphiLayers"]->at(isrc3).size() : 0;
-	m_trkPhiLayers[0] = 0; if(isTPmu1) { for(unsigned int i=0 ; i<N1 ; ++i) m_trkPhiLayers[0] += tpmu_vvi[src1+"_nphiLayers"]->at(isrc1)[i]; }
-	m_trkPhiLayers[1] = 0; if(isTPmu2) { for(unsigned int i=0 ; i<N2 ; ++i) m_trkPhiLayers[1] += tpmu_vvi[src2+"_nphiLayers"]->at(isrc2)[i]; }
-	m_trkPhiLayers[2] = 0; if(isTPmu3) { for(unsigned int i=0 ; i<N3 ; ++i) m_trkPhiLayers[2] += tpmu_vvi[src3+"_nphiLayers"]->at(isrc3)[i]; }
+	if(isMuon1 && bugMU_doExsit1) N1 = (!src1.Contains("Muid")) ? muons_nphiLayers->at(bugMU[isrc1]).size() : muid_nphiLayers->at(bugMU[isrc1]).size();
+	if(isMuon2 && bugMU_doExsit2) N2 = (!src2.Contains("Muid")) ? muons_nphiLayers->at(bugMU[isrc2]).size() : muid_nphiLayers->at(bugMU[isrc2]).size();
+	if(isMuon3 && bugMU_doExsit3) N3 = (!src3.Contains("Muid")) ? muons_nphiLayers->at(bugMU[isrc3]).size() : muid_nphiLayers->at(bugMU[isrc3]).size();
+	m_trkPhiLayers[0] = 0;
+	m_trkPhiLayers[1] = 0;
+	m_trkPhiLayers[2] = 0;
+	if(isTPmu1) { for(unsigned int i=0 ; i<N1 ; ++i) m_trkPhiLayers[0] += tpmu_vvi[src1+"_nphiLayers"]->at(isrc1)[i]; }
+	if(isTPmu2) { for(unsigned int i=0 ; i<N2 ; ++i) m_trkPhiLayers[1] += tpmu_vvi[src2+"_nphiLayers"]->at(isrc2)[i]; }
+	if(isTPmu3) { for(unsigned int i=0 ; i<N3 ; ++i) m_trkPhiLayers[2] += tpmu_vvi[src3+"_nphiLayers"]->at(isrc3)[i]; }
+	if(isMuon1 && bugMU_doExsit1) { for(unsigned int i=0 ; i<N1 ; ++i) m_trkPhiLayers[0] += (!src1.Contains("Muid")) ? muons_nphiLayers->at(bugMU[isrc1])[i] : muid_nphiLayers->at(bugMU[isrc1])[i]; }
+	if(isMuon2 && bugMU_doExsit2) { for(unsigned int i=0 ; i<N2 ; ++i) m_trkPhiLayers[1] += (!src2.Contains("Muid")) ? muons_nphiLayers->at(bugMU[isrc2])[i] : muid_nphiLayers->at(bugMU[isrc2])[i]; }
+	if(isMuon3 && bugMU_doExsit3) { for(unsigned int i=0 ; i<N3 ; ++i) m_trkPhiLayers[2] += (!src3.Contains("Muid")) ? muons_nphiLayers->at(bugMU[isrc3])[i] : muid_nphiLayers->at(bugMU[isrc3])[i]; }
 	
 	_DEBUG("");
 	
 	N1 = (isTPmu1) ? tpmu_vvi[src1+"_netaPhiLayers"]->at(isrc1).size() : 0;
 	N2 = (isTPmu2) ? tpmu_vvi[src2+"_netaPhiLayers"]->at(isrc2).size() : 0;
 	N3 = (isTPmu3) ? tpmu_vvi[src3+"_netaPhiLayers"]->at(isrc3).size() : 0;
-	m_trkEtaPhiLayers[0] = 0; if(isTPmu1) { for(unsigned int i=0 ; i<N1 ; ++i) m_trkEtaPhiLayers[0] += tpmu_vvi[src1+"_netaPhiLayers"]->at(isrc1)[i]; }
-	m_trkEtaPhiLayers[1] = 0; if(isTPmu2) { for(unsigned int i=0 ; i<N2 ; ++i) m_trkEtaPhiLayers[1] += tpmu_vvi[src2+"_netaPhiLayers"]->at(isrc2)[i]; }
-	m_trkEtaPhiLayers[2] = 0; if(isTPmu3) { for(unsigned int i=0 ; i<N3 ; ++i) m_trkEtaPhiLayers[2] += tpmu_vvi[src3+"_netaPhiLayers"]->at(isrc3)[i]; }
+	if(isMuon1 && bugMU_doExsit1) N1 = (!src1.Contains("Muid")) ? muons_netaPhiLayers->at(bugMU[isrc1]).size() : muid_netaPhiLayers->at(bugMU[isrc1]).size();
+	if(isMuon2 && bugMU_doExsit2) N2 = (!src2.Contains("Muid")) ? muons_netaPhiLayers->at(bugMU[isrc2]).size() : muid_netaPhiLayers->at(bugMU[isrc2]).size();
+	if(isMuon3 && bugMU_doExsit3) N3 = (!src3.Contains("Muid")) ? muons_netaPhiLayers->at(bugMU[isrc3]).size() : muid_netaPhiLayers->at(bugMU[isrc3]).size();
+	m_trkEtaPhiLayers[0] = 0;
+	m_trkEtaPhiLayers[1] = 0;
+	m_trkEtaPhiLayers[2] = 0;
+	if(isTPmu1) { for(unsigned int i=0 ; i<N1 ; ++i) m_trkEtaPhiLayers[0] += tpmu_vvi[src1+"_netaPhiLayers"]->at(isrc1)[i]; }
+	if(isTPmu2) { for(unsigned int i=0 ; i<N2 ; ++i) m_trkEtaPhiLayers[1] += tpmu_vvi[src2+"_netaPhiLayers"]->at(isrc2)[i]; }
+	if(isTPmu3) { for(unsigned int i=0 ; i<N3 ; ++i) m_trkEtaPhiLayers[2] += tpmu_vvi[src3+"_netaPhiLayers"]->at(isrc3)[i]; }
+	if(isMuon1 && bugMU_doExsit1) { for(unsigned int i=0 ; i<N1 ; ++i) m_trkEtaPhiLayers[0] += (!src1.Contains("Muid")) ? muons_netaPhiLayers->at(bugMU[isrc1])[i] : muid_netaPhiLayers->at(bugMU[isrc1])[i]; }
+	if(isMuon2 && bugMU_doExsit2) { for(unsigned int i=0 ; i<N2 ; ++i) m_trkEtaPhiLayers[1] += (!src2.Contains("Muid")) ? muons_netaPhiLayers->at(bugMU[isrc2])[i] : muid_netaPhiLayers->at(bugMU[isrc2])[i]; }
+	if(isMuon3 && bugMU_doExsit3) { for(unsigned int i=0 ; i<N3 ; ++i) m_trkEtaPhiLayers[2] += (!src3.Contains("Muid")) ? muons_netaPhiLayers->at(bugMU[isrc3])[i] : muid_netaPhiLayers->at(bugMU[isrc3])[i]; }
+	
 	
 	_DEBUG("");
 	
 	N1 = (isTPmu1) ? tpmu_vvi[src1+"_nprecisionHoles"]->at(isrc1).size() : 0;
 	N2 = (isTPmu2) ? tpmu_vvi[src2+"_nprecisionHoles"]->at(isrc2).size() : 0;
 	N3 = (isTPmu3) ? tpmu_vvi[src3+"_nprecisionHoles"]->at(isrc3).size() : 0;
-	m_trkPrecisionHoles[0] = 0; if(isTPmu1) { for(unsigned int i=0 ; i<N1 ; ++i) m_trkPrecisionHoles[0] += tpmu_vvi[src1+"_nprecisionHoles"]->at(isrc1)[i]; }
-	m_trkPrecisionHoles[1] = 0; if(isTPmu2) { for(unsigned int i=0 ; i<N2 ; ++i) m_trkPrecisionHoles[1] += tpmu_vvi[src2+"_nprecisionHoles"]->at(isrc2)[i]; }
-	m_trkPrecisionHoles[2] = 0; if(isTPmu3) { for(unsigned int i=0 ; i<N3 ; ++i) m_trkPrecisionHoles[2] += tpmu_vvi[src3+"_nprecisionHoles"]->at(isrc3)[i]; }
+	if(isMuon1 && bugMU_doExsit1) N1 = (!src1.Contains("Muid")) ? muons_nprecisionHoles->at(bugMU[isrc1]).size() : muid_nprecisionHoles->at(bugMU[isrc1]).size();
+	if(isMuon2 && bugMU_doExsit2) N2 = (!src2.Contains("Muid")) ? muons_nprecisionHoles->at(bugMU[isrc2]).size() : muid_nprecisionHoles->at(bugMU[isrc2]).size();
+	if(isMuon3 && bugMU_doExsit3) N3 = (!src3.Contains("Muid")) ? muons_nprecisionHoles->at(bugMU[isrc3]).size() : muid_nprecisionHoles->at(bugMU[isrc3]).size();
+	m_trkPrecisionHoles[0] = 0;
+	m_trkPrecisionHoles[1] = 0;
+	m_trkPrecisionHoles[2] = 0;
+	if(isTPmu1) { for(unsigned int i=0 ; i<N1 ; ++i) m_trkPrecisionHoles[0] += tpmu_vvi[src1+"_nprecisionHoles"]->at(isrc1)[i]; }
+	if(isTPmu2) { for(unsigned int i=0 ; i<N2 ; ++i) m_trkPrecisionHoles[1] += tpmu_vvi[src2+"_nprecisionHoles"]->at(isrc2)[i]; }
+	if(isTPmu3) { for(unsigned int i=0 ; i<N3 ; ++i) m_trkPrecisionHoles[2] += tpmu_vvi[src3+"_nprecisionHoles"]->at(isrc3)[i]; }
+	if(isMuon1 && bugMU_doExsit1) { for(unsigned int i=0 ; i<N1 ; ++i) m_trkPrecisionHoles[0] += (!src1.Contains("Muid")) ? muons_nprecisionHoles->at(bugMU[isrc1])[i] : muid_nprecisionHoles->at(bugMU[isrc1])[i]; }
+	if(isMuon2 && bugMU_doExsit2) { for(unsigned int i=0 ; i<N2 ; ++i) m_trkPrecisionHoles[1] += (!src2.Contains("Muid")) ? muons_nprecisionHoles->at(bugMU[isrc2])[i] : muid_nprecisionHoles->at(bugMU[isrc2])[i]; }
+	if(isMuon3 && bugMU_doExsit3) { for(unsigned int i=0 ; i<N3 ; ++i) m_trkPrecisionHoles[2] += (!src3.Contains("Muid")) ? muons_nprecisionHoles->at(bugMU[isrc3])[i] : muid_nprecisionHoles->at(bugMU[isrc3])[i]; }
 	
 	_DEBUG("");
 	
 	N1 = (isTPmu1) ? tpmu_vvi[src1+"_netaTriggerHoleLayers"]->at(isrc1).size() : 0;
 	N2 = (isTPmu2) ? tpmu_vvi[src2+"_netaTriggerHoleLayers"]->at(isrc2).size() : 0;
 	N3 = (isTPmu3) ? tpmu_vvi[src3+"_netaTriggerHoleLayers"]->at(isrc3).size() : 0;
-	m_trkEtaTriggerHoleLayers[0] = 0; if(isTPmu1) { for(unsigned int i=0 ; i<N1 ; ++i) m_trkEtaTriggerHoleLayers[0] += tpmu_vvi[src1+"_netaTriggerHoleLayers"]->at(isrc1)[i]; }
-	m_trkEtaTriggerHoleLayers[1] = 0; if(isTPmu2) { for(unsigned int i=0 ; i<N2 ; ++i) m_trkEtaTriggerHoleLayers[1] += tpmu_vvi[src2+"_netaTriggerHoleLayers"]->at(isrc2)[i]; }
-	m_trkEtaTriggerHoleLayers[2] = 0; if(isTPmu3) { for(unsigned int i=0 ; i<N3 ; ++i) m_trkEtaTriggerHoleLayers[2] += tpmu_vvi[src3+"_netaTriggerHoleLayers"]->at(isrc3)[i]; }
+	if(isMuon1 && bugMU_doExsit1) N1 = (!src1.Contains("Muid")) ? muons_netaTriggerHoleLayers->at(bugMU[isrc1]).size() : muid_netaTriggerHoleLayers->at(bugMU[isrc1]).size();
+	if(isMuon2 && bugMU_doExsit2) N2 = (!src2.Contains("Muid")) ? muons_netaTriggerHoleLayers->at(bugMU[isrc2]).size() : muid_netaTriggerHoleLayers->at(bugMU[isrc2]).size();
+	if(isMuon3 && bugMU_doExsit3) N3 = (!src3.Contains("Muid")) ? muons_netaTriggerHoleLayers->at(bugMU[isrc3]).size() : muid_netaTriggerHoleLayers->at(bugMU[isrc3]).size();
+	m_trkEtaTriggerHoleLayers[0] = 0;
+	m_trkEtaTriggerHoleLayers[1] = 0;
+	m_trkEtaTriggerHoleLayers[2] = 0;
+	if(isTPmu1) { for(unsigned int i=0 ; i<N1 ; ++i) m_trkEtaTriggerHoleLayers[0] += tpmu_vvi[src1+"_netaTriggerHoleLayers"]->at(isrc1)[i]; }
+	if(isTPmu2) { for(unsigned int i=0 ; i<N2 ; ++i) m_trkEtaTriggerHoleLayers[1] += tpmu_vvi[src2+"_netaTriggerHoleLayers"]->at(isrc2)[i]; }
+	if(isTPmu3) { for(unsigned int i=0 ; i<N3 ; ++i) m_trkEtaTriggerHoleLayers[2] += tpmu_vvi[src3+"_netaTriggerHoleLayers"]->at(isrc3)[i]; }
+	if(isMuon1 && bugMU_doExsit1) { for(unsigned int i=0 ; i<N1 ; ++i) m_trkEtaTriggerHoleLayers[0] += (!src1.Contains("Muid")) ? muons_netaTriggerHoleLayers->at(bugMU[isrc1])[i] : muid_netaTriggerHoleLayers->at(bugMU[isrc1])[i]; }
+	if(isMuon2 && bugMU_doExsit2) { for(unsigned int i=0 ; i<N2 ; ++i) m_trkEtaTriggerHoleLayers[1] += (!src2.Contains("Muid")) ? muons_netaTriggerHoleLayers->at(bugMU[isrc2])[i] : muid_netaTriggerHoleLayers->at(bugMU[isrc2])[i]; }
+	if(isMuon3 && bugMU_doExsit3) { for(unsigned int i=0 ; i<N3 ; ++i) m_trkEtaTriggerHoleLayers[2] += (!src3.Contains("Muid")) ? muons_netaTriggerHoleLayers->at(bugMU[isrc3])[i] : muid_netaTriggerHoleLayers->at(bugMU[isrc3])[i]; }
 	
 	_DEBUG("");
 	
 	N1 = (isTPmu1) ? tpmu_vvi[src1+"_nphiHoleLayers"]->at(isrc1).size() : 0;
 	N2 = (isTPmu2) ? tpmu_vvi[src2+"_nphiHoleLayers"]->at(isrc2).size() : 0;
 	N3 = (isTPmu3) ? tpmu_vvi[src3+"_nphiHoleLayers"]->at(isrc3).size() : 0;
-	m_trkPhiHoleLayers[0] = 0; if(isTPmu1) { for(unsigned int i=0 ; i<N1 ; ++i) m_trkPhiHoleLayers[0] += tpmu_vvi[src1+"_nphiHoleLayers"]->at(isrc1)[i]; }
-	m_trkPhiHoleLayers[1] = 0; if(isTPmu2) { for(unsigned int i=0 ; i<N2 ; ++i) m_trkPhiHoleLayers[1] += tpmu_vvi[src2+"_nphiHoleLayers"]->at(isrc2)[i]; }
-	m_trkPhiHoleLayers[2] = 0; if(isTPmu3) { for(unsigned int i=0 ; i<N3 ; ++i) m_trkPhiHoleLayers[2] += tpmu_vvi[src3+"_nphiHoleLayers"]->at(isrc3)[i]; }
+	if(isMuon1 && bugMU_doExsit1) N1 = (!src1.Contains("Muid")) ? muons_nphiHoleLayers->at(bugMU[isrc1]).size() : muid_nphiHoleLayers->at(bugMU[isrc1]).size();
+	if(isMuon2 && bugMU_doExsit2) N2 = (!src2.Contains("Muid")) ? muons_nphiHoleLayers->at(bugMU[isrc2]).size() : muid_nphiHoleLayers->at(bugMU[isrc2]).size();
+	if(isMuon3 && bugMU_doExsit3) N3 = (!src3.Contains("Muid")) ? muons_nphiHoleLayers->at(bugMU[isrc3]).size() : muid_nphiHoleLayers->at(bugMU[isrc3]).size();
+	m_trkPhiHoleLayers[0] = 0;
+	m_trkPhiHoleLayers[1] = 0;
+	m_trkPhiHoleLayers[2] = 0;
+	if(isTPmu1) { for(unsigned int i=0 ; i<N1 ; ++i) m_trkPhiHoleLayers[0] += tpmu_vvi[src1+"_nphiHoleLayers"]->at(isrc1)[i]; }
+	if(isTPmu2) { for(unsigned int i=0 ; i<N2 ; ++i) m_trkPhiHoleLayers[1] += tpmu_vvi[src2+"_nphiHoleLayers"]->at(isrc2)[i]; }
+	if(isTPmu3) { for(unsigned int i=0 ; i<N3 ; ++i) m_trkPhiHoleLayers[2] += tpmu_vvi[src3+"_nphiHoleLayers"]->at(isrc3)[i]; }
+	if(isMuon1 && bugMU_doExsit1) { for(unsigned int i=0 ; i<N1 ; ++i) m_trkPhiHoleLayers[0] += (!src1.Contains("Muid")) ? muons_nphiHoleLayers->at(bugMU[isrc1])[i] : muid_nphiHoleLayers->at(bugMU[isrc1])[i]; }
+	if(isMuon2 && bugMU_doExsit2) { for(unsigned int i=0 ; i<N2 ; ++i) m_trkPhiHoleLayers[1] += (!src2.Contains("Muid")) ? muons_nphiHoleLayers->at(bugMU[isrc2])[i] : muid_nphiHoleLayers->at(bugMU[isrc2])[i]; }
+	if(isMuon3 && bugMU_doExsit3) { for(unsigned int i=0 ; i<N3 ; ++i) m_trkPhiHoleLayers[2] += (!src3.Contains("Muid")) ? muons_nphiHoleLayers->at(bugMU[isrc3])[i] : muid_nphiHoleLayers->at(bugMU[isrc3])[i]; }
 	
 	_DEBUG("");
 	
 	N1 = (isTPmu1) ? tpmu_vvi[src1+"_nprecisionOutliers"]->at(isrc1).size() : 0;
 	N2 = (isTPmu2) ? tpmu_vvi[src2+"_nprecisionOutliers"]->at(isrc2).size() : 0;
 	N3 = (isTPmu3) ? tpmu_vvi[src3+"_nprecisionOutliers"]->at(isrc3).size() : 0;
-	m_trkPrecisionOutliers[0] = 0; if(isTPmu1) { for(unsigned int i=0 ; i<N1 ; ++i) m_trkPrecisionOutliers[0] += tpmu_vvi[src1+"_nprecisionOutliers"]->at(isrc1)[i]; }
-	m_trkPrecisionOutliers[1] = 0; if(isTPmu2) { for(unsigned int i=0 ; i<N2 ; ++i) m_trkPrecisionOutliers[1] += tpmu_vvi[src2+"_nprecisionOutliers"]->at(isrc2)[i]; }
-	m_trkPrecisionOutliers[2] = 0; if(isTPmu3) { for(unsigned int i=0 ; i<N3 ; ++i) m_trkPrecisionOutliers[2] += tpmu_vvi[src3+"_nprecisionOutliers"]->at(isrc3)[i]; }
-	
+	if(isMuon1 && bugMU_doExsit1) N1 = (!src1.Contains("Muid")) ? muons_nprecisionOutliers->at(bugMU[isrc1]).size() : muid_nprecisionOutliers->at(bugMU[isrc1]).size();
+	if(isMuon2 && bugMU_doExsit2) N2 = (!src2.Contains("Muid")) ? muons_nprecisionOutliers->at(bugMU[isrc2]).size() : muid_nprecisionOutliers->at(bugMU[isrc2]).size();
+	if(isMuon3 && bugMU_doExsit3) N3 = (!src3.Contains("Muid")) ? muons_nprecisionOutliers->at(bugMU[isrc3]).size() : muid_nprecisionOutliers->at(bugMU[isrc3]).size();
+	m_trkPrecisionOutliers[0] = 0;
+	m_trkPrecisionOutliers[1] = 0;
+	m_trkPrecisionOutliers[2] = 0;
+	if(isTPmu1) { for(unsigned int i=0 ; i<N1 ; ++i) m_trkPrecisionOutliers[0] += tpmu_vvi[src1+"_nprecisionOutliers"]->at(isrc1)[i]; }
+	if(isTPmu2) { for(unsigned int i=0 ; i<N2 ; ++i) m_trkPrecisionOutliers[1] += tpmu_vvi[src2+"_nprecisionOutliers"]->at(isrc2)[i]; }
+	if(isTPmu3) { for(unsigned int i=0 ; i<N3 ; ++i) m_trkPrecisionOutliers[2] += tpmu_vvi[src3+"_nprecisionOutliers"]->at(isrc3)[i]; }
+	if(isMuon1 && bugMU_doExsit1) { for(unsigned int i=0 ; i<N1 ; ++i) m_trkPrecisionOutliers[0] += (!src1.Contains("Muid")) ? muons_nprecisionOutliers->at(bugMU[isrc1])[i] : muid_nprecisionOutliers->at(bugMU[isrc1])[i]; }
+	if(isMuon2 && bugMU_doExsit2) { for(unsigned int i=0 ; i<N2 ; ++i) m_trkPrecisionOutliers[1] += (!src2.Contains("Muid")) ? muons_nprecisionOutliers->at(bugMU[isrc2])[i] : muid_nprecisionOutliers->at(bugMU[isrc2])[i]; }
+	if(isMuon3 && bugMU_doExsit3) { for(unsigned int i=0 ; i<N3 ; ++i) m_trkPrecisionOutliers[2] += (!src3.Contains("Muid")) ? muons_nprecisionOutliers->at(bugMU[isrc3])[i] : muid_nprecisionOutliers->at(bugMU[isrc3])[i]; }
 	
 	_DEBUG("");
 
@@ -6189,11 +6771,14 @@ if(!skim)
 
 	multimap<double,int> pt2i;
 	vector<int> ijet;
-	for(int i=0 ; i<(int)jets_pt->size() ; i++)
+	// for(int i=0 ; i<(int)jets_pt->size() ; i++)
+	// {
+	// 	bool isUgly = (jets_isUgly->at(i));
+	// 	if(isUgly)  continue;
+	for(int i=0 ; i<AntiKt4TopoEMJets_n ; i++)
 	{
-		bool isUgly = (jets_isUgly->at(i));
-		if(isUgly)  continue;
-		pt2i.insert(make_pair(jets_pt->at(i),i));
+		if(!isGoodJet(i,JetQuality))  continue;
+		pt2i.insert(make_pair(AntiKt4TopoEMJets_pt->at(i),i));
 	}
 	for(multimap<double,int>::reverse_iterator rit=pt2i.rbegin() ; rit!=pt2i.rend() ; ++rit) ijet.push_back(rit->second);
 	unsigned int njet = ijet.size();
@@ -6204,16 +6789,16 @@ if(!skim)
 	if(njet>0)
 	{
 		int j1 = ijet[0];
-		double phi1 = jets_phi->at(j1);	
+		double phi1 = AntiKt4TopoEMJets_phi->at(j1);	
 		dPhi3muJet1 = fabs(dPhi(psum.Phi(),phi1));
-		dR3muJet1   = deltaR(psum.Eta(),psum.Phi(),jets_eta->at(j1),jets_phi->at(j1));
+		dR3muJet1   = deltaR(psum.Eta(),psum.Phi(),AntiKt4TopoEMJets_eta->at(j1),AntiKt4TopoEMJets_phi->at(j1));
 		if(njet>1)
 		{
 			int j2 = ijet[1];
-			sumptj12 = jets_pt->at(j1)+jets_pt->at(j2);
-			double phi2  = jets_phi->at(j2);
+			sumptj12 = AntiKt4TopoEMJets_pt->at(j1)+AntiKt4TopoEMJets_pt->at(j2);
+			double phi2  = AntiKt4TopoEMJets_phi->at(j2);
 			dPhiJet1Jet2 = fabs(dPhi(phi1,phi2));
-			dRJet1Jet2   = deltaR(jets_eta->at(j1),jets_phi->at(j1),jets_eta->at(j2),jets_phi->at(j2));
+			dRJet1Jet2   = deltaR(AntiKt4TopoEMJets_eta->at(j1),AntiKt4TopoEMJets_phi->at(j1),AntiKt4TopoEMJets_eta->at(j2),AntiKt4TopoEMJets_phi->at(j2));
 		}
 	}
 	
@@ -6223,9 +6808,10 @@ if(!skim)
 	for(int i=0 ; i<m_njets ; ++i)
 	{
 		int j = ijet[i];
-		m_jetPE[i].SetPtEtaPhiE(jets_pt->at(j),jets_eta->at(j),jets_phi->at(j),jets_e->at(j));
-		m_jetPM[i].SetPtEtaPhiM(jets_pt->at(j),jets_eta->at(j),jets_phi->at(j),jets_m->at(j));
-		m_jetMV1[i] = jets_flwgt_MV1->at(j);
+		m_jetPE[i].SetPtEtaPhiE(AntiKt4TopoEMJets_pt->at(j),AntiKt4TopoEMJets_eta->at(j),AntiKt4TopoEMJets_phi->at(j),AntiKt4TopoEMJets_E->at(j));
+		m_jetPM[i].SetPtEtaPhiM(AntiKt4TopoEMJets_pt->at(j),AntiKt4TopoEMJets_eta->at(j),AntiKt4TopoEMJets_phi->at(j),AntiKt4TopoEMJets_m->at(j));
+		m_jetMV1[i] = AntiKt4TopoEMJets_flavor_weight_MV1->at(j);
+		m_jetVtxFrac[i] = AntiKt4TopoEMJets_jvtxf->at(j);
 	}
 	if(m_njets>1) { m_jetDphi12 = dPhiJet1Jet2; m_jetDR12 = dRJet1Jet2; m_jetSumpt12 = sumptj12; }
 	if(m_njets>0) { m_jetDphi3body = dPhi3muJet1; m_jetDR3body = dR3muJet1; }
@@ -6997,22 +7583,34 @@ bool acceptVtxMET(TString method, unsigned int vtx, vector<vertex>& vertices, TS
 	{
 		_DEBUG("");
 
+		// multimap<double,int> pt2i;
+		// vector<int> ijet;
+		// for(int i=0 ; i<(int)jets_pt->size() ; i++)
+		// {
+		// 	bool isUgly = (jets_isUgly->at(i));
+		// 	// cout << "Jet["<<i<<"] isUgly(pt="<< jets_pt->at(i) <<")=" << jets_isUgly->at(i) << ", passCleaning("<< AntiKt4TopoEMJets_pt->at(i) << ")=" << isGoodJet(i,"TightBad") << "|" << isGoodJet(i,"MediumBad") << "|" << isGoodJet(i,JetQuality) << "|" << isGoodJet(i,"VeryLooseBad") << endl;
+		// 	if(isUgly)  continue;
+		// 	pt2i.insert(make_pair(jets_pt->at(i),i));
+		// }
+		// for(multimap<double,int>::reverse_iterator rit=pt2i.rbegin() ; rit!=pt2i.rend() ; ++rit) ijet.push_back(rit->second);
+		// unsigned int njet = ijet.size();
+		
 		multimap<double,int> pt2i;
 		vector<int> ijet;
-		for(int i=0 ; i<(int)jets_pt->size() ; i++)
+		for(int i=0 ; i<AntiKt4TopoEMJets_n ; i++)
 		{
-			bool isUgly = (jets_isUgly->at(i));
-			if(isUgly)  continue;
-			pt2i.insert(make_pair(jets_pt->at(i),i));
+			if(!isGoodJet(i,JetQuality))  continue;
+			pt2i.insert(make_pair(AntiKt4TopoEMJets_pt->at(i),i));
 		}
 		for(multimap<double,int>::reverse_iterator rit=pt2i.rbegin() ; rit!=pt2i.rend() ; ++rit) ijet.push_back(rit->second);
 		unsigned int njet = ijet.size();
+		
 
 		_DEBUG("");
 		
 		// Fill some histos before doing full had-cleaning		
-		if(njet>0 && jets_pt->at(ijet[0])>20.*GeV2MeV) { histos2[name+"_dPhi3muJet1_vs_pTjet1_before_tightveto"]->Fill(jets_pt->at(ijet[0]),fabs(dPhi(pMuSum.Phi(),jets_phi->at(ijet[0]))),weight); histos[name+"_jets_dPhi3bodyJ1_before_tightveto"]->Fill(fabs(dPhi(pMuSum.Phi(),jets_phi->at(ijet[0]))),weight); }
-		if(njet>1 && jets_pt->at(ijet[0])>20.*GeV2MeV && jets_pt->at(ijet[1])>20.*GeV2MeV) { histos2[name+"_dPhiJet1Jet2_vs_sumpTjet12_before_tightveto"]->Fill(jets_pt->at(ijet[0])+jets_pt->at(ijet[1]),fabs(dPhi(jets_phi->at(ijet[0]),jets_phi->at(ijet[1]))),weight); histos[name+"_jets_dPhiJ1J2_before_tightveto"]->Fill(fabs(dPhi(jets_phi->at(ijet[0]),jets_phi->at(ijet[1]))),weight); }
+		if(njet>0 && AntiKt4TopoEMJets_pt->at(ijet[0])>20.*GeV2MeV)                                                  { histos2[name+"_dPhi3muJet1_vs_pTjet1_before_tightveto"]->Fill(AntiKt4TopoEMJets_pt->at(ijet[0]),fabs(dPhi(pMuSum.Phi(),AntiKt4TopoEMJets_phi->at(ijet[0]))),weight); histos[name+"_jets_dPhi3bodyJ1_before_tightveto"]->Fill(fabs(dPhi(pMuSum.Phi(),AntiKt4TopoEMJets_phi->at(ijet[0]))),weight); }
+		if(njet>1 && AntiKt4TopoEMJets_pt->at(ijet[0])>20.*GeV2MeV && AntiKt4TopoEMJets_pt->at(ijet[1])>20.*GeV2MeV) { histos2[name+"_dPhiJet1Jet2_vs_sumpTjet12_before_tightveto"]->Fill(AntiKt4TopoEMJets_pt->at(ijet[0])+AntiKt4TopoEMJets_pt->at(ijet[1]),fabs(dPhi(AntiKt4TopoEMJets_phi->at(ijet[0]),AntiKt4TopoEMJets_phi->at(ijet[1]))),weight); histos[name+"_jets_dPhiJ1J2_before_tightveto"]->Fill(fabs(dPhi(AntiKt4TopoEMJets_phi->at(ijet[0]),AntiKt4TopoEMJets_phi->at(ijet[1]))),weight); }
 		
 		_DEBUG("");
 	
@@ -7020,14 +7618,14 @@ bool acceptVtxMET(TString method, unsigned int vtx, vector<vertex>& vertices, TS
 		if(isWsignal(name))
 		{
 			(*ofstr1) << EventNumber << " " << lbn << endl;
-			if(njet>0) (*ofstr1) << "  pt1=" << jets_pt->at(ijet[0]) << ", dphi3muj1=" << fabs(dPhi(pMuSum.Phi(),jets_phi->at(ijet[0]))) << endl;
-			if(njet>1) (*ofstr1) << "  pt1=" << jets_pt->at(ijet[0]) << ", pt2=" << jets_pt->at(ijet[1]) << ", dphij1j2=" << fabs(dPhi(jets_phi->at(ijet[0]),jets_phi->at(ijet[1]))) << endl;
+			if(njet>0) (*ofstr1) << "  pt1=" << AntiKt4TopoEMJets_pt->at(ijet[0]) << ", dphi3muj1=" << fabs(dPhi(pMuSum.Phi(),AntiKt4TopoEMJets_phi->at(ijet[0]))) << endl;
+			if(njet>1) (*ofstr1) << "  pt1=" << AntiKt4TopoEMJets_pt->at(ijet[0]) << ", pt2=" << AntiKt4TopoEMJets_pt->at(ijet[1]) << ", dphij1j2=" << fabs(dPhi(AntiKt4TopoEMJets_phi->at(ijet[0]),AntiKt4TopoEMJets_phi->at(ijet[1]))) << endl;
 			(*ofstr1) << "-------------------------------------------" << endl;
 		}
 	
 		// colinear jet veto
 		/////////////////////////////////////////////////////////////////////////////////////
-		bool isJet3muOverlap = (njet>0 && jets_pt->at(ijet[0])>25.*GeV2MeV) ? (fabs(dPhi(pMuSum.Phi(),jets_phi->at(ijet[0])))<0.2 || fabs(dPhi(pMuSum.Phi(),jets_phi->at(ijet[0])))>2.5) : false;
+		bool isJet3muOverlap = (njet>0 && AntiKt4TopoEMJets_pt->at(ijet[0])>25.*GeV2MeV) ? (fabs(dPhi(pMuSum.Phi(),AntiKt4TopoEMJets_phi->at(ijet[0])))<0.2 || fabs(dPhi(pMuSum.Phi(),AntiKt4TopoEMJets_phi->at(ijet[0])))>2.5) : false;
 		if(isCounter("nPassing_jets_coljetveto") && isJet3muOverlap) return false; /////
 		incrementCounter("nPassing_jets_coljetveto",weight); /////////////////////////////
 		/////////////////////////////////////////////////////////////////////////////////////
@@ -7039,7 +7637,7 @@ bool acceptVtxMET(TString method, unsigned int vtx, vector<vertex>& vertices, TS
 
 		// di-jet veto
 		//////////////////////////////////////////////////////////////////////////
-		bool isDijets = (njet>1 && jets_pt->at(ijet[0])>20.*GeV2MeV && jets_pt->at(ijet[1])>20.*GeV2MeV) ? (jets_pt->at(ijet[0])+jets_pt->at(ijet[1])>60.*GeV2MeV && fabs(dPhi(jets_phi->at(ijet[0]),jets_phi->at(ijet[1])))>2.5) : false;
+		bool isDijets = (njet>1 && AntiKt4TopoEMJets_pt->at(ijet[0])>20.*GeV2MeV && AntiKt4TopoEMJets_pt->at(ijet[1])>20.*GeV2MeV) ? (AntiKt4TopoEMJets_pt->at(ijet[0])+AntiKt4TopoEMJets_pt->at(ijet[1])>60.*GeV2MeV && fabs(dPhi(AntiKt4TopoEMJets_phi->at(ijet[0]),AntiKt4TopoEMJets_phi->at(ijet[1])))>2.5) : false;
 		if(isCounter("nPassing_jets_dijetveto") && isDijets) return false; //////
 		incrementCounter("nPassing_jets_dijetveto",weight); //////////////////////
 		//////////////////////////////////////////////////////////////////////////
@@ -7047,8 +7645,8 @@ bool acceptVtxMET(TString method, unsigned int vtx, vector<vertex>& vertices, TS
 		_DEBUG("");
 		
 		// Fill some histos before doing full had-cleaning		
-		if(njet>0 && jets_pt->at(ijet[0])>20.*GeV2MeV) { histos2[name+"_dPhi3muJet1_vs_pTjet1_after_tightveto"]->Fill(jets_pt->at(ijet[0]),fabs(dPhi(pMuSum.Phi(),jets_phi->at(ijet[0]))),weight); histos[name+"_jets_dPhi3bodyJ1_after_tightveto"]->Fill(fabs(dPhi(pMuSum.Phi(),jets_phi->at(ijet[0]))),weight); }
-		if(njet>1 && jets_pt->at(ijet[0])>20.*GeV2MeV && jets_pt->at(ijet[1])>20.*GeV2MeV) { histos2[name+"_dPhiJet1Jet2_vs_sumpTjet12_after_tightveto"]->Fill(jets_pt->at(ijet[0])+jets_pt->at(ijet[1]),fabs(dPhi(jets_phi->at(ijet[0]),jets_phi->at(ijet[1]))),weight); histos[name+"_jets_dPhiJ1J2_after_tightveto"]->Fill(fabs(dPhi(jets_phi->at(ijet[0]),jets_phi->at(ijet[1]))),weight); }
+		if(njet>0 && AntiKt4TopoEMJets_pt->at(ijet[0])>20.*GeV2MeV)                                                  { histos2[name+"_dPhi3muJet1_vs_pTjet1_after_tightveto"]->Fill(AntiKt4TopoEMJets_pt->at(ijet[0]),fabs(dPhi(pMuSum.Phi(),AntiKt4TopoEMJets_phi->at(ijet[0]))),weight); histos[name+"_jets_dPhi3bodyJ1_after_tightveto"]->Fill(fabs(dPhi(pMuSum.Phi(),AntiKt4TopoEMJets_phi->at(ijet[0]))),weight); }
+		if(njet>1 && AntiKt4TopoEMJets_pt->at(ijet[0])>20.*GeV2MeV && AntiKt4TopoEMJets_pt->at(ijet[1])>20.*GeV2MeV) { histos2[name+"_dPhiJet1Jet2_vs_sumpTjet12_after_tightveto"]->Fill(AntiKt4TopoEMJets_pt->at(ijet[0])+AntiKt4TopoEMJets_pt->at(ijet[1]),fabs(dPhi(AntiKt4TopoEMJets_phi->at(ijet[0]),AntiKt4TopoEMJets_phi->at(ijet[1]))),weight); histos[name+"_jets_dPhiJ1J2_after_tightveto"]->Fill(fabs(dPhi(AntiKt4TopoEMJets_phi->at(ijet[0]),AntiKt4TopoEMJets_phi->at(ijet[1]))),weight); }
 		
 		_DEBUG("");
 		
@@ -7539,32 +8137,43 @@ bool acceptHadClean(unsigned int vtx, TString name, TMapTSP2TH1& histos, TMapTSP
 	nJet3muOverlaps = 0;
 	nJet3muOverlapsLoose = 0;
 
+	// multimap<double,int> pt2i;
+	// vector<int> ijet;
+	// for(int i=0 ; i<(int)jets_pt->size() ; i++)
+	// {
+	// 	bool isUgly = (jets_isUgly->at(i));
+	// 	if(isUgly)  continue;
+	// 	pt2i.insert(make_pair(jets_pt->at(i),i));
+	// }
+	// for(multimap<double,int>::reverse_iterator rit=pt2i.rbegin() ; rit!=pt2i.rend() ; ++rit) ijet.push_back(rit->second);
+	// unsigned int njet = ijet.size();
+	
 	multimap<double,int> pt2i;
-        vector<int> ijet;
-        for(int i=0 ; i<(int)jets_pt->size() ; i++)
-        {
-                bool isUgly = (jets_isUgly->at(i));
-                if(isUgly)  continue;
-                pt2i.insert(make_pair(jets_pt->at(i),i));
-        }
-        for(multimap<double,int>::reverse_iterator rit=pt2i.rbegin() ; rit!=pt2i.rend() ; ++rit) ijet.push_back(rit->second);
-        unsigned int njet = ijet.size();
+	vector<int> ijet;
+	for(int i=0 ; i<AntiKt4TopoEMJets_n ; i++)
+	{
+		if(!isGoodJet(i,JetQuality))  continue;
+		pt2i.insert(make_pair(AntiKt4TopoEMJets_pt->at(i),i));
+	}
+	for(multimap<double,int>::reverse_iterator rit=pt2i.rbegin() ; rit!=pt2i.rend() ; ++rit) ijet.push_back(rit->second);
+	unsigned int njet = ijet.size();
+	
 
 	// for b-jet veto
 	for(unsigned int i=0 ; i<njet && i<4 ; ++i)
 	{
 		int j = ijet[i];
-		double mj  = jets_m->at(j);
-                double ptj = jets_pt->at(j);
-                double MV1 = jets_flwgt_MV1->at(j);
-                histos2[name+"_flwMV1_vs_mjet"]->Fill(mj,MV1,weight);
-                histos2[name+"_flwMV1_vs_pTjet"]->Fill(ptj,MV1,weight);
-                if(ptj>20.*GeV2MeV && mj>4.*GeV2MeV && isStandardBtag(MV1)) nStdBtaggedJets20GeV++;
-                if(ptj>30.*GeV2MeV && mj>4.*GeV2MeV && isStandardBtag(MV1)) nStdBtaggedJets30GeV++;
-                if(ptj>20.*GeV2MeV && mj>4.*GeV2MeV && isMediumBtag(MV1))   nMedBtaggedJets20GeV++;
-                if(ptj>30.*GeV2MeV && mj>4.*GeV2MeV && isMediumBtag(MV1))   nMedBtaggedJets30GeV++;
-                if(ptj>20.*GeV2MeV && mj>4.*GeV2MeV && isTightBtag(MV1))    nTgtBtaggedJets20GeV++;
-                if(ptj>30.*GeV2MeV && mj>4.*GeV2MeV && isTightBtag(MV1))    nTgtBtaggedJets30GeV++;
+		double mj  = AntiKt4TopoEMJets_m->at(j);
+		double ptj = AntiKt4TopoEMJets_pt->at(j);
+		double MV1 = AntiKt4TopoEMJets_flavor_weight_MV1->at(j);
+		histos2[name+"_flwMV1_vs_mjet"]->Fill(mj,MV1,weight);
+		histos2[name+"_flwMV1_vs_pTjet"]->Fill(ptj,MV1,weight);
+		if(ptj>20.*GeV2MeV && mj>4.*GeV2MeV && isStandardBtag(MV1)) nStdBtaggedJets20GeV++;
+		if(ptj>30.*GeV2MeV && mj>4.*GeV2MeV && isStandardBtag(MV1)) nStdBtaggedJets30GeV++;
+		if(ptj>20.*GeV2MeV && mj>4.*GeV2MeV && isMediumBtag(MV1))   nMedBtaggedJets20GeV++;
+		if(ptj>30.*GeV2MeV && mj>4.*GeV2MeV && isMediumBtag(MV1))   nMedBtaggedJets30GeV++;
+		if(ptj>20.*GeV2MeV && mj>4.*GeV2MeV && isTightBtag(MV1))    nTgtBtaggedJets20GeV++;
+		if(ptj>30.*GeV2MeV && mj>4.*GeV2MeV && isTightBtag(MV1))    nTgtBtaggedJets30GeV++;
 	}
 
 	double sumptj12     = -999.;
@@ -7573,9 +8182,9 @@ bool acceptHadClean(unsigned int vtx, TString name, TMapTSP2TH1& histos, TMapTSP
 	if(njet>0)
 	{
 		int j1 = ijet[0];
-		double phi1 = jets_phi->at(j1);
+		double phi1 = AntiKt4TopoEMJets_phi->at(j1);
 		dPhi3muJet1 = fabs(dPhi(pMuSum.Phi(),phi1));
-		double pt1  = jets_pt->at(j1);
+		double pt1  = AntiKt4TopoEMJets_pt->at(j1);
 
 		// for leadingjet-3mu(tau) overlap veto
 		if(pt1>25.*GeV2MeV && (dPhi3muJet1<0.2 || dPhi3muJet1>2.5))  nJet3muOverlaps++;
@@ -7584,9 +8193,9 @@ bool acceptHadClean(unsigned int vtx, TString name, TMapTSP2TH1& histos, TMapTSP
 		if(njet>1)
 		{
 			int j2 = ijet[1];
-			sumptj12 = jets_pt->at(j1)+jets_pt->at(j2);
-			double phi2  = jets_phi->at(j2);
-			double pt2   = jets_pt->at(j2);
+			sumptj12 = AntiKt4TopoEMJets_pt->at(j1)+AntiKt4TopoEMJets_pt->at(j2);
+			double phi2  = AntiKt4TopoEMJets_phi->at(j2);
+			double pt2   = AntiKt4TopoEMJets_phi->at(j2);
 			dPhiJet1Jet2 = fabs(dPhi(phi1,phi2));
 
 			// for dijet veto
@@ -7601,8 +8210,8 @@ bool acceptHadClean(unsigned int vtx, TString name, TMapTSP2TH1& histos, TMapTSP
 	JetPt1 = 0.; JetM1 = 0.; JetE1 = 0.; JetEta1 = +5.; JetPhi1 = TMath::Pi()*1.2; JetMV1w1 = 0.;
 	JetPt2 = 0.; JetM2 = 0.; JetE2 = 0.; JetEta2 = +5.; JetPhi2 = TMath::Pi()*1.2; JetMV1w2 = 0.;
 	JetSumPt12 = 0.; JetdPhiJ1J2 = TMath::Pi()*1.2; JetdPhi3bodyJ1 = TMath::Pi()*1.2;
-	if(njet>0 && jets_pt->at(ijet[0])>20.*GeV2MeV) { JetPt1 = jets_pt->at(ijet[0]); JetEta1 = jets_eta->at(ijet[0]); JetPhi1 = jets_phi->at(ijet[0]); JetM1 = jets_m->at(ijet[0]); JetE1 = jets_e->at(ijet[0]); JetMV1w1 = jets_flwgt_MV1->at(ijet[0]); }
-	if(njet>1 && jets_pt->at(ijet[1])>20.*GeV2MeV) { JetPt2 = jets_pt->at(ijet[1]); JetEta2 = jets_eta->at(ijet[1]); JetPhi2 = jets_phi->at(ijet[1]); JetM2 = jets_m->at(ijet[1]); JetE2 = jets_e->at(ijet[1]); JetMV1w2 = jets_flwgt_MV1->at(ijet[1]); }
+	if(njet>0 && AntiKt4TopoEMJets_pt->at(ijet[0])>20.*GeV2MeV) { JetPt1 = AntiKt4TopoEMJets_pt->at(ijet[0]); JetEta1 = AntiKt4TopoEMJets_eta->at(ijet[0]); JetPhi1 = AntiKt4TopoEMJets_phi->at(ijet[0]); JetM1 = AntiKt4TopoEMJets_m->at(ijet[0]); JetE1 = AntiKt4TopoEMJets_E->at(ijet[0]); JetMV1w1 = AntiKt4TopoEMJets_flavor_weight_MV1->at(ijet[0]); }
+	if(njet>1 && AntiKt4TopoEMJets_pt->at(ijet[1])>20.*GeV2MeV) { JetPt2 = AntiKt4TopoEMJets_pt->at(ijet[1]); JetEta2 = AntiKt4TopoEMJets_eta->at(ijet[1]); JetPhi2 = AntiKt4TopoEMJets_phi->at(ijet[1]); JetM2 = AntiKt4TopoEMJets_m->at(ijet[1]); JetE2 = AntiKt4TopoEMJets_E->at(ijet[1]); JetMV1w2 = AntiKt4TopoEMJets_flavor_weight_MV1->at(ijet[1]); }
 	if(njet>1 && JetPt1>20.*GeV2MeV && JetPt2>20.*GeV2MeV) { JetSumPt12 = sumptj12; JetdPhiJ1J2 = dPhiJet1Jet2; }
 	if(njet>0 && JetPt1>20.*GeV2MeV) { JetdPhi3bodyJ1 = dPhi3muJet1; }
 	
@@ -7617,8 +8226,8 @@ bool acceptHadClean(unsigned int vtx, TString name, TMapTSP2TH1& histos, TMapTSP
 	_DEBUG("");	
 	
 	// Fill some histos before doing loose had-cleaning
-	if(njet>0 && jets_pt->at(ijet[0])>20.*GeV2MeV) { histos2[name+"_dPhi3muJet1_vs_pTjet1_before_looseveto"]->Fill(jets_pt->at(ijet[0]),fabs(dPhi(pMuSum.Phi(),jets_phi->at(ijet[0]))),weight); histos[name+"_jets_dPhi3bodyJ1_before_looseveto"]->Fill(fabs(dPhi(pMuSum.Phi(),jets_phi->at(ijet[0]))),weight); }
-	if(njet>1 && jets_pt->at(ijet[0])>20.*GeV2MeV && jets_pt->at(ijet[1])>20.*GeV2MeV) { histos2[name+"_dPhiJet1Jet2_vs_sumpTjet12_before_looseveto"]->Fill(jets_pt->at(ijet[0])+jets_pt->at(ijet[1]),fabs(dPhi(jets_phi->at(ijet[0]),jets_phi->at(ijet[1]))),weight); histos[name+"_jets_dPhiJ1J2_before_looseveto"]->Fill(fabs(dPhi(jets_phi->at(ijet[0]),jets_phi->at(ijet[1]))),weight); }
+	if(njet>0 && AntiKt4TopoEMJets_pt->at(ijet[0])>20.*GeV2MeV)                                                  { histos2[name+"_dPhi3muJet1_vs_pTjet1_before_looseveto"]->Fill(AntiKt4TopoEMJets_pt->at(ijet[0]),fabs(dPhi(pMuSum.Phi(),AntiKt4TopoEMJets_phi->at(ijet[0]))),weight); histos[name+"_jets_dPhi3bodyJ1_before_looseveto"]->Fill(fabs(dPhi(pMuSum.Phi(),AntiKt4TopoEMJets_phi->at(ijet[0]))),weight); }
+	if(njet>1 && AntiKt4TopoEMJets_pt->at(ijet[0])>20.*GeV2MeV && AntiKt4TopoEMJets_pt->at(ijet[1])>20.*GeV2MeV) { histos2[name+"_dPhiJet1Jet2_vs_sumpTjet12_before_looseveto"]->Fill(AntiKt4TopoEMJets_pt->at(ijet[0])+AntiKt4TopoEMJets_pt->at(ijet[1]),fabs(dPhi(AntiKt4TopoEMJets_phi->at(ijet[0]),AntiKt4TopoEMJets_phi->at(ijet[1]))),weight); histos[name+"_jets_dPhiJ1J2_before_looseveto"]->Fill(fabs(dPhi(AntiKt4TopoEMJets_phi->at(ijet[0]),AntiKt4TopoEMJets_phi->at(ijet[1]))),weight); }
 	
 	_DEBUG("");	
 
@@ -7634,7 +8243,7 @@ bool acceptHadClean(unsigned int vtx, TString name, TMapTSP2TH1& histos, TMapTSP
 
 	
 	///////////////////////////////////////////////////////////////////////////////////////////
-	bool isJet3muOverlapLoose = (njet>0 && jets_pt->at(ijet[0])>35.*GeV2MeV) ? (fabs(dPhi(pMuSum.Phi(),jets_phi->at(ijet[0])))<0.2 || fabs(dPhi(pMuSum.Phi(),jets_phi->at(ijet[0])))>2.95) : false;
+	bool isJet3muOverlapLoose = (njet>0 && AntiKt4TopoEMJets_pt->at(ijet[0])>35.*GeV2MeV) ? (fabs(dPhi(pMuSum.Phi(),AntiKt4TopoEMJets_phi->at(ijet[0])))<0.2 || fabs(dPhi(pMuSum.Phi(),AntiKt4TopoEMJets_phi->at(ijet[0])))>2.95) : false;
 	if(isCounter("nPassing_jets_coljetvetoLoose") && isJet3muOverlapLoose) return false; //////
 	incrementCounter("nPassing_jets_coljetvetoLoose",weight); /////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////////
@@ -7644,15 +8253,15 @@ bool acceptHadClean(unsigned int vtx, TString name, TMapTSP2TH1& histos, TMapTSP
 	_DEBUG("");
 	
 	////////////////////////////////////////////////////////////////////////////////////
-	bool isDijetsLoose = (njet>1 && jets_pt->at(ijet[0])>20.*GeV2MeV && jets_pt->at(ijet[1])>20.*GeV2MeV) ? (jets_pt->at(ijet[0])+jets_pt->at(ijet[1])>75.*GeV2MeV && fabs(dPhi(jets_phi->at(ijet[0]),jets_phi->at(ijet[1])))>2.5) : false;
+	bool isDijetsLoose = (njet>1 && AntiKt4TopoEMJets_pt->at(ijet[0])>20.*GeV2MeV && AntiKt4TopoEMJets_pt->at(ijet[1])>20.*GeV2MeV) ? (AntiKt4TopoEMJets_pt->at(ijet[0])+AntiKt4TopoEMJets_pt->at(ijet[1])>75.*GeV2MeV && fabs(dPhi(AntiKt4TopoEMJets_phi->at(ijet[0]),AntiKt4TopoEMJets_phi->at(ijet[1])))>2.5) : false;
 	if(isCounter("nPassing_jets_dijetvetoLoose") && isDijetsLoose) return false; //////
 	incrementCounter("nPassing_jets_dijetvetoLoose",weight); ///////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////
 	
 	_DEBUG("");
 	
-	if(njet>0 && jets_pt->at(ijet[0])>20.*GeV2MeV) { histos2[name+"_dPhi3muJet1_vs_pTjet1_after_looseveto"]->Fill(jets_pt->at(ijet[0]),fabs(dPhi(pMuSum.Phi(),jets_phi->at(ijet[0]))),weight); histos[name+"_jets_dPhi3bodyJ1_after_looseveto"]->Fill(fabs(dPhi(pMuSum.Phi(),jets_phi->at(ijet[0]))),weight); }
-	if(njet>1 && jets_pt->at(ijet[0])>20.*GeV2MeV && jets_pt->at(ijet[1])>20.*GeV2MeV) { histos2[name+"_dPhiJet1Jet2_vs_sumpTjet12_after_looseveto"]->Fill(jets_pt->at(ijet[0])+jets_pt->at(ijet[1]),fabs(dPhi(jets_phi->at(ijet[0]),jets_phi->at(ijet[1]))),weight); histos[name+"_jets_dPhiJ1J2_after_looseveto"]->Fill(fabs(dPhi(jets_phi->at(ijet[0]),jets_phi->at(ijet[1]))),weight); }
+	if(njet>0 && AntiKt4TopoEMJets_pt->at(ijet[0])>20.*GeV2MeV)                                                  { histos2[name+"_dPhi3muJet1_vs_pTjet1_after_looseveto"]->Fill(AntiKt4TopoEMJets_pt->at(ijet[0]),fabs(dPhi(pMuSum.Phi(),AntiKt4TopoEMJets_phi->at(ijet[0]))),weight); histos[name+"_jets_dPhi3bodyJ1_after_looseveto"]->Fill(fabs(dPhi(pMuSum.Phi(),AntiKt4TopoEMJets_phi->at(ijet[0]))),weight); }
+	if(njet>1 && AntiKt4TopoEMJets_pt->at(ijet[0])>20.*GeV2MeV && AntiKt4TopoEMJets_pt->at(ijet[1])>20.*GeV2MeV) { histos2[name+"_dPhiJet1Jet2_vs_sumpTjet12_after_looseveto"]->Fill(AntiKt4TopoEMJets_pt->at(ijet[0])+AntiKt4TopoEMJets_pt->at(ijet[1]),fabs(dPhi(AntiKt4TopoEMJets_phi->at(ijet[0]),AntiKt4TopoEMJets_phi->at(ijet[1]))),weight); histos[name+"_jets_dPhiJ1J2_after_looseveto"]->Fill(fabs(dPhi(AntiKt4TopoEMJets_phi->at(ijet[0]),AntiKt4TopoEMJets_phi->at(ijet[1]))),weight); }
 	
 	_DEBUG("");
 	
@@ -7768,7 +8377,6 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 
 	bool isdata   = isData(name);
 	bool issignal = isSignal(name);
-	glob_isMC     = (!isdata);
 
 	
 	double mBlindMinInitial = 1670.;
@@ -7841,6 +8449,7 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 		weights.insert(make_pair("wLumi",wLumi));
 		weights.insert(make_pair("wKfac",wKfac));
 		weights.insert(make_pair("wDijet",wDijet));
+		weights.insert(make_pair("wPileup",wPileup));
 		weights.insert(make_pair("wgt",wgt));
 
 
@@ -7979,7 +8588,7 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 			
 			if(ptmu && zmass && etamu && mcp)
 			{
-				cout << "m4=" << p4.M() << ", m3=" << p3.M() << endl;
+				//cout << "m4=" << p4.M() << ", m3=" << p3.M() << endl;
 				
 				histos[name+"_triplet_mQuad_muons"]->Fill(p4.M(),wgt);
 				histos[name+"_triplet_mQuad_norm_muons"]->Fill(p4.M(),wgt);
@@ -8109,7 +8718,7 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 				TLorentzVector pMuSum = getTlv3mu(vtx);
 				double mt = mT(met_RefFinal_et,met_RefFinal_phi,pMuSum.Pt(),pMuSum.Phi());
 				
-				if(isCounter("nPassing_skim2_m3mu") && mass>5.*GeV2MeV) continue;
+				if(isCounter("nPassing_skim2_m3mu") && mass>4.5*GeV2MeV) continue;
 				incrementCounter("nPassing_skim2_m3mu",wgt);
 
 				if(isCounter("nPassing_skim2_pT3mu") && vtx_pt->at(vtx)<7.*GeV2MeV) continue;
@@ -9284,7 +9893,7 @@ void NTUPmaker(TString runType, TString outDir, TString chnl, TString master, TS
 	properties("ZmumuNpX",            "#it{Z#rightarrow#mu#mu+jets}",                        kViolet+7, 3023,"f",0, labels,colors,patterns,legoptions);
 	properties("WtaunuNpX",           "#it{W#rightarrow#tau#nu+jets}",                       kAzure,    3011,"f",0, labels,colors,patterns,legoptions);
 	properties("Data",                "Data "+slumi,                                         kBlack,    3004,"p",1, labels,colors,patterns,legoptions);
-	properties("Backgrounds",         "#SigmaBg",                                            kRed-3,    3005,"f",1, labels,colors,patterns,legoptions);	
+	properties("Backgrounds",         "#SigmaBg",                                            kRed-3,    3005,"f",1, labels,colors,patterns,legoptions);
 	properties("Signals",             "#SigmaSig",                                           kGreen+2,  3001,"f",1, labels,colors,patterns,legoptions);
 	
 	
@@ -10039,6 +10648,10 @@ void NTUPmaker(TString runType, TString outDir, TString chnl, TString master, TS
 		clearCounters();
 		initCounters();
 		clearCounters();
+		
+		
+		// global flag to note if MC or Data
+		glob_isMC = (!isData(name));
 		
 		
 		///////////////////////////////////////

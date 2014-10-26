@@ -110,6 +110,7 @@ void flatout_book(TDirectory* olddir)
 	addBranch("wgt_luminosity", order, FLT);
 	addBranch("wgt_kfactor",    order, FLT);
 	addBranch("wgt_dijets",     order, FLT);
+	addBranch("wgt_pileup",     order, FLT);
 	addBranch("wgt_total",      order, FLT);
 	
 	// trigger info
@@ -263,6 +264,10 @@ void flatout_book(TDirectory* olddir)
 	addBranch("jet_MV1w2",     order, VFLT);
 	addBranch("jet_MV1w3",     order, VFLT);
 	addBranch("jet_MV1w4",     order, VFLT);
+	addBranch("jet_vtxf1",     order, VFLT);
+	addBranch("jet_vtxf2",     order, VFLT);
+	addBranch("jet_vtxf3",     order, VFLT);
+	addBranch("jet_vtxf4",     order, VFLT);
 	addBranch("jet_sumpt12",   order, VFLT);
 	addBranch("jet_dphi3muJ1", order, VFLT);
 	addBranch("jet_dR3muJ1",   order, VFLT);

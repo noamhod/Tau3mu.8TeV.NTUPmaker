@@ -13,6 +13,7 @@ typedef multimap<float, unsigned int> TMMapfui;
 typedef multimap<int, string>   TMapis;
 typedef map<int, double>        TMapid;
 typedef map<double, double>     TMapdd;
+typedef map<int, int>           TMapII;
 typedef map<double, vector<int> > TMapdvi;
 typedef map<float,  vector<int> > TMapfvi;
 typedef vector<TLorentzVector*> TVectorP2VL;

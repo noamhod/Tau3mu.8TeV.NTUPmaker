@@ -118,15 +118,16 @@ public:
 	
 	
 	//// jets
-	int            jetN()         { return m_njets;        };
-	TLorentzVector jetPE(int i)   { return m_jetPE[i];     };
-	TLorentzVector jetPM(int i)   { return m_jetPM[i];     };
-	double         jetMV1(int i)  { return m_jetMV1[i];    };
-	double         jetSumPt()     { return m_jetSumpt12;   };
-	double         jetDphi12()    { return m_jetDphi12;    };
-	double         jetDR12()      { return m_jetDR12;      };
-	double         jetDphi3body() { return m_jetDphi3body; };
-	double         jetDR3body()   { return m_jetDR3body;   };
+	int            jetN()            { return m_njets;         };
+	TLorentzVector jetPE(int i)      { return m_jetPE[i];      };
+	TLorentzVector jetPM(int i)      { return m_jetPM[i];      };
+	double         jetMV1(int i)     { return m_jetMV1[i];     };
+	double         jetVtxFrac(int i) { return m_jetVtxFrac[i]; };
+	double         jetSumPt()        { return m_jetSumpt12;    };
+	double         jetDphi12()       { return m_jetDphi12;     };
+	double         jetDR12()         { return m_jetDR12;       };
+	double         jetDphi3body()    { return m_jetDphi3body;  };
+	double         jetDR3body()      { return m_jetDR3body;    };
 	
 	//// MET
 	double         met()          { return m_met;          };
@@ -146,7 +147,7 @@ private:
 	TLorentzVector m_trkP[nMaxTracks];
 	int m_njets;
 	TLorentzVector m_jetPE[4], m_jetPM[4];
-	double m_jetMV1[4];
+	double m_jetMV1[4], m_jetVtxFrac[4];
 	double m_jetSumpt12, m_jetDphi12, m_jetDphi3body, m_jetDR12, m_jetDR3body;
 	bool m_ismuon[nMaxTracks], m_istp[nMaxTracks], m_istpa[nMaxTracks], m_istpb[nMaxTracks], m_iscalo[nMaxTracks];
 	bool m_ismedium[nMaxTracks], m_istight[nMaxTracks], m_isloose[nMaxTracks], m_iscb[nMaxTracks];
