@@ -104,7 +104,6 @@ void flatout_book(TDirectory* olddir)
 	addBranch("evt_averageIntPerXing", order, INT);
 	
 	// weights info
-	addBranch("wgt_mcevt",      order, FLT);
 	addBranch("wgt_shapeFONLL", order, FLT);
 	addBranch("wgt_normFONLL",  order, FLT);
 	addBranch("wgt_luminosity", order, FLT);

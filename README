@@ -1,6 +1,6 @@
 to get the pileup reweighting tool, check the latest tag in:
+	https://twiki.cern.ch/twiki/bin/viewauth/AtlasProtected/ExtendedPileupReweighting
 	https://svnweb.cern.ch/trac/atlasoff/browser/PhysicsAnalysis/AnalysisCommon/PileupReweighting/tags
-	https://twiki.cern.ch/twiki/bin/view/AtlasProtected/PileupReweighting
 checkout the latest tag and compile it:
 	svn co svn+ssh://svn.cern.ch/reps/atlasoff/PhysicsAnalysis/AnalysisCommon/PileupReweighting/tags/PileupReweighting-XX-YY-ZZ PileupReweighting
         cd PileupReweighting/cmt
