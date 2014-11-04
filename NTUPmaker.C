@@ -4,6 +4,9 @@
 //////////////////////////////////////////////
 
 #include "../PileupReweighting/PileupReweighting/TPileupReweighting.h"
+#include "../ApplyJetCalibration/ApplyJetCalibration/ApplyJetCalibration.h"
+#include "../JetUncertainties/JetUncertainties/MultijetJESUncertaintyProvider.h"
+#include "../JetUncertainties/JetUncertainties/JESUncertaintyProvider.h"
 
 #include "rawStd.h"
 #include "rawROOT.h"
@@ -21,6 +24,7 @@
 
 bool makepufile = false;
 bool glob_isMC  = true;
+bool glob_isSig  = true;
 
 struct sources
 {
@@ -854,6 +858,35 @@ float rhorhoKt3EM;
 float rhorhoKt4EM;
 float rhorhoKt3LC;
 float rhorhoKt4LC;
+
+Int_t                   musp_n;
+vector<float>*          musp_eta;
+vector<float>*          musp_phi;
+vector<unsigned short>* musp_trigHits;
+vector<unsigned short>* musp_innerHits;
+vector<unsigned short>* musp_middleHits;
+vector<unsigned short>* musp_outerHits;
+vector<unsigned short>* musp_innerSegments;
+vector<unsigned short>* musp_middleSegments;
+vector<unsigned short>* musp_outerSegments;
+
+Int_t          vxp_n;
+vector<float>* vxp_x;
+vector<float>* vxp_y;
+vector<float>* vxp_z;
+vector<int>*   vxp_type;
+vector<float>* vxp_chi2;
+vector<int>*   vxp_ndof;
+vector<float>* vxp_px;
+vector<float>* vxp_py;
+vector<float>* vxp_pz;
+vector<float>* vxp_E;
+vector<float>* vxp_m;
+vector<int>*   vxp_nTracks;
+vector<float>* vxp_sumPt;
+
+
+
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
@@ -877,16 +910,16 @@ void initializePileup()
 }
 float getPileupWeight()
 {
-		/////////////////////////////
+	/////////////////////////////
 	float pileup_weight = 1.; ///
-		/////////////////////////////
+	/////////////////////////////
 
-		// NOTE (23/01/2013): A bug has been found in the d3pd making code,
-		// causing all MC12 samples to have a few of the averageIntPerXing
-		// values incorrectly set (some should be 0 but are set to 1).
-		// The bug does not affect data. To resolve this, when reading this branch,
-		// for both prw file generating and for when retrieving pileup weights,
-		// you should amend the value with the following line of code:
+	// NOTE (23/01/2013): A bug has been found in the d3pd making code,
+	// causing all MC12 samples to have a few of the averageIntPerXing
+	// values incorrectly set (some should be 0 but are set to 1).
+	// The bug does not affect data. To resolve this, when reading this branch,
+	// for both prw file generating and for when retrieving pileup weights,
+	// you should amend the value with the following line of code:
 
 	float averageIntPerXing_fixed = (lbn==1 && int(phys_averageIntPerXing+0.5)==1) ? 0. : phys_averageIntPerXing;
 	if(makepufile) pileupTool->Fill(phys_RunNumber,phys_mc_channel_number,phys_mc_event_weight,averageIntPerXing_fixed);
@@ -982,6 +1015,213 @@ bool isGoodJet(unsigned int jet, TString configuration = "VeryLooseBad")
 	return isGood;
 }
 
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+
+JetAnalysisCalib::JetCalibrationTool* JES;
+void initJES(bool isdata, TString tag="Moriond", TString jetAlgo="AntiKt4TopoEM") 
+{
+	TString JES_config_file = "../ApplyJetCalibration/data/CalibrationConfigs/";
+	
+	if(tag=="Moriond") JES_config_file += "JES_Full2012dataset_Preliminary_Jan13.config"; // Data/MC12 Configuration file
+	else
+	{
+		if(isdata) JES_config_file += "JES_Full2012dataset_May2014.config";       // Data Configuration file
+		else       JES_config_file += "JES_Full2012dataset_MC12b_May2014.config"; // MC12b Configuration file (Fullsim)
+	}
+	JES = new JetAnalysisCalib::JetCalibrationTool(jetAlgo,JES_config_file,isdata);
+}
+
+int findMuspContainer(float jet_eta, float jet_phi) {
+	double delR = 0;
+	double delta_phi;
+	double delta_eta;
+	// Match mspn container to jet delR<0.4
+	delR = 100;
+	int index_musp=-1;
+	for(unsigned int i=0 ; i<musp_phi->size(); i++)
+	{
+		delta_phi = fabs(jet_phi-musp_phi->at(i)); //calculate the distance in phi
+		if(delta_phi>TMath::Pi()) delta_phi = (2*TMath::Pi()) - delta_phi; // always take the smaller angle (below 180°)
+		delta_eta = jet_eta - musp_eta->at(i); // distance in eta
+		if(sqrt(delta_phi*delta_phi + delta_eta*delta_eta) < delR)
+		{
+			delR = sqrt(delta_phi*delta_phi + delta_eta*delta_eta);
+			index_musp = i;
+		}
+	}
+	if(delR<0.4) return index_musp;
+	return -1;
+}
+
+TLorentzVector applyJES(unsigned int jet, TString tag="Moriond")
+{
+	TLorentzVector Jet;
+	
+	if(tag=="Moriond")
+	{
+		double Eraw = AntiKt4TopoEMJets_emscale_E->at(jet);
+		double eta  = AntiKt4TopoEMJets_emscale_eta->at(jet);
+		double phi  = AntiKt4TopoEMJets_emscale_phi->at(jet);
+		double m    = AntiKt4TopoEMJets_emscale_m->at(jet);
+		double Ax   = AntiKt4TopoEMJets_ActiveAreaPx->at(jet);
+		double Ay   = AntiKt4TopoEMJets_ActiveAreaPy->at(jet);
+		double Az   = AntiKt4TopoEMJets_ActiveAreaPz->at(jet);
+		double Ae   = AntiKt4TopoEMJets_ActiveAreaE->at(jet);
+		double rho  = rhorhoKt4EM;
+		
+		// For the pile-up correction, we need mu and NPV(2+ tracks)
+		double mu = phys_averageIntPerXing;
+		int NPV=0; // count the number of vertices with 2 or more tracks
+		// for(unsigned tracki=0 ; tracki<vxp_nTracks->size(); tracki++)
+		for(unsigned tracki=0 ; tracki<pv_ntrk->size() ; tracki++)
+		{
+			// if(vxp_nTracks->at(tracki)>=2) NPV++;
+			if(pv_ntrk->at(tracki)>=2) NPV++;
+		}
+		
+		Jet = JES->ApplyJetAreaOffsetEtaJES(Eraw,eta,phi,m,Ax,Ay,Az,Ae,rho,mu,NPV);
+		
+	}
+	else
+	{
+		double Eraw       = AntiKt4TopoEMJets_emscale_E->at(jet);
+		double eta_det    = AntiKt4TopoEMJets_emscale_eta->at(jet);
+		double phi        = AntiKt4TopoEMJets_emscale_phi->at(jet);
+		double m          = AntiKt4TopoEMJets_emscale_m->at(jet);
+		double eta_origin = AntiKt4TopoEMJets_EtaOrigin->at(jet);
+		double phi_origin = AntiKt4TopoEMJets_PhiOrigin->at(jet);
+		double m_origin   = AntiKt4TopoEMJets_MOrigin->at(jet);
+		double Ax         = AntiKt4TopoEMJets_ActiveAreaPx->at(jet);
+		double Ay         = AntiKt4TopoEMJets_ActiveAreaPy->at(jet);
+		double Az         = AntiKt4TopoEMJets_ActiveAreaPz->at(jet);
+		double Ae         = AntiKt4TopoEMJets_ActiveAreaE->at(jet);
+		double rho        = rhorhoKt4EM;       
+		double fEM3       = (AntiKt4TopoEMJets_e_EMB3->at(jet)+AntiKt4TopoEMJets_e_EME3->at(jet))/AntiKt4TopoEMJets_emscale_E->at(jet);
+		double fTile0     = (AntiKt4TopoEMJets_e_TileBar0->at(jet)+AntiKt4TopoEMJets_e_TileExt0->at(jet))/AntiKt4TopoEMJets_emscale_E->at(jet);
+		double nTrk       = AntiKt4TopoEMJets_nTrk_pv0_1GeV->at(jet); 
+		double trackWIDTH = AntiKt4TopoEMJets_trackWIDTH_pv0_1GeV->at(jet); //This variable may also be called AntiKt4TopoEMJets_trackWIDTH_pv0_1GeV
+		double Nsegments = 0;  //see below
+		int musp_index = findMuspContainer(eta_det, phi); //Detector jet eta and phi, obtained as above.
+		if(musp_index>=0) Nsegments = musp_innerSegments->at(musp_index) + musp_outerSegments->at(musp_index) + musp_middleSegments->at(musp_index);
+		
+		// For the pile-up correction, we need mu and NPV(2+ tracks)
+		double mu = phys_averageIntPerXing;
+		int NPV=0; // count the number of vertices with 2 or more tracks
+		for(unsigned tracki=0 ; tracki<pv_ntrk->size() ; tracki++)
+		{
+			if(pv_ntrk->at(tracki)>=2) NPV++;
+		}
+		
+		Jet = JES->ApplyJetAreaOffsetOriginEtaJESGSC(Eraw,eta_det,phi,m,eta_origin,phi_origin,m_origin,Ax,Ay,Az,Ae,rho,trackWIDTH,nTrk,fTile0,fEM3,Nsegments,mu,NPV);
+	}
+	return Jet;
+}
+
+MultijetJESUncertaintyProvider* jUNCP;
+void initJUNC(TString tag="Moriond")
+{
+	if(tag=="Moriond")
+	{
+		TString multijetConfig = "JES_2012/Moriond2013/MultijetJES_2012.config";
+		TString jesprovConfig  = "JES_2012/Moriond2013/InsituJES2012_14NP.config"; // Two other nominal options
+		TString jetAlgorithm   = "AntiKt4TopoEM"; // One of {AntiKt4TopoEM,AntiKt4LCTopo,AntiKt6TopoEM,AntiKt6LCTopo}
+		TString mcType         = "MC12b"; // Also accepts {Pythia8,MC12c,AFII} (note: MC12a==Pythia8)
+		TString path           = "../JetUncertainties/share/"; // Path to the share directory
+		jUNCP = new MultijetJESUncertaintyProvider(multijetConfig,jesprovConfig,jetAlgorithm,mcType,path);
+	}
+	else
+	{
+		TString base_path_for_config_files = "../JetUncertainties/share/";
+		TString flavour_and_topology_uncertainties_config_file = "JES_2012/Final/MultijetJES_2012.config";
+		TString baseline_uncertainties_uncertainties_config_file = "JES_2012/Final/InsituJES2012_AllNuisanceParameters.config";
+		TString collection_name = "AntiKt4TopoEM"; //  AntiKt4TopoEM, AntiKt6TopoEM, AntiKt4TopoLC and AntiKt6TopoLC.
+		TString MC_youre_running_on = "MC12b"; // "Pythia8";
+		jUNCP = new MultijetJESUncertaintyProvider(flavour_and_topology_uncertainties_config_file,
+											  	   baseline_uncertainties_uncertainties_config_file,
+											  	   collection_name,
+											  	   MC_youre_running_on,
+											  	   base_path_for_config_files);
+	}
+}
+
+
+void getJUNC(TLorentzVector Jet, TMapVL& JetShiftsUp, TMapVL& JetShiftsDwn, TString tag="Moriond")
+{
+	JetShiftsUp.clear();
+	JetShiftsDwn.clear();
+	TLorentzVector JetShiftUp, JetShiftDwn;
+	
+	if(tag=="Moriond")
+	{
+		
+	}
+	else
+	{
+		/////////////////////////
+		// Baseline uncertainties
+		int Ncomp = jUNCP->getNUncertaintyComponents();
+		for(int icomp=0 ; icomp<Ncomp ; ++icomp)
+		{
+			TString compName = jUNCP->getComponentNames().at(icomp); // returns the name of the nuisance parameter
+			TString compDesc = jUNCP->getComponentDescriptions().at(icomp); // returns a one-sentence description of the nuisance parameter
+			compCategory categoryEnum = jUNCP->getComponentCategories().at(icomp); // returns a enumeration of the category for the nuisance parameter
+			TString categoryName = jUNCP->getCategoryStringFromEnum(categoryEnum); // returns a string for the category name from the enumeration
+			double unc = jUNCP->getRelUncertComponent(icomp, Jet.Pt(), Jet.Eta()); // nuisance paramter amplitude (with sign) ("relative uncertainty" of component) 
+			// can also use  jUNCP->getRelUncertComponent(compName, Jet.Pt(), Jet.Eta());
+			
+			JetShiftUp  = Jet;
+			JetShiftDwn = Jet;
+			
+			// now scale your jet (the full 4-vector)
+			// Upward variation: Jet *= 1+unc
+			// Downward variation: Jet *= 1-unc
+			JetShiftUp *= 1+unc;
+			JetShiftDwn *= 1+unc;
+			
+			JetShiftsUp.insert(make_pair(compName,JetShiftUp));
+			JetShiftsDwn.insert(make_pair(compName,JetShiftDwn));
+			
+			// print the uncertainty and information
+			printf("JES uncertainty source %2d: %s\n",icomp,compName.Data());  
+			printf("Description : %s\n",compDesc.Data());
+			printf("Category: %s\n",categoryName.Data());
+			printf("The uncertainty for (pT,eta) = (%.1f,%5.1f) is %.1f%%\n",Jet.Pt(),Jet.Eta(),unc*100);
+    	
+		}
+		
+		
+		///////////////////////
+		// Pileup uncertainties
+		double mu = phys_averageIntPerXing;
+		int NPV=0; // count the number of vertices with 2 or more tracks
+		for(unsigned tracki=0 ; tracki<pv_ntrk->size() ; tracki++)
+		{
+			if(pv_ntrk->at(tracki)>=2) NPV++;
+		}
+	
+		JetShiftUp  = Jet;
+		JetShiftDwn = Jet;
+		double shift = 0;
+		
+		shift = jUNCP->getRelNPVOffsetTerm(Jet.Pt(),Jet.Eta(),NPV);
+		JetShiftUp  *= (1.0+shift); JetShiftsUp.insert(make_pair("NPVOffsetTerm", JetShiftUp));
+		JetShiftDwn *= (1.0-shift); JetShiftsDwn.insert(make_pair("NPVOffsetTerm",JetShiftDwn));
+		
+		shift = jUNCP->getRelMuOffsetTerm(Jet.Pt(),Jet.Eta(),mu);
+		JetShiftUp  *= (1.0+shift); JetShiftsUp.insert(make_pair("MuOffsetTerm", JetShiftUp));
+		JetShiftDwn *= (1.0-shift); JetShiftsDwn.insert(make_pair("MuOffsetTerm",JetShiftDwn));
+		
+		shift = jUNCP->getRelPileupPtTerm(Jet.Pt(),Jet.Eta(),NPV,mu);
+		JetShiftUp  *= (1.0+shift); JetShiftsUp.insert(make_pair("PileupPtTerm", JetShiftUp));
+		JetShiftDwn *= (1.0-shift); JetShiftsDwn.insert(make_pair("PileupPtTerm",JetShiftDwn));
+		
+		shift = jUNCP->getRelPileupRhoTopology(Jet.Pt(),Jet.Eta());
+		JetShiftUp  *= (1.0+shift); JetShiftsUp.insert(make_pair("PileupRhoTopology", JetShiftUp));
+		JetShiftDwn *= (1.0-shift); JetShiftsDwn.insert(make_pair("PileupRhoTopology",JetShiftDwn));
+	}
+}
 
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
@@ -2317,61 +2557,61 @@ void fillFlatoutTree(vector<vertex>& vertices, int allPassing)
 		
 		_DEBUG("");
 		
-		for(int m=0 ; m<nMaxTracks ; ++m)
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m)
 		{
 			TString x = _s((float)(m+1),0);
 			if(m>2 && isFourthTrack[vtx][m]) {  flatout_vfloats["vtx_mQuad"+x]->push_back(v.vtxMquad(m-3)); }
 		}
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_order"+x]          ->push_back(v.trkOrder(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_type"+x]           ->push_back(v.trkType(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_pt"+x]           ->push_back(v.trkP(m).Pt()); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_eta"+x]          ->push_back(v.trkP(m).Eta()); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_phi"+x]          ->push_back(v.trkP(m).Phi()); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_sctangsig"+x]    ->push_back(v.trkSctAngMu(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_sctngbsig"+x]    ->push_back(v.trkSctNgbMu(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_pbalsig"+x]      ->push_back(v.trkPbalMu(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_chi2trkfit"+x]   ->push_back(v.trkChi2(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_ndftrkfit"+x]    ->push_back(v.trkNdf(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_chi2ndftrkfit"+x]->push_back(v.trkChi2Ndf(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_pvaltrkfit"+x]   ->push_back(v.trkPval(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_srcqoverp"+x]    ->push_back(v.trkQoverPsrc(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_trkqoverp"+x]    ->push_back(v.trkQoverPtrk(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_ptfrac"+x]       ->push_back(v.trkPtfrac(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_pixeldEdx"+x]    ->push_back(v.trkPixeldEdx(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_isMedium"+x]       ->push_back(v.trkIsMediumMu(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nPIXhits"+x]       ->push_back(v.trkPIXhits(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nDeadPIX"+x]       ->push_back(v.trkDeadPIX(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nPIXholes"+x]      ->push_back(v.trkPIXholes(m)); }	
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nSCThits"+x]       ->push_back(v.trkSCThits(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nDeadSCT"+x]       ->push_back(v.trkDeadSCT(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nSCTholes"+x]      ->push_back(v.trkSCTholes(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nTRThits"+x]       ->push_back(v.trkTRThits(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nTRToutliers"+x]   ->push_back(v.trkTRToutliers(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_htTRThits"+x]      ->push_back(v.trkHtTRThits(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nUsedHitsdEdx"+x]  ->push_back(v.trkUsedHitsdEdx(m)); }
-	 	for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nMDThits"+x]->push_back(v.trkMDThits(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nTGCPhiHits"+x]->push_back(v.trkTGCPhiHits(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nTGCEtaHits"+x]->push_back(v.trkTGCEtaHits(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nCSCPhiHits"+x]->push_back(v.trkCSCPhiHits(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nCSCEtaHits"+x]->push_back(v.trkCSCEtaHits(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nRPCPhiHits"+x]->push_back(v.trkRPCPhiHits(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nRPCEtaHits"+x]->push_back(v.trkRPCEtaHits(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nCSCEtaHoles"+x]->push_back(v.trkCSCEtaHoles(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nCSCPhiHoles"+x]->push_back(v.trkCSCPhiHoles(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nRPCEtaHoles"+x]->push_back(v.trkRPCEtaHoles(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nRPCPhiHoles"+x]->push_back(v.trkRPCPhiHoles(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nMDTHoles"+x]->push_back(v.trkMDTholes(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nTGCEtaHoles"+x]->push_back(v.trkTGCEtaHoles(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nTGCPhiHoles"+x]->push_back(v.trkTGCPhiHoles(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nOutliersOnTrack"+x]->push_back(v.trkOutliersOnTrack(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_standardDeviationOfChi2OS"+x]->push_back(v.trkStdDevOfChi2OS(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nPrecisionHits"+x]->push_back(v.trkPrecisionHits(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nPhiLayers"+x]->push_back(v.trkPhiLayers(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nEtaPhiLayers"+x]->push_back(v.trkEtaPhiLayers(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nPrecisionHoles"+x]->push_back(v.trkPrecisionHoles(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nEtaTriggerHoleLayers"+x]->push_back(v.trkEtaTriggerHoleLayers(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nPhiHoleLayers"+x]->push_back(v.trkPhiHoleLayers(m)); }
-		for(int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nPrecisionOutliers"+x]->push_back(v.trkPrecisionOutliers(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_order"+x]          ->push_back(v.trkOrder(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_type"+x]           ->push_back(v.trkType(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_pt"+x]           ->push_back(v.trkP(m).Pt()); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_eta"+x]          ->push_back(v.trkP(m).Eta()); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_phi"+x]          ->push_back(v.trkP(m).Phi()); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_sctangsig"+x]    ->push_back(v.trkSctAngMu(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_sctngbsig"+x]    ->push_back(v.trkSctNgbMu(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_pbalsig"+x]      ->push_back(v.trkPbalMu(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_chi2trkfit"+x]   ->push_back(v.trkChi2(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_ndftrkfit"+x]    ->push_back(v.trkNdf(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_chi2ndftrkfit"+x]->push_back(v.trkChi2Ndf(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_pvaltrkfit"+x]   ->push_back(v.trkPval(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_srcqoverp"+x]    ->push_back(v.trkQoverPsrc(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_trkqoverp"+x]    ->push_back(v.trkQoverPtrk(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_ptfrac"+x]       ->push_back(v.trkPtfrac(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vfloats["mu_pixeldEdx"+x]    ->push_back(v.trkPixeldEdx(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_isMedium"+x]       ->push_back(v.trkIsMediumMu(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nPIXhits"+x]       ->push_back(v.trkPIXhits(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nDeadPIX"+x]       ->push_back(v.trkDeadPIX(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nPIXholes"+x]      ->push_back(v.trkPIXholes(m)); }	
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nSCThits"+x]       ->push_back(v.trkSCThits(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nDeadSCT"+x]       ->push_back(v.trkDeadSCT(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nSCTholes"+x]      ->push_back(v.trkSCTholes(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nTRThits"+x]       ->push_back(v.trkTRThits(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nTRToutliers"+x]   ->push_back(v.trkTRToutliers(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_htTRThits"+x]      ->push_back(v.trkHtTRThits(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nUsedHitsdEdx"+x]  ->push_back(v.trkUsedHitsdEdx(m)); }
+	 	for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nMDThits"+x]->push_back(v.trkMDThits(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nTGCPhiHits"+x]->push_back(v.trkTGCPhiHits(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nTGCEtaHits"+x]->push_back(v.trkTGCEtaHits(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nCSCPhiHits"+x]->push_back(v.trkCSCPhiHits(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nCSCEtaHits"+x]->push_back(v.trkCSCEtaHits(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nRPCPhiHits"+x]->push_back(v.trkRPCPhiHits(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nRPCEtaHits"+x]->push_back(v.trkRPCEtaHits(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nCSCEtaHoles"+x]->push_back(v.trkCSCEtaHoles(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nCSCPhiHoles"+x]->push_back(v.trkCSCPhiHoles(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nRPCEtaHoles"+x]->push_back(v.trkRPCEtaHoles(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nRPCPhiHoles"+x]->push_back(v.trkRPCPhiHoles(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nMDTHoles"+x]->push_back(v.trkMDTholes(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nTGCEtaHoles"+x]->push_back(v.trkTGCEtaHoles(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nTGCPhiHoles"+x]->push_back(v.trkTGCPhiHoles(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nOutliersOnTrack"+x]->push_back(v.trkOutliersOnTrack(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_standardDeviationOfChi2OS"+x]->push_back(v.trkStdDevOfChi2OS(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nPrecisionHits"+x]->push_back(v.trkPrecisionHits(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nPhiLayers"+x]->push_back(v.trkPhiLayers(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nEtaPhiLayers"+x]->push_back(v.trkEtaPhiLayers(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nPrecisionHoles"+x]->push_back(v.trkPrecisionHoles(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nEtaTriggerHoleLayers"+x]->push_back(v.trkEtaTriggerHoleLayers(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nPhiHoleLayers"+x]->push_back(v.trkPhiHoleLayers(m)); }
+		for(unsigned int m=0 ; m<nMaxTracks ; ++m) { TString x = _s((float)(m+1),0); if(isFourthTrack[vtx][m]) flatout_vints["mu_nPrecisionOutliers"+x]->push_back(v.trkPrecisionOutliers(m)); }
 		
 		_DEBUG("");
 
@@ -3301,6 +3541,152 @@ void setBranches(TString tType, TChain* t)
 {
 	if(tType=="physics")
 	{
+		AntiKt4TopoEMJets_E = 0;
+		AntiKt4TopoEMJets_pt = 0;
+		AntiKt4TopoEMJets_m = 0;
+		AntiKt4TopoEMJets_eta = 0;
+		AntiKt4TopoEMJets_phi = 0;
+		
+		AntiKt4TopoEMJets_emfrac = 0;
+		AntiKt4TopoEMJets_hecf = 0;
+		AntiKt4TopoEMJets_LArQuality = 0;
+		AntiKt4TopoEMJets_HECQuality = 0;
+		AntiKt4TopoEMJets_Timing = 0;
+		AntiKt4TopoEMJets_sumPtTrk_pv0_500MeV = 0;
+		AntiKt4TopoEMJets_eta = 0;
+		AntiKt4TopoEMJets_pt = 0;
+		AntiKt4TopoEMJets_fracSamplingMax = 0;
+		AntiKt4TopoEMJets_NegativeE = 0;
+		AntiKt4TopoEMJets_AverageLArQF = 0;
+		
+		AntiKt4TopoEMJets_EtaOrigin = 0;
+		AntiKt4TopoEMJets_PhiOrigin = 0;
+		AntiKt4TopoEMJets_MOrigin = 0;
+		AntiKt4TopoEMJets_WIDTH = 0;
+		AntiKt4TopoEMJets_n90 = 0;
+		AntiKt4TopoEMJets_nTrk = 0;
+		AntiKt4TopoEMJets_sumPtTrk = 0;
+		AntiKt4TopoEMJets_OriginIndex = 0;
+        
+		AntiKt4TopoEMJets_BCH_CORR_CELL = 0;
+		AntiKt4TopoEMJets_BCH_CORR_DOTX = 0;
+		AntiKt4TopoEMJets_BCH_CORR_JET = 0;
+		AntiKt4TopoEMJets_BCH_CORR_JET_FORCELL = 0;
+		AntiKt4TopoEMJets_ENG_BAD_CELLS = 0;
+		AntiKt4TopoEMJets_N_BAD_CELLS = 0;
+		AntiKt4TopoEMJets_N_BAD_CELLS_CORR = 0;
+		AntiKt4TopoEMJets_BAD_CELLS_CORR_E = 0;
+        
+		AntiKt4TopoEMJets_isUgly = 0;
+		AntiKt4TopoEMJets_isBadLooseMinus = 0;
+		AntiKt4TopoEMJets_isBadLoose = 0;
+		AntiKt4TopoEMJets_isBadMedium = 0;
+		AntiKt4TopoEMJets_isBadTight = 0;
+        
+		AntiKt4TopoEMJets_Offset = 0;
+		AntiKt4TopoEMJets_EMJES = 0;
+		AntiKt4TopoEMJets_EMJES_EtaCorr = 0;
+		AntiKt4TopoEMJets_EMJESnooffset = 0;
+        
+		AntiKt4TopoEMJets_emscale_E = 0;
+		AntiKt4TopoEMJets_emscale_pt = 0;
+		AntiKt4TopoEMJets_emscale_m = 0;
+		AntiKt4TopoEMJets_emscale_eta = 0;
+		AntiKt4TopoEMJets_emscale_phi = 0;
+		
+		AntiKt4TopoEMJets_jvtx_x = 0;
+		AntiKt4TopoEMJets_jvtx_y = 0;
+		AntiKt4TopoEMJets_jvtx_z = 0;
+		AntiKt4TopoEMJets_jvtxf = 0;
+		
+		AntiKt4TopoEMJets_LikeLihood_0 = 0;
+		AntiKt4TopoEMJets_ActiveArea = 0;
+		AntiKt4TopoEMJets_ActiveAreaPx = 0;
+		AntiKt4TopoEMJets_ActiveAreaPy = 0;
+		AntiKt4TopoEMJets_ActiveAreaPz = 0;
+		AntiKt4TopoEMJets_ActiveAreaE = 0;
+		AntiKt4TopoEMJets_VoronoiArea = 0;
+		AntiKt4TopoEMJets_VoronoiAreaPx = 0;
+		AntiKt4TopoEMJets_VoronoiAreaPy = 0;
+		AntiKt4TopoEMJets_VoronoiAreaPz = 0;
+		AntiKt4TopoEMJets_VoronoiAreaE = 0;
+		AntiKt4TopoEMJets_LowEtConstituentsFrac = 0;
+		
+		AntiKt4TopoEMJets_constscale_E = 0;
+		AntiKt4TopoEMJets_constscale_pt = 0;
+		AntiKt4TopoEMJets_constscale_m = 0;
+		AntiKt4TopoEMJets_constscale_eta = 0;
+		AntiKt4TopoEMJets_constscale_phi = 0;
+		AntiKt4TopoEMJets_LArBadHVEnergy = 0;
+		AntiKt4TopoEMJets_LArBadHVRatio = 0;
+		
+		AntiKt4TopoEMJets_flavor_weight_MV1 = 0;
+		
+		MET_RefFinal_etx = 0;;
+		MET_RefFinal_ety = 0;;
+		MET_RefFinal_phi = 0;;
+		MET_RefFinal_et = 0;
+		MET_RefFinal_sumet = 0;
+		MET_RefFinal_etx_CentralReg = 0;
+		MET_RefFinal_ety_CentralReg = 0;
+		MET_RefFinal_sumet_CentralReg = 0;
+		MET_RefFinal_phi_CentralReg = 0;
+		MET_RefFinal_etx_EndcapRegion = 0;
+		MET_RefFinal_ety_EndcapRegion = 0;
+		MET_RefFinal_sumet_EndcapRegion = 0;
+		MET_RefFinal_phi_EndcapRegion = 0;
+		MET_RefFinal_etx_ForwardReg = 0;
+		MET_RefFinal_ety_ForwardReg = 0;
+		MET_RefFinal_sumet_ForwardReg = 0;
+		MET_RefFinal_phi_ForwardReg = 0;
+        
+		el_MET_wpx = 0;
+		el_MET_wpy = 0;
+		el_MET_wet = 0;
+		el_MET_statusWord = 0;
+		ph_MET_wpx = 0;
+		ph_MET_wpy = 0;
+		ph_MET_wet = 0;
+		ph_MET_statusWord = 0;
+		mu_staco_MET_wpx = 0;
+		mu_staco_MET_wpy = 0;
+		mu_staco_MET_wet = 0;
+		mu_staco_MET_statusWord = 0;
+		mu_muid_MET_wpx = 0;
+		mu_muid_MET_wpy = 0;
+		mu_muid_MET_wet = 0;
+		mu_muid_MET_statusWord = 0;
+		mu_MET_wpx = 0;
+		mu_MET_wpy = 0;
+		mu_MET_wet = 0;
+		mu_MET_statusWord = 0;
+		tau_MET_wpx = 0;
+		tau_MET_wpy = 0;
+		tau_MET_wet = 0;
+		tau_MET_statusWord = 0;
+		jet_antikt4LCtopo_MET_wpx = 0;
+		jet_antikt4LCtopo_MET_wpy = 0;
+		jet_antikt4LCtopo_MET_wet = 0;
+		jet_antikt4LCtopo_MET_statusWord = 0;
+		cl_MET_wpx = 0;
+		cl_MET_wpy = 0;
+		cl_MET_wet = 0;
+		cl_MET_statusWord = 0;
+		trk_MET_wpx = 0;
+		trk_MET_wpy = 0;
+		trk_MET_wet = 0;
+		trk_MET_statusWord = 0;
+		
+		musp_eta = 0;
+		musp_phi = 0;
+		musp_innerSegments = 0;
+		musp_middleSegments = 0;
+		musp_outerSegments = 0;
+		
+		vxp_nTracks = 0;
+		
+		
+		
 		t->SetBranchAddress("RunNumber",&phys_RunNumber);
 		t->SetBranchAddress("EventNumber",&phys_EventNumber);
 		if(glob_isMC) t->SetBranchAddress("mc_channel_number",&phys_mc_channel_number);
@@ -3460,6 +3846,14 @@ void setBranches(TString tType, TChain* t)
 		t->SetBranchAddress("rhorhoKt4EM", &rhorhoKt4EM);
 		t->SetBranchAddress("rhorhoKt3LC", &rhorhoKt3LC);
 		t->SetBranchAddress("rhorhoKt4LC", &rhorhoKt4LC);
+		
+		if(glob_isSig) t->SetBranchAddress("musp_eta", &musp_eta);
+		if(glob_isSig) t->SetBranchAddress("musp_phi", &musp_phi);
+		if(glob_isSig) t->SetBranchAddress("musp_innerSegments", &musp_innerSegments);
+		if(glob_isSig) t->SetBranchAddress("musp_middleSegments", &musp_middleSegments);
+		if(glob_isSig) t->SetBranchAddress("musp_outerSegments", &musp_outerSegments);
+
+		if(glob_isMC) t->SetBranchAddress("vxp_nTracks", &vxp_nTracks);
 
 		if(skim)
 		{
@@ -5982,6 +6376,9 @@ void vertex::set(unsigned int vtx)
 	m_srcQoverP[0] = (isMuon1) ? qopmemu1 : qopTP1;
 	m_srcQoverP[1] = (isMuon2) ? qopmemu2 : qopTP2;
 	m_srcQoverP[2] = (isMuon3) ? qopmemu3 : qopTP3;
+	if(0) cout << "qopiemu1=" << qopiemu1 << endl;
+	if(0) cout << "qopiemu2=" << qopiemu2 << endl;
+	if(0) cout << "qopiemu3=" << qopiemu3 << endl;
 	
 	_DEBUG("");
 	
@@ -6422,7 +6819,7 @@ if(!skim)
 	/////////////////////////
 	vector<int> vtmp;
 	isFourthTrack.insert(make_pair(vtx,vtmp));
-	for(int t=1 ; t<=nMaxTracks ; ++t)
+	for(unsigned int t=1 ; t<=nMaxTracks ; ++t)
 	{
 		if(t<=3) isFourthTrack[vtx].push_back(1);
 		else     isFourthTrack[vtx].push_back(0);
@@ -6430,32 +6827,32 @@ if(!skim)
 	/////////////////////////
 	double margins = 30.*GeV2MeV;
 	TString srctp = "CombinedFitMuonParticles";
-	unsigned int nMuons = muons_pt->size();
-	unsigned int nTPas  = tpmu_vd[srctp+"_pt"]->size();
+	int nMuons = (int)muons_pt->size();
+	int nTPas  = (int)tpmu_vd[srctp+"_pt"]->size();
 	vector<int> vfourthmuons;
 	vector<int> vfourthtps;
 	if(nMuons>3 || nTPas>3)
 	{
-		for(unsigned int m=0 ; m<nMuons ; ++m)
+		for(int m=0 ; m<nMuons ; ++m)
 		{
 			if(isMuon1 && m==isrc1) continue;
 			if(isMuon2 && m==isrc2) continue;
 			if(isMuon3 && m==isrc3) continue;
 			
 			int itrk = (mastername!="muid") ? muons_inDetTrackIndex->at(m) : muid_inDetTrackIndex->at(m);
-			if(itrk<0 || itrk>=trks_pt->size()) continue;
+			if(itrk<0 || itrk>=(int)trks_pt->size()) continue;
 			
 			TLorentzVector vZ, v4th;
 			v4th.SetPtEtaPhiM(muons_pt->at(m),muons_eta->at(m),muons_phi->at(m),muonMassMeV);
 			vZ = psum+v4th;
-			double mQuad = vZ.M();
+			// double mQuad = vZ.M();
 			if(fabs(vZ.M()-91.*GeV2MeV)>margins) continue;
 			
 			vfourthmuons.push_back(m);
 			// cout << "\tEvent: " << EventNumber << "(" << isrc1 << "," << isrc2 << "," << isrc3 << "+" << m << ") -> with 4th muon mQuad=" << mQuad << endl;
 		}
 		
-		for(unsigned int m=0 ; m<nTPas ; ++m)
+		for(int m=0 ; m<nTPas ; ++m)
 		{
 			if(isTPa1 && m==isrc1) continue;
 			if(isTPa2 && m==isrc2) continue;
@@ -6476,19 +6873,19 @@ if(!skim)
 			TLorentzVector vZ, v4th;
 			v4th.SetPtEtaPhiM(tpmu_vd[srctp+"_pt"]->at(m),tpmu_vd[srctp+"_eta"]->at(m),tpmu_vd[srctp+"_phi"]->at(m),muonMassMeV);
 			vZ = psum+v4th;
-			double mQuad = vZ.M();
+			// double mQuad = vZ.M();
 			if(fabs(vZ.M()-91.*GeV2MeV)>margins) continue;
 			
 			vfourthtps.push_back(m);
 			// cout << "\tEvent: " << EventNumber << "(" << isrc1 << "," << isrc2 << "," << isrc3 << "+" << m << ") -> with 4th TPa mQuad=" << mQuad << endl;
 		}
 	}
-	unsigned int n4thMuons = vfourthmuons.size();
-	unsigned int n4thTPs   = vfourthtps.size();
+	int n4thMuons = (int)vfourthmuons.size();
+	int n4thTPs   = (int)vfourthtps.size();
 	int nMax4thTracks = nMaxTracks-3;
 	int nFilled = 0;
 	// if(n4thMuons+n4thTPs>0) cout << "\tn4thMuons=" << n4thMuons << ", n4thTPs=" << n4thTPs << endl;
-	for(unsigned int i=0 ; (i<n4thMuons && (2+i+1)<(3+nMax4thTracks)) ; ++i) 
+	for(int i=0 ; (i<n4thMuons && (2+i+1)<(3+nMax4thTracks)) ; ++i) 
 	{
 		unsigned int ithis = 2+(i+1);
 		
@@ -6605,7 +7002,7 @@ if(!skim)
 	{
 		// cout << "\tGoing to add " << nMax4thTracks-nFilled << " TPas" << endl;
 		
-		for(unsigned int i=0 ; (i<n4thTPs && (2+nFilled+i+1)<(3+nMax4thTracks)) ; ++i) 
+		for(int i=0 ; (i<n4thTPs && (2+nFilled+i+1)<(3+nMax4thTracks)) ; ++i) 
 		{
 			unsigned int ithis = 2+nFilled+(i+1);
 			
@@ -6724,7 +7121,10 @@ if(!skim)
 	
 	_DEBUG("");
 	
-	double pt1, pt2, pt3, dpt12, dpt13, dpt23, ptfraction12, ptfraction13, ptfraction23;
+	double pt1 = 0;
+	double pt2 = 0;
+	double pt3 = 0;
+	float dpt12, dpt13, dpt23, ptfraction12, ptfraction13, ptfraction23;
 	if     (order1==1) { pt1=src.srcTlv[0].Pt(); }
 	else if(order1==2) { pt2=src.srcTlv[0].Pt(); }
 	else if(order1==3) { pt3=src.srcTlv[0].Pt(); }
@@ -7052,6 +7452,9 @@ bool acceptMuons(unsigned int vtx, TString name, TMapTSP2TH1& histos, TMapTSP2TH
 	if(fabs(qopiemu1)>7.e-4) qopiemu1 = 6.999e-4;
 	if(fabs(qopiemu2)>7.e-4) qopiemu2 = 6.999e-4;
 	if(fabs(qopiemu3)>7.e-4) qopiemu3 = 6.999e-4;
+	if(0) cout << "qopiemu1=" << qopiemu1 << endl;
+	if(0) cout << "qopiemu2=" << qopiemu2 << endl;
+	if(0) cout << "qopiemu3=" << qopiemu3 << endl;
 	
 	_DEBUG("");
 	
@@ -7531,17 +7934,16 @@ bool acceptVtxMET(TString method, unsigned int vtx, vector<vertex>& vertices, TS
 	float vertex_mOS1      = mOS1;
 	float vertex_mOS2      = mOS2;
 	float vertex_mSS       = mSS;
-	float jets_pt1         = JetPt1;
-	float jets_pt2         = JetPt2;
-	float jets_dphi3muJ1   = JetdPhi3bodyJ1;
-	// float jets_sumpt12  = JetSumPt12;
-	float jets_dphiJ1J2    = JetdPhiJ1J2;
+	// float jets_pt1         = JetPt1;
+	// float jets_pt2         = JetPt2;
+	// float jets_dphi3muJ1   = JetdPhi3bodyJ1;
+	// float jets_dphiJ1J2    = JetdPhiJ1J2;
 	// float vtx_ptfrac12     = ptFraction12;
 	// float vtx_ptfrac13     = ptFraction13;
 	// float vtx_ptfrac23     = ptFraction23;
-	float vertex_isolation = isolation;
-	float vertex_rapidity  = vtx_rapidity->at(vtx);
-	float vertex_charge    = vtx_charge->at(vtx);
+	// float vertex_isolation = isolation;
+	// float vertex_rapidity  = vtx_rapidity->at(vtx);
+	// float vertex_charge    = vtx_charge->at(vtx);
 	float vertex_pval      = TMath::Prob(vtx_chi2->at(vtx),vtx_ndf->at(vtx));
 	float vertex_lxy       = vtx_lxy->at(vtx)[pvindex];
 	// float vertex_lxyErr = vtx_lxyErr->at(vtx)[pvindex];
@@ -8574,7 +8976,7 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 			p3 = m2+m3+m4;
 			p4 = m1+m2+m3+m4;
 		
-			unsigned int nTracks = trks_pt->size();
+			int nTracks = trks_pt->size();
 			int itrk1 = muons_inDetTrackIndex->at(0);
 			int itrk2 = muons_inDetTrackIndex->at(1);
 			int itrk3 = muons_inDetTrackIndex->at(2);
@@ -8830,7 +9232,7 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 			unsigned int vtx = acceptedvtx[avtx]; ///
 			/////////////////////////////////////////
 			
-			double mass = vtx_mass->at(vtx);
+			// double mass = vtx_mass->at(vtx);
 			TLorentzVector pMuSum = getTlv3mu(vtx);
 			
 			_DEBUG("");
@@ -10652,6 +11054,7 @@ void NTUPmaker(TString runType, TString outDir, TString chnl, TString master, TS
 		
 		// global flag to note if MC or Data
 		glob_isMC = (!isData(name));
+		glob_isSig = (isSignal(name));
 		
 		
 		///////////////////////////////////////

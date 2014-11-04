@@ -174,7 +174,10 @@ private:
 
 int vertex::iSorted(int i)
 {
-	if(i>2 && i<nMaxTracks) return i;
+	unsigned int j = 999;
+	if(i<0) _FATAL("i<0: "+_s(i));
+	j = (unsigned int)i;
+	if(j>2 && j<nMaxTracks) return j;
 	if((m_order[0]-1)==i)   return 0;
 	if((m_order[1]-1)==i)   return 1;
 	if((m_order[2]-1)==i)   return 2;

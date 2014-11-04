@@ -202,8 +202,11 @@ void setMVAvars(unsigned int vtx,
 				TMapTSi& input_ints, TMapTSf& input_floats, 
 				TMapTSP2vi& input_vints, TMapTSP2vf& input_vfloats)
 {
-	// cout << "MVA vars: vtx=" << vtx << endl;
-	// cout << "MVA vars: input_vfloats->size()=" << input_vfloats["vtx_pt"]->size() << endl;
+	// dummy code
+	if(0) cout << "input_ints size    = " << input_ints.size() << endl;
+	if(0) cout << "input_floats size  = " << input_floats.size() << endl;
+	if(0) cout << "input_vints size   = " << input_vints.size() << endl;
+	if(0) cout << "input_vfloats size = " << input_vfloats.size() << endl;
 	
 	
 	mva_variables["vtx_pt"]               = input_vfloats["vtx_pt"]->at(vtx);
@@ -226,9 +229,11 @@ void setMVAspect(unsigned int vtx,
 				TMapTSi& input_ints, TMapTSf& input_floats,
 				TMapTSP2vi& input_vints, TMapTSP2vf& input_vfloats)
 {
-	// cout << "MVA spectators: vtx=" << vtx << endl;
-	// cout << "MVA spectators: input_vints->size()=" << input_vints["vtx_code"]->size() << endl;
-	// cout << "MVA spectators: input_vfloats->size()=" << input_vfloats["vtx_charge"]->size() << endl;
+	// dummy code
+	if(0) cout << "input_ints size    = " << input_ints.size() << endl;
+	if(0) cout << "input_floats size  = " << input_floats.size() << endl;
+	if(0) cout << "input_vints size   = " << input_vints.size() << endl;
+	if(0) cout << "input_vfloats size = " << input_vfloats.size() << endl;
 	
 	mva_spectators["EF_3mu4T"]                = input_ints["EF_3mu4T"];
 	mva_spectators["EF_3mu6"]                 = input_ints["EF_3mu6"];

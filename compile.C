@@ -51,10 +51,12 @@
 		exit(-1);
 	}
 	
-	//gROOT->ProcessLine(".include "+p+"/../../../TauLFVCommonTools/");
-	//gROOT->ProcessLine(".include "+p+"/../../../TauLFVCommonTools/TauLFVCommonTools");
 	gROOT->ProcessLine(".include "+p+"/../PileupReweighting/");
 	gROOT->ProcessLine(".include "+p+"/../PileupReweighting/PileupReweighting");
+	gROOT->ProcessLine(".include "+p+"/../ApplyJetCalibration/");
+	gROOT->ProcessLine(".include "+p+"/../ApplyJetCalibration/ApplyJetCalibration");
+	gROOT->ProcessLine(".include "+p+"/../JetUncertainties/");
+	gROOT->ProcessLine(".include "+p+"/../JetUncertainties/JetUncertainties");
 	gROOT->ProcessLine(".include "+p);
 	gSystem->Load( "libCintex.so" );
 	Cintex::Cintex::Enable();
@@ -64,6 +66,8 @@
 		cout << "===> Building" << endl;
 		gROOT->ProcessLine(".L Loader.C+");
 		gROOT->ProcessLine(".L ../PileupReweighting/StandAlone/PileupReweightingLib.so");
+		gROOT->ProcessLine(".L ../ApplyJetCalibration/StandAlone/libApplyJetCalibration.so");
+		gROOT->ProcessLine(".L ../JetUncertainties/StandAlone/libJetUncertainties.so");
 		gROOT->ProcessLine(".L "+type+".C++");
 	}
 	if(modeflag%2!=0)
@@ -71,6 +75,8 @@
 		cout << "===> Loading" << endl;
 		gROOT->ProcessLine(".L Loader_C.so");
 		gROOT->ProcessLine(".L ../PileupReweighting/StandAlone/PileupReweightingLib.so");
+		gROOT->ProcessLine(".L ../ApplyJetCalibration/StandAlone/libApplyJetCalibration.so");
+		gROOT->ProcessLine(".L ../JetUncertainties/StandAlone/libJetUncertainties.so");
 		gROOT->ProcessLine(".L "+type+"_C.so");
 	}
 	if(modeflag>1)
