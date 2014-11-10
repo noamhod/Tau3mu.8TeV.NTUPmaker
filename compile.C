@@ -57,6 +57,22 @@
 	gROOT->ProcessLine(".include "+p+"/../ApplyJetCalibration/ApplyJetCalibration");
 	gROOT->ProcessLine(".include "+p+"/../JetUncertainties/");
 	gROOT->ProcessLine(".include "+p+"/../JetUncertainties/JetUncertainties");
+	gROOT->ProcessLine(".include "+p+"/../JetResolution/");
+	gROOT->ProcessLine(".include "+p+"/../JetResolution/JetResolution");
+	gROOT->ProcessLine(".include "+p+"/../ApplyJetResolutionSmearing/");
+	gROOT->ProcessLine(".include "+p+"/../ApplyJetResolutionSmearing/ApplyJetResolutionSmearing");
+	gROOT->ProcessLine(".include "+p+"/../METAnalysisCommon/");
+	gROOT->ProcessLine(".include "+p+"/../METAnalysisCommon/METAnalysisCommon");
+	gROOT->ProcessLine(".include "+p+"/../METSystematics/");
+	gROOT->ProcessLine(".include "+p+"/../METSystematics/METSystematics");
+	gROOT->ProcessLine(".include "+p+"/../MissingETUtility/");
+	gROOT->ProcessLine(".include "+p+"/../MissingETUtility/MissingETUtility");
+	gROOT->ProcessLine(".include "+p+"/../PATCore/");
+	gROOT->ProcessLine(".include "+p+"/../PATCore/PATCore/");
+	gROOT->ProcessLine(".include "+p+"/../TileTripReader/");
+	gROOT->ProcessLine(".include "+p+"/../TileTripReader/TileTripReader");
+	gROOT->ProcessLine(".include "+p+"/../BCHCleaningTool/");
+	gROOT->ProcessLine(".include "+p+"/../BCHCleaningTool/BCHCleaningTool");
 	gROOT->ProcessLine(".include "+p);
 	gSystem->Load( "libCintex.so" );
 	Cintex::Cintex::Enable();
@@ -68,6 +84,13 @@
 		gROOT->ProcessLine(".L ../PileupReweighting/StandAlone/PileupReweightingLib.so");
 		gROOT->ProcessLine(".L ../ApplyJetCalibration/StandAlone/libApplyJetCalibration.so");
 		gROOT->ProcessLine(".L ../JetUncertainties/StandAlone/libJetUncertainties.so");
+		gROOT->ProcessLine(".L ../ApplyJetResolutionSmearing/StandAlone/libApplyJetResolutionSmearing.so");
+		gROOT->ProcessLine(".L ../JetResolution/StandAlone/libJERProvider.so");
+		gROOT->ProcessLine(".L ../METAnalysisCommon/StandAlone/libMETAnalysisCommon.so");
+		gROOT->ProcessLine(".L ../METSystematics/StandAlone/libMETSystematics.so");
+		gROOT->ProcessLine(".L ../MissingETUtility/StandAlone/libMETUtility.so");
+		gROOT->ProcessLine(".L ../TileTripReader/StandAlone/libTTileTripReader.so");
+		gROOT->ProcessLine(".L ../BCHCleaningTool/StandAlone/libBCHCleaningTool.so");
 		gROOT->ProcessLine(".L "+type+".C++");
 	}
 	if(modeflag%2!=0)
@@ -77,6 +100,13 @@
 		gROOT->ProcessLine(".L ../PileupReweighting/StandAlone/PileupReweightingLib.so");
 		gROOT->ProcessLine(".L ../ApplyJetCalibration/StandAlone/libApplyJetCalibration.so");
 		gROOT->ProcessLine(".L ../JetUncertainties/StandAlone/libJetUncertainties.so");
+		gROOT->ProcessLine(".L ../ApplyJetResolutionSmearing/StandAlone/libApplyJetResolutionSmearing.so");
+		gROOT->ProcessLine(".L ../JetResolution/StandAlone/libJERProvider.so");
+		gROOT->ProcessLine(".L ../METAnalysisCommon/StandAlone/libMETAnalysisCommon.so");
+		gROOT->ProcessLine(".L ../METSystematics/StandAlone/libMETSystematics.so");
+		gROOT->ProcessLine(".L ../MissingETUtility/StandAlone/libMETUtility.so");
+		gROOT->ProcessLine(".L ../TileTripReader/StandAlone/libTTileTripReader.so");
+		gROOT->ProcessLine(".L ../BCHCleaningTool/StandAlone/libBCHCleaningTool.so");
 		gROOT->ProcessLine(".L "+type+"_C.so");
 	}
 	if(modeflag>1)

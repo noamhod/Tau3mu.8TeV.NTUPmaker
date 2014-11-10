@@ -4,9 +4,7 @@ to get the pileup reweighting tool, check the latest tag in:
 checkout the latest tag and compile it:
 	svn co svn+ssh://svn.cern.ch/reps/atlasoff/PhysicsAnalysis/AnalysisCommon/PileupReweighting/tags/PileupReweighting-XX-YY-ZZ PileupReweighting
         cd PileupReweighting/cmt
-	gmake -f Makefile.Standalone
-the library is in:
-	PileupReweighting/Standalone/libPileupReweighting.so	
+	gmake -f Makefile.Standalone	
 
 
 to get the jet cleaning tool:
@@ -15,8 +13,59 @@ to get the jet cleaning tool:
 checkuot the tag and compile it:
 	svn co svn+ssh://svn.cern.ch/reps/atlasoff/PhysicsAnalysis/JetMissingEtID/JetSelectorTools/tags/JetSelectorTools-00-01-01 JetSelectorTools
 	cd JetSelectorTools/cmt
-	gmake -f Makefile.Standalone
-		
+	make -f Makefile.Standalone
+	
+
+to get the jet cleaning tool:
+	https://twiki.cern.ch/twiki/bin/viewauth/AtlasProtected/ApplyJetResolutionSmearing
+	https://svnweb.cern.ch/trac/atlasoff/browser/Reconstruction/Jet/JetResolution/tags
+	https://svnweb.cern.ch/trac/atlasoff/browser/Reconstruction/Jet/JetAnalysisTools/ApplyJetResolutionSmearing/tags
+checkuot the tag and compile it:
+	svn co svn+ssh://svn.cern.ch/reps/atlasoff/Reconstruction/Jet/JetResolution/tags/JetResolution-03-00-13 JetResolution
+	svn co svn+ssh://svn.cern.ch/reps/atlasoff/Reconstruction/Jet/JetAnalysisTools/ApplyJetResolutionSmearing/tags/ApplyJetResolutionSmearing-00-01-02 ApplyJetResolutionSmearing
+JetResolution
+	cd JetResolution/cmt
+	make -f Makefile.Standalone
+ApplyJetResolutionSmearing
+	cd ApplyJetResolutionSmearing/cmt
+	make -f Makefile.Standalone
+	
+to get the BCH cleaning tool:
+	https://twiki.cern.ch/twiki/bin/viewauth/AtlasProtected/BCHCleaningTool
+	https://svnweb.cern.ch/trac/atlasoff/browser/PhysicsAnalysis/AnalysisCommon/PATCore/tags
+	https://svnweb.cern.ch/trac/atlasoff/browser/PhysicsAnalysis/TileID/TileTripReader/tags
+	https://svnweb.cern.ch/trac/atlasoff/browser/Reconstruction/Jet/JetAnalysisTools/BCHCleaningTool/tags
+checkout the tag and compile it:
+	[no need to compile] svn co svn+ssh://svn.cern.ch/reps/atlasoff/PhysicsAnalysis/AnalysisCommon/PATCore/tags/PATCore-00-00-20 PATCore 
+	svn co svn+ssh://svn.cern.ch/reps/atlasoff/PhysicsAnalysis/TileID/TileTripReader/tags/TileTripReader-00-00-19-01 TileTripReader
+	svn co svn+ssh://svn.cern.ch/reps/atlasoff/Reconstruction/Jet/JetAnalysisTools/BCHCleaningTool/tags/BCHCleaningTool-00-00-10 BCHCleaningTool
+TileTripReader
+	cd TileTripReader/cmt
+	make -f Makefile.Standalone
+BCHCleaningTool
+	cd BCHCleaningTool
+	make -f Makefile.Standalone
+
+	
+
+to get the MET tool:
+	https://svnweb.cern.ch/trac/atlasoff/browser/Reconstruction/MissingETUtility/tags
+	https://svnweb.cern.ch/trac/atlasoff/browser/Reconstruction/MET/METAnalysisCommon/tags
+	https://svnweb.cern.ch/trac/atlasoff/browser/Reconstruction/MET/METSystematics/tags
+	https://twiki.cern.ch/twiki/bin/viewauth/AtlasProtected/JetEtmissRecommendations2012
+checkuot the tag and compile it:
+	svn co svn+ssh://svn.cern.ch/reps/atlasoff/Reconstruction/MET/METAnalysisCommon/tags/METAnalysisCommon-00-00-03 METAnalysisCommon
+	svn co svn+ssh://svn.cern.ch/reps/atlasoff/Reconstruction/MET/METSystematics/tags/METSystematics-00-00-04 METSystematics
+	svn co svn+ssh://svn.cern.ch/reps/atlasoff/Reconstruction/MissingETUtility/tags/MissingETUtility-01-03-03 MissingETUtility
+MissingETUtility
+	cd METAnalysisCommon/cmt/
+	make -f Makefile.Standalone
+	cd METSystematics/cmt/
+	make -f Makefile.Standalone
+	cd MissingETUtility/cmt/
+	make -f Makefile.Standalone
+if one or more packages complain about some missing headers,
+just have to add the absolute paths to the ones which cannot be found.
 
 
 to get the trunk:
