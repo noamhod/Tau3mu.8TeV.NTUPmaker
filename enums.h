@@ -1,7 +1,23 @@
 #ifndef enums_H
 #define enums_H
 
-enum pdtEnum { // *** note that this is not a complete list of pdt's particles ***
+enum systshift
+{
+	SHIFTDWN=-1,
+	NOSHIFT,
+	SHIFTUP
+};
+
+enum uncertainties
+{
+	NOJES,
+	NOMINAL,
+	JESUP,JESDWN,
+	JERUP,JERDWN
+};
+
+enum pdtEnum
+{ // *** note that this is not a complete list of pdt's particles ***
 	PDTDWN=1, PDTUP=2, PDTSTR=3, PDTCHM=4, PDTBOT=5, PDTTOP=6,
 	PDTBOTPRIME=7, PDTTOPPRIME=8,
 	PDTE=11, PDTNUE=12, PDTMU=13, PDTNUMU=14, PDTTAU=15, PDTNUTAU=16,

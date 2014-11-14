@@ -185,6 +185,28 @@ void flatout_book(TDirectory* olddir)
 	addBranch("met_reffinal_mT",      order, VFLT);
 	addBranch("met_reffinal_dPhi3mu", order, VFLT);
 	
+	addBranch("met_reffinal_JESnominal_et",      order, FLT);
+	addBranch("met_reffinal_JESnominal_phi",     order, FLT);
+	addBranch("met_reffinal_JESnominal_mT",      order, VFLT);
+	addBranch("met_reffinal_JESnominal_dPhi3mu", order, VFLT);
+	addBranch("met_reffinal_JESup_et",           order, FLT);
+	addBranch("met_reffinal_JESup_phi",          order, FLT);
+	addBranch("met_reffinal_JESup_mT",           order, VFLT);
+	addBranch("met_reffinal_JESup_dPhi3mu",      order, VFLT);
+	addBranch("met_reffinal_JESdwn_et",          order, FLT);
+	addBranch("met_reffinal_JESdwn_phi",         order, FLT);
+	addBranch("met_reffinal_JESdwn_mT",          order, VFLT);
+	addBranch("met_reffinal_JESdwn_dPhi3mu",     order, VFLT);
+	
+	addBranch("met_reffinal_JERup_et",      order, FLT);
+	addBranch("met_reffinal_JERup_phi",     order, FLT);
+	addBranch("met_reffinal_JERup_mT",      order, VFLT);
+	addBranch("met_reffinal_JERup_dPhi3mu", order, VFLT);
+	addBranch("met_reffinal_JERdwn_et",      order, FLT);
+	addBranch("met_reffinal_JERdwn_phi",     order, FLT);
+	addBranch("met_reffinal_JERdwn_mT",      order, VFLT);
+	addBranch("met_reffinal_JERdwn_dPhi3mu", order, VFLT);
+	
 	// Muons
 	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_order"+x,          order, VINT); }
 	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_type"+x,           order, VINT); }
@@ -267,11 +289,41 @@ void flatout_book(TDirectory* olddir)
 	addBranch("jet_vtxf2",     order, VFLT);
 	addBranch("jet_vtxf3",     order, VFLT);
 	addBranch("jet_vtxf4",     order, VFLT);
+	addBranch("jet_JES_shift1",     order, VFLT);
+	addBranch("jet_JES_shift2",     order, VFLT);
+	addBranch("jet_JES_shift3",     order, VFLT);
+	addBranch("jet_JES_shift4",     order, VFLT);
+	addBranch("jet_JER_shift1",     order, VFLT);
+	addBranch("jet_JER_shift2",     order, VFLT);
+	addBranch("jet_JER_shift3",     order, VFLT);
+	addBranch("jet_JER_shift4",     order, VFLT);
+	
 	addBranch("jet_sumpt12",   order, VFLT);
 	addBranch("jet_dphi3muJ1", order, VFLT);
 	addBranch("jet_dR3muJ1",   order, VFLT);
 	addBranch("jet_dphiJ1J2",  order, VFLT);
 	addBranch("jet_dRJ1J2",    order, VFLT);
+	addBranch("jet_sumpt12_jes_up",   order, VFLT);
+	addBranch("jet_dphi3muJ1_jes_up", order, VFLT);
+	addBranch("jet_dR3muJ1_jes_up",   order, VFLT);
+	addBranch("jet_dphiJ1J2_jes_up",  order, VFLT);
+	addBranch("jet_dRJ1J2_jes_up",    order, VFLT);
+	addBranch("jet_sumpt12_jes_dwn",   order, VFLT);
+	addBranch("jet_dphi3muJ1_jes_dwn", order, VFLT);
+	addBranch("jet_dR3muJ1_jes_dwn",   order, VFLT);
+	addBranch("jet_dphiJ1J2_jes_dwn",  order, VFLT);
+	addBranch("jet_dRJ1J2_jes_dwn",    order, VFLT);
+	addBranch("jet_sumpt12_jer_up",   order, VFLT);
+	addBranch("jet_dphi3muJ1_jer_up", order, VFLT);
+	addBranch("jet_dR3muJ1_jer_up",   order, VFLT);
+	addBranch("jet_dphiJ1J2_jer_up",  order, VFLT);
+	addBranch("jet_dRJ1J2_jer_up",    order, VFLT);
+	addBranch("jet_sumpt12_jer_dwn",   order, VFLT);
+	addBranch("jet_dphi3muJ1_jer_dwn", order, VFLT);
+	addBranch("jet_dR3muJ1_jer_dwn",   order, VFLT);
+	addBranch("jet_dphiJ1J2_jer_dwn",  order, VFLT);
+	addBranch("jet_dRJ1J2_jer_dwn",    order, VFLT);
+	
 	
 	
 	// addBranch("mc_channel_number",  order, INT);

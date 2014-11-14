@@ -99,18 +99,28 @@ TMapTSb  binnedmcenable;
 TMapTSd  weights;
 double totalLumi;
 TMapuivi isFourthTrack;
+
 TString JetQuality = "VeryLooseBad";
 vector<TLorentzVector> calibJets;
 vector<bool>           badBCHJets;
 vector<TLorentzVector> smearedJets;
 vector<double>         calibJetsUnc;
+vector<double>         smearedJetsUnc;
 vector<unsigned int>   calibJetsIndex;
-
-vector<float>* AntiKt4LCTopoLets_calibrated_pt;
-vector<float>* AntiKt4LCTopoLets_calibrated_E;
-vector<float>* AntiKt4LCTopoLets_calibrated_m;
-vector<float>* AntiKt4LCTopoLets_calibrated_eta;
-vector<float>* AntiKt4LCTopoLets_calibrated_phi;
+vector<float>* AntiKt4LCTopoJets_calibrated_pt;
+vector<float>* AntiKt4LCTopoJets_calibrated_E;
+vector<float>* AntiKt4LCTopoJets_calibrated_m;
+vector<float>* AntiKt4LCTopoJets_calibrated_eta;
+vector<float>* AntiKt4LCTopoJets_calibrated_phi;
+vector<float>* akt4lc_jet_pt;
+vector<float>* akt4lc_jet_E;
+vector<float>* akt4lc_jet_eta;
+vector<float>* akt4lc_jet_phi;
+METUtil::METObject calibMET_nominal;
+METUtil::METObject calibMET_jes_up;
+METUtil::METObject calibMET_jes_dwn;
+METUtil::METObject calibMET_jer_up;
+METUtil::METObject calibMET_jer_dwn;
 
 double isolation;
 vector<double> iso10;
@@ -537,270 +547,270 @@ int    phys_lbn;
 float  phys_actualIntPerXing;
 float  phys_averageIntPerXing;
 
-int            AntiKt4LCTopoLets_n;
-vector<float>* AntiKt4LCTopoLets_E;
-vector<float>* AntiKt4LCTopoLets_pt;
-vector<float>* AntiKt4LCTopoLets_m;
-vector<float>* AntiKt4LCTopoLets_eta;
-vector<float>* AntiKt4LCTopoLets_phi;
-vector<float>* AntiKt4LCTopoLets_EtaOrigin;
-vector<float>* AntiKt4LCTopoLets_PhiOrigin;
-vector<float>* AntiKt4LCTopoLets_MOrigin;
-vector<float>* AntiKt4LCTopoLets_WIDTH;
-vector<float>* AntiKt4LCTopoLets_n90;
-vector<float>* AntiKt4LCTopoLets_Timing;
-vector<float>* AntiKt4LCTopoLets_LArQuality;
-vector<float>* AntiKt4LCTopoLets_nTrk;
-vector<float>* AntiKt4LCTopoLets_sumPtTrk;
-vector<float>* AntiKt4LCTopoLets_OriginIndex;
-vector<float>* AntiKt4LCTopoLets_HECQuality;
-vector<float>* AntiKt4LCTopoLets_NegativeE;
-vector<float>* AntiKt4LCTopoLets_AverageLArQF;
-vector<float>* AntiKt4LCTopoLets_BCH_CORR_CELL;
-vector<float>* AntiKt4LCTopoLets_BCH_CORR_DOTX;
-vector<float>* AntiKt4LCTopoLets_BCH_CORR_JET;
-vector<float>* AntiKt4LCTopoLets_BCH_CORR_JET_FORCELL;
-vector<float>* AntiKt4LCTopoLets_ENG_BAD_CELLS;
-vector<float>* AntiKt4LCTopoLets_N_BAD_CELLS;
-vector<float>* AntiKt4LCTopoLets_N_BAD_CELLS_CORR;
-vector<float>* AntiKt4LCTopoLets_BAD_CELLS_CORR_E;
-vector<float>* AntiKt4LCTopoLets_NumTowers;
-vector<float>* AntiKt4LCTopoLets_ootFracCells5;
-vector<float>* AntiKt4LCTopoLets_ootFracCells10;
-vector<float>* AntiKt4LCTopoLets_ootFracClusters5;
-vector<float>* AntiKt4LCTopoLets_ootFracClusters10;
-vector<int>*   AntiKt4LCTopoLets_SamplingMax;
-vector<float>* AntiKt4LCTopoLets_fracSamplingMax;
-vector<float>* AntiKt4LCTopoLets_hecf;
-vector<float>* AntiKt4LCTopoLets_tgap3f;
-vector<int>*   AntiKt4LCTopoLets_isUgly;
-vector<int>*   AntiKt4LCTopoLets_isBadLooseMinus;
-vector<int>*   AntiKt4LCTopoLets_isBadLoose;
-vector<int>*   AntiKt4LCTopoLets_isBadMedium;
-vector<int>*   AntiKt4LCTopoLets_isBadTight;
-vector<float>* AntiKt4LCTopoLets_emfrac;
-vector<float>* AntiKt4LCTopoLets_Offset;
-vector<float>* AntiKt4LCTopoLets_EMJES;
-vector<float>* AntiKt4LCTopoLets_EMJES_EtaCorr;
-vector<float>* AntiKt4LCTopoLets_EMJESnooffset;
-vector<float>* AntiKt4LCTopoLets_LCJES;
-vector<float>* AntiKt4LCTopoLets_LCJES_EtaCorr;
-vector<float>* AntiKt4LCTopoLets_emscale_E;
-vector<float>* AntiKt4LCTopoLets_emscale_pt;
-vector<float>* AntiKt4LCTopoLets_emscale_m;
-vector<float>* AntiKt4LCTopoLets_emscale_eta;
-vector<float>* AntiKt4LCTopoLets_emscale_phi;
-vector<float>* AntiKt4LCTopoLets_jvtx_x;
-vector<float>* AntiKt4LCTopoLets_jvtx_y;
-vector<float>* AntiKt4LCTopoLets_jvtx_z;
-vector<float>* AntiKt4LCTopoLets_jvtxf;
-vector<float>* AntiKt4LCTopoLets_GSCFactorF;
-vector<float>* AntiKt4LCTopoLets_WidthFraction;
-vector<float>* AntiKt4LCTopoLets_e_PreSamplerB;
-vector<float>* AntiKt4LCTopoLets_e_EMB1;
-vector<float>* AntiKt4LCTopoLets_e_EMB2;
-vector<float>* AntiKt4LCTopoLets_e_EMB3;
-vector<float>* AntiKt4LCTopoLets_e_PreSamplerE;
-vector<float>* AntiKt4LCTopoLets_e_EME1;
-vector<float>* AntiKt4LCTopoLets_e_EME2;
-vector<float>* AntiKt4LCTopoLets_e_EME3;
-vector<float>* AntiKt4LCTopoLets_e_HEC0;
-vector<float>* AntiKt4LCTopoLets_e_HEC1;
-vector<float>* AntiKt4LCTopoLets_e_HEC2;
-vector<float>* AntiKt4LCTopoLets_e_HEC3;
-vector<float>* AntiKt4LCTopoLets_e_TileBar0;
-vector<float>* AntiKt4LCTopoLets_e_TileBar1;
-vector<float>* AntiKt4LCTopoLets_e_TileBar2;
-vector<float>* AntiKt4LCTopoLets_e_TileGap1;
-vector<float>* AntiKt4LCTopoLets_e_TileGap2;
-vector<float>* AntiKt4LCTopoLets_e_TileGap3;
-vector<float>* AntiKt4LCTopoLets_e_TileExt0;
-vector<float>* AntiKt4LCTopoLets_e_TileExt1;
-vector<float>* AntiKt4LCTopoLets_e_TileExt2;
-vector<float>* AntiKt4LCTopoLets_e_FCAL0;
-vector<float>* AntiKt4LCTopoLets_e_FCAL1;
-vector<float>* AntiKt4LCTopoLets_e_FCAL2;
-vector<vector<float> >* AntiKt4LCTopoLets_shapeBins;
-vector<int>*  AntiKt4LCTopoLets_Nconst;
-vector<vector<float> >* AntiKt4LCTopoLets_ptconst_default;
-vector<vector<float> >* AntiKt4LCTopoLets_econst_default;
-vector<vector<float> >* AntiKt4LCTopoLets_etaconst_default;
-vector<vector<float> >* AntiKt4LCTopoLets_phiconst_default;
-vector<vector<float> >* AntiKt4LCTopoLets_weightconst_default;
-vector<float>* AntiKt4LCTopoLets_constscale_E;
-vector<float>* AntiKt4LCTopoLets_constscale_pt;
-vector<float>* AntiKt4LCTopoLets_constscale_m;
-vector<float>* AntiKt4LCTopoLets_constscale_eta;
-vector<float>* AntiKt4LCTopoLets_constscale_phi;
-vector<float>* AntiKt4LCTopoLets_LArBadHVEnergy;
-vector<float>* AntiKt4LCTopoLets_LArBadHVRatio;
-vector<float>* AntiKt4LCTopoLets_flavor_weight_Comb;
-vector<float>* AntiKt4LCTopoLets_flavor_weight_IP2D;
-vector<float>* AntiKt4LCTopoLets_flavor_weight_IP3D;
-vector<float>* AntiKt4LCTopoLets_flavor_weight_SV0;
-vector<float>* AntiKt4LCTopoLets_flavor_weight_SV1;
-vector<float>* AntiKt4LCTopoLets_flavor_weight_SV2;
-vector<float>* AntiKt4LCTopoLets_flavor_weight_SoftMuonTagChi2;
-vector<float>* AntiKt4LCTopoLets_flavor_weight_SecondSoftMuonTagChi2;
-vector<float>* AntiKt4LCTopoLets_flavor_weight_JetFitterTagNN;
-vector<float>* AntiKt4LCTopoLets_flavor_weight_JetFitterCOMBNN;
-vector<float>* AntiKt4LCTopoLets_flavor_weight_MV1;
-vector<float>* AntiKt4LCTopoLets_flavor_weight_MV2;
-vector<float>* AntiKt4LCTopoLets_flavor_weight_GbbNN;
-vector<int>*   AntiKt4LCTopoLets_flavor_truth_label;
-vector<float>* AntiKt4LCTopoLets_flavor_truth_dRminToB;
-vector<float>* AntiKt4LCTopoLets_flavor_truth_dRminToC;
-vector<float>* AntiKt4LCTopoLets_flavor_truth_dRminToT;
-vector<int>*   AntiKt4LCTopoLets_flavor_truth_BHadronpdg;
-vector<float>* AntiKt4LCTopoLets_flavor_truth_vx_x;
-vector<float>* AntiKt4LCTopoLets_flavor_truth_vx_y;
-vector<float>* AntiKt4LCTopoLets_flavor_truth_vx_z;
-vector<int>*   AntiKt4LCTopoLets_flavor_putruth_label;
-vector<float>* AntiKt4LCTopoLets_flavor_putruth_dRminToB;
-vector<float>* AntiKt4LCTopoLets_flavor_putruth_dRminToC;
-vector<float>* AntiKt4LCTopoLets_flavor_putruth_dRminToT;
-vector<int>*   AntiKt4LCTopoLets_flavor_putruth_BHadronpdg;
-vector<float>* AntiKt4LCTopoLets_flavor_putruth_vx_x;
-vector<float>* AntiKt4LCTopoLets_flavor_putruth_vx_y;
-vector<float>* AntiKt4LCTopoLets_flavor_putruth_vx_z;
-vector<float>* AntiKt4LCTopoLets_flavor_component_ip2d_pu;
-vector<float>* AntiKt4LCTopoLets_flavor_component_ip2d_pb;
-vector<int>*   AntiKt4LCTopoLets_flavor_component_ip2d_isValid;
-vector<int>*   AntiKt4LCTopoLets_flavor_component_ip2d_ntrk;
-vector<float>* AntiKt4LCTopoLets_flavor_component_ip3d_pu;
-vector<float>* AntiKt4LCTopoLets_flavor_component_ip3d_pb;
-vector<int>  * AntiKt4LCTopoLets_flavor_component_ip3d_isValid;
-vector<int>  * AntiKt4LCTopoLets_flavor_component_ip3d_ntrk;
-vector<int>  * AntiKt4LCTopoLets_flavor_component_jetprob_ntrk;
-vector<float>* AntiKt4LCTopoLets_flavor_component_sv1_pu;
-vector<float>* AntiKt4LCTopoLets_flavor_component_sv1_pb;
-vector<int>*   AntiKt4LCTopoLets_flavor_component_sv1_isValid;
-vector<float>* AntiKt4LCTopoLets_flavor_component_sv2_pu;
-vector<float>* AntiKt4LCTopoLets_flavor_component_sv2_pb;
-vector<int>*   AntiKt4LCTopoLets_flavor_component_sv2_isValid;
-vector<float>* AntiKt4LCTopoLets_flavor_component_jfit_pu;
-vector<float>* AntiKt4LCTopoLets_flavor_component_jfit_pb;
-vector<float>* AntiKt4LCTopoLets_flavor_component_jfit_pc;
-vector<int>*   AntiKt4LCTopoLets_flavor_component_jfit_isValid;
-vector<float>* AntiKt4LCTopoLets_flavor_component_jfitcomb_pu;
-vector<float>* AntiKt4LCTopoLets_flavor_component_jfitcomb_pb;
-vector<float>* AntiKt4LCTopoLets_flavor_component_jfitcomb_pc;
-vector<int>*   AntiKt4LCTopoLets_flavor_component_jfitcomb_isValid;
-vector<int>*   AntiKt4LCTopoLets_flavor_component_gbbnn_nMatchingTracks;
-vector<double>* AntiKt4LCTopoLets_flavor_component_gbbnn_trkJetWidth;
-vector<double>* AntiKt4LCTopoLets_flavor_component_gbbnn_trkJetMaxDeltaR;
-vector<int>*   AntiKt4LCTopoLets_flavor_component_jfit_nvtx;
-vector<int>*   AntiKt4LCTopoLets_flavor_component_jfit_nvtx1t;
-vector<int>*   AntiKt4LCTopoLets_flavor_component_jfit_ntrkAtVx;
-vector<float>* AntiKt4LCTopoLets_flavor_component_jfit_efrc;
-vector<float>* AntiKt4LCTopoLets_flavor_component_jfit_mass;
-vector<float>* AntiKt4LCTopoLets_flavor_component_jfit_sig3d;
-vector<float>* AntiKt4LCTopoLets_flavor_component_jfit_deltaPhi;
-vector<float>* AntiKt4LCTopoLets_flavor_component_jfit_deltaEta;
-vector<vector<float> >* AntiKt4LCTopoLets_flavor_component_ipplus_trk_d0val;
-vector<vector<float> >* AntiKt4LCTopoLets_flavor_component_ipplus_trk_d0sig;
-vector<vector<float> >* AntiKt4LCTopoLets_flavor_component_ipplus_trk_z0val;
-vector<vector<float> >* AntiKt4LCTopoLets_flavor_component_ipplus_trk_z0sig;
-vector<vector<float> >* AntiKt4LCTopoLets_flavor_component_ipplus_trk_w2D;
-vector<vector<float> >* AntiKt4LCTopoLets_flavor_component_ipplus_trk_w3D;
-vector<vector<float> >* AntiKt4LCTopoLets_flavor_component_ipplus_trk_pJP;
-vector<vector<float> >* AntiKt4LCTopoLets_flavor_component_ipplus_trk_pJPneg;
-vector<vector<int> >* AntiKt4LCTopoLets_flavor_component_ipplus_trk_grade;
-vector<vector<int> >* AntiKt4LCTopoLets_flavor_component_ipplus_trk_isFromV0;
-vector<int>* AntiKt4LCTopoLets_flavor_component_svp_isValid;
-vector<int>* AntiKt4LCTopoLets_flavor_component_svp_ntrkv;
-vector<int>* AntiKt4LCTopoLets_flavor_component_svp_ntrkj;
-vector<int>* AntiKt4LCTopoLets_flavor_component_svp_n2t;
-vector<float>* AntiKt4LCTopoLets_flavor_component_svp_mass;
-vector<float>* AntiKt4LCTopoLets_flavor_component_svp_efrc;
-vector<float>* AntiKt4LCTopoLets_flavor_component_svp_x;
-vector<float>* AntiKt4LCTopoLets_flavor_component_svp_y;
-vector<float>* AntiKt4LCTopoLets_flavor_component_svp_z;
-vector<float>* AntiKt4LCTopoLets_flavor_component_svp_err_x;
-vector<float>* AntiKt4LCTopoLets_flavor_component_svp_err_y;
-vector<float>* AntiKt4LCTopoLets_flavor_component_svp_err_z;
-vector<float>* AntiKt4LCTopoLets_flavor_component_svp_cov_xy;
-vector<float>* AntiKt4LCTopoLets_flavor_component_svp_cov_xz;
-vector<float>* AntiKt4LCTopoLets_flavor_component_svp_cov_yz;
-vector<float>* AntiKt4LCTopoLets_flavor_component_svp_chi2;
-vector<int>*  AntiKt4LCTopoLets_flavor_component_svp_ndof;
-vector<int>*  AntiKt4LCTopoLets_flavor_component_svp_ntrk;
-vector<int>*  AntiKt4LCTopoLets_flavor_component_sv0p_isValid;
-vector<int>*  AntiKt4LCTopoLets_flavor_component_sv0p_ntrkv;
-vector<int>*  AntiKt4LCTopoLets_flavor_component_sv0p_ntrkj;
-vector<int>*  AntiKt4LCTopoLets_flavor_component_sv0p_n2t;
-vector<float>* AntiKt4LCTopoLets_flavor_component_sv0p_mass;
-vector<float>* AntiKt4LCTopoLets_flavor_component_sv0p_efrc;
-vector<float>* AntiKt4LCTopoLets_flavor_component_sv0p_x;
-vector<float>* AntiKt4LCTopoLets_flavor_component_sv0p_y;
-vector<float>* AntiKt4LCTopoLets_flavor_component_sv0p_z;
-vector<float>* AntiKt4LCTopoLets_flavor_component_sv0p_err_x;
-vector<float>* AntiKt4LCTopoLets_flavor_component_sv0p_err_y;
-vector<float>* AntiKt4LCTopoLets_flavor_component_sv0p_err_z;
-vector<float>* AntiKt4LCTopoLets_flavor_component_sv0p_cov_xy;
-vector<float>* AntiKt4LCTopoLets_flavor_component_sv0p_cov_xz;
-vector<float>* AntiKt4LCTopoLets_flavor_component_sv0p_cov_yz;
-vector<float>* AntiKt4LCTopoLets_flavor_component_sv0p_chi2;
-vector<int>*   AntiKt4LCTopoLets_flavor_component_sv0p_ndof;
-vector<int>*   AntiKt4LCTopoLets_flavor_component_sv0p_ntrk;
-vector<vector<float> >* AntiKt4LCTopoLets_flavor_component_softmuoninfo_muon_w;
-vector<vector<float> >* AntiKt4LCTopoLets_flavor_component_softmuoninfo_muon_pTRel;
-vector<vector<float> >* AntiKt4LCTopoLets_flavor_component_softmuoninfo_muon_dRJet;
-vector<vector<float> >* AntiKt4LCTopoLets_flavor_component_softmuonchi2info_muon_w;
-vector<vector<float> >* AntiKt4LCTopoLets_flavor_component_softmuonchi2info_muon_pTRel;
-vector<vector<float> >* AntiKt4LCTopoLets_flavor_component_softmuonchi2info_muon_dRJet;
-vector<float>* AntiKt4LCTopoLets_el_dr;
-vector<int>*   AntiKt4LCTopoLets_el_matched;
-vector<float>* AntiKt4LCTopoLets_mu_dr;
-vector<int>*   AntiKt4LCTopoLets_mu_matched;
-vector<float>* AntiKt4LCTopoLets_L1_dr;
-vector<int>*   AntiKt4LCTopoLets_L1_matched;
-vector<float>* AntiKt4LCTopoLets_L2_dr;
-vector<int>*   AntiKt4LCTopoLets_L2_matched;
-vector<float>* AntiKt4LCTopoLets_EF_dr;
-vector<int>*   AntiKt4LCTopoLets_EF_matched;
-vector<float>* AntiKt4LCTopoLets_LikeLihood_0;
-vector<float>* AntiKt4LCTopoLets_ActiveArea;
-vector<float>* AntiKt4LCTopoLets_ActiveAreaPx;
-vector<float>* AntiKt4LCTopoLets_ActiveAreaPy;
-vector<float>* AntiKt4LCTopoLets_ActiveAreaPz;
-vector<float>* AntiKt4LCTopoLets_ActiveAreaE;
-vector<float>* AntiKt4LCTopoLets_VoronoiArea;
-vector<float>* AntiKt4LCTopoLets_VoronoiAreaPx;
-vector<float>* AntiKt4LCTopoLets_VoronoiAreaPy;
-vector<float>* AntiKt4LCTopoLets_VoronoiAreaPz;
-vector<float>* AntiKt4LCTopoLets_VoronoiAreaE;
-vector<float>* AntiKt4LCTopoLets_LowEtConstituentsFrac;
-vector<float>* AntiKt4LCTopoLets_pt_truth;
-vector<float>* AntiKt4LCTopoLets_IsoKR20Perp;
-vector<float>* AntiKt4LCTopoLets_IsoKR20Par;
-vector<float>* AntiKt4LCTopoLets_IsoKR20SumPt;
-vector<float>* AntiKt4LCTopoLets_IsoDelta2Perp;
-vector<float>* AntiKt4LCTopoLets_IsoDelta2Par;
-vector<float>* AntiKt4LCTopoLets_IsoDelta2SumPt;
-vector<float>* AntiKt4LCTopoLets_IsoFixedCone8Perp;
-vector<float>* AntiKt4LCTopoLets_IsoFixedCone8Par;
-vector<float>* AntiKt4LCTopoLets_IsoFixedCone8SumPt;
-vector<float>* AntiKt4LCTopoLets_IsoFixedArea13Perp;
-vector<float>* AntiKt4LCTopoLets_IsoFixedArea13Par;
-vector<float>* AntiKt4LCTopoLets_IsoFixedArea13SumPt;
-vector<float>* AntiKt4LCTopoLets_Iso6To88Perp;
-vector<float>* AntiKt4LCTopoLets_Iso6To88Par;
-vector<float>* AntiKt4LCTopoLets_Iso6To88SumPt;
-vector<float>* AntiKt4LCTopoLets_KtDr;
-vector<float>* AntiKt4LCTopoLets_Centroid_r;
-vector<float>* AntiKt4LCTopoLets_nTrk_pv0_1GeV;
-vector<float>* AntiKt4LCTopoLets_sumPtTrk_pv0_1GeV;
-vector<float>* AntiKt4LCTopoLets_nTrk_allpv_1GeV;
-vector<float>* AntiKt4LCTopoLets_sumPtTrk_allpv_1GeV;
-vector<float>* AntiKt4LCTopoLets_nTrk_pv0_500MeV;
-vector<float>* AntiKt4LCTopoLets_sumPtTrk_pv0_500MeV;
-vector<float>* AntiKt4LCTopoLets_trackWIDTH_pv0_1GeV;
-vector<float>* AntiKt4LCTopoLets_trackWIDTH_allpv_1GeV;
-vector<float>* AntiKt4LCTopoLets_TrackMFindex;
-vector<float>* AntiKt4LCTopoLets_TrackMFPt;
-vector<float>* AntiKt4LCTopoLets_TruthMFindex;
-vector<float>* AntiKt4LCTopoLets_TruthMFPt;
+int            AntiKt4LCTopoJets_n;
+vector<float>* AntiKt4LCTopoJets_E;
+vector<float>* AntiKt4LCTopoJets_pt;
+vector<float>* AntiKt4LCTopoJets_m;
+vector<float>* AntiKt4LCTopoJets_eta;
+vector<float>* AntiKt4LCTopoJets_phi;
+vector<float>* AntiKt4LCTopoJets_EtaOrigin;
+vector<float>* AntiKt4LCTopoJets_PhiOrigin;
+vector<float>* AntiKt4LCTopoJets_MOrigin;
+vector<float>* AntiKt4LCTopoJets_WIDTH;
+vector<float>* AntiKt4LCTopoJets_n90;
+vector<float>* AntiKt4LCTopoJets_Timing;
+vector<float>* AntiKt4LCTopoJets_LArQuality;
+vector<float>* AntiKt4LCTopoJets_nTrk;
+vector<float>* AntiKt4LCTopoJets_sumPtTrk;
+vector<float>* AntiKt4LCTopoJets_OriginIndex;
+vector<float>* AntiKt4LCTopoJets_HECQuality;
+vector<float>* AntiKt4LCTopoJets_NegativeE;
+vector<float>* AntiKt4LCTopoJets_AverageLArQF;
+vector<float>* AntiKt4LCTopoJets_BCH_CORR_CELL;
+vector<float>* AntiKt4LCTopoJets_BCH_CORR_DOTX;
+vector<float>* AntiKt4LCTopoJets_BCH_CORR_JET;
+vector<float>* AntiKt4LCTopoJets_BCH_CORR_JET_FORCELL;
+vector<float>* AntiKt4LCTopoJets_ENG_BAD_CELLS;
+vector<float>* AntiKt4LCTopoJets_N_BAD_CELLS;
+vector<float>* AntiKt4LCTopoJets_N_BAD_CELLS_CORR;
+vector<float>* AntiKt4LCTopoJets_BAD_CELLS_CORR_E;
+vector<float>* AntiKt4LCTopoJets_NumTowers;
+vector<float>* AntiKt4LCTopoJets_ootFracCells5;
+vector<float>* AntiKt4LCTopoJets_ootFracCells10;
+vector<float>* AntiKt4LCTopoJets_ootFracClusters5;
+vector<float>* AntiKt4LCTopoJets_ootFracClusters10;
+vector<int>*   AntiKt4LCTopoJets_SamplingMax;
+vector<float>* AntiKt4LCTopoJets_fracSamplingMax;
+vector<float>* AntiKt4LCTopoJets_hecf;
+vector<float>* AntiKt4LCTopoJets_tgap3f;
+vector<int>*   AntiKt4LCTopoJets_isUgly;
+vector<int>*   AntiKt4LCTopoJets_isBadLooseMinus;
+vector<int>*   AntiKt4LCTopoJets_isBadLoose;
+vector<int>*   AntiKt4LCTopoJets_isBadMedium;
+vector<int>*   AntiKt4LCTopoJets_isBadTight;
+vector<float>* AntiKt4LCTopoJets_emfrac;
+vector<float>* AntiKt4LCTopoJets_Offset;
+vector<float>* AntiKt4LCTopoJets_EMJES;
+vector<float>* AntiKt4LCTopoJets_EMJES_EtaCorr;
+vector<float>* AntiKt4LCTopoJets_EMJESnooffset;
+vector<float>* AntiKt4LCTopoJets_LCJES;
+vector<float>* AntiKt4LCTopoJets_LCJES_EtaCorr;
+vector<float>* AntiKt4LCTopoJets_constscale_E;
+vector<float>* AntiKt4LCTopoJets_constscale_pt;
+vector<float>* AntiKt4LCTopoJets_constscale_m;
+vector<float>* AntiKt4LCTopoJets_constscale_eta;
+vector<float>* AntiKt4LCTopoJets_constscale_phi;
+vector<float>* AntiKt4LCTopoJets_jvtx_x;
+vector<float>* AntiKt4LCTopoJets_jvtx_y;
+vector<float>* AntiKt4LCTopoJets_jvtx_z;
+vector<float>* AntiKt4LCTopoJets_jvtxf;
+vector<float>* AntiKt4LCTopoJets_GSCFactorF;
+vector<float>* AntiKt4LCTopoJets_WidthFraction;
+vector<float>* AntiKt4LCTopoJets_e_PreSamplerB;
+vector<float>* AntiKt4LCTopoJets_e_EMB1;
+vector<float>* AntiKt4LCTopoJets_e_EMB2;
+vector<float>* AntiKt4LCTopoJets_e_EMB3;
+vector<float>* AntiKt4LCTopoJets_e_PreSamplerE;
+vector<float>* AntiKt4LCTopoJets_e_EME1;
+vector<float>* AntiKt4LCTopoJets_e_EME2;
+vector<float>* AntiKt4LCTopoJets_e_EME3;
+vector<float>* AntiKt4LCTopoJets_e_HEC0;
+vector<float>* AntiKt4LCTopoJets_e_HEC1;
+vector<float>* AntiKt4LCTopoJets_e_HEC2;
+vector<float>* AntiKt4LCTopoJets_e_HEC3;
+vector<float>* AntiKt4LCTopoJets_e_TileBar0;
+vector<float>* AntiKt4LCTopoJets_e_TileBar1;
+vector<float>* AntiKt4LCTopoJets_e_TileBar2;
+vector<float>* AntiKt4LCTopoJets_e_TileGap1;
+vector<float>* AntiKt4LCTopoJets_e_TileGap2;
+vector<float>* AntiKt4LCTopoJets_e_TileGap3;
+vector<float>* AntiKt4LCTopoJets_e_TileExt0;
+vector<float>* AntiKt4LCTopoJets_e_TileExt1;
+vector<float>* AntiKt4LCTopoJets_e_TileExt2;
+vector<float>* AntiKt4LCTopoJets_e_FCAL0;
+vector<float>* AntiKt4LCTopoJets_e_FCAL1;
+vector<float>* AntiKt4LCTopoJets_e_FCAL2;
+vector<vector<float> >* AntiKt4LCTopoJets_shapeBins;
+vector<int>*  AntiKt4LCTopoJets_Nconst;
+vector<vector<float> >* AntiKt4LCTopoJets_ptconst_default;
+vector<vector<float> >* AntiKt4LCTopoJets_econst_default;
+vector<vector<float> >* AntiKt4LCTopoJets_etaconst_default;
+vector<vector<float> >* AntiKt4LCTopoJets_phiconst_default;
+vector<vector<float> >* AntiKt4LCTopoJets_weightconst_default;
+vector<float>* AntiKt4LCTopoJets_emscale_E;
+vector<float>* AntiKt4LCTopoJets_emscale_pt;
+vector<float>* AntiKt4LCTopoJets_emscale_m;
+vector<float>* AntiKt4LCTopoJets_emscale_eta;
+vector<float>* AntiKt4LCTopoJets_emscale_phi;
+vector<float>* AntiKt4LCTopoJets_LArBadHVEnergy;
+vector<float>* AntiKt4LCTopoJets_LArBadHVRatio;
+vector<float>* AntiKt4LCTopoJets_flavor_weight_Comb;
+vector<float>* AntiKt4LCTopoJets_flavor_weight_IP2D;
+vector<float>* AntiKt4LCTopoJets_flavor_weight_IP3D;
+vector<float>* AntiKt4LCTopoJets_flavor_weight_SV0;
+vector<float>* AntiKt4LCTopoJets_flavor_weight_SV1;
+vector<float>* AntiKt4LCTopoJets_flavor_weight_SV2;
+vector<float>* AntiKt4LCTopoJets_flavor_weight_SoftMuonTagChi2;
+vector<float>* AntiKt4LCTopoJets_flavor_weight_SecondSoftMuonTagChi2;
+vector<float>* AntiKt4LCTopoJets_flavor_weight_JetFitterTagNN;
+vector<float>* AntiKt4LCTopoJets_flavor_weight_JetFitterCOMBNN;
+vector<float>* AntiKt4LCTopoJets_flavor_weight_MV1;
+vector<float>* AntiKt4LCTopoJets_flavor_weight_MV2;
+vector<float>* AntiKt4LCTopoJets_flavor_weight_GbbNN;
+vector<int>*   AntiKt4LCTopoJets_flavor_truth_label;
+vector<float>* AntiKt4LCTopoJets_flavor_truth_dRminToB;
+vector<float>* AntiKt4LCTopoJets_flavor_truth_dRminToC;
+vector<float>* AntiKt4LCTopoJets_flavor_truth_dRminToT;
+vector<int>*   AntiKt4LCTopoJets_flavor_truth_BHadronpdg;
+vector<float>* AntiKt4LCTopoJets_flavor_truth_vx_x;
+vector<float>* AntiKt4LCTopoJets_flavor_truth_vx_y;
+vector<float>* AntiKt4LCTopoJets_flavor_truth_vx_z;
+vector<int>*   AntiKt4LCTopoJets_flavor_putruth_label;
+vector<float>* AntiKt4LCTopoJets_flavor_putruth_dRminToB;
+vector<float>* AntiKt4LCTopoJets_flavor_putruth_dRminToC;
+vector<float>* AntiKt4LCTopoJets_flavor_putruth_dRminToT;
+vector<int>*   AntiKt4LCTopoJets_flavor_putruth_BHadronpdg;
+vector<float>* AntiKt4LCTopoJets_flavor_putruth_vx_x;
+vector<float>* AntiKt4LCTopoJets_flavor_putruth_vx_y;
+vector<float>* AntiKt4LCTopoJets_flavor_putruth_vx_z;
+vector<float>* AntiKt4LCTopoJets_flavor_component_ip2d_pu;
+vector<float>* AntiKt4LCTopoJets_flavor_component_ip2d_pb;
+vector<int>*   AntiKt4LCTopoJets_flavor_component_ip2d_isValid;
+vector<int>*   AntiKt4LCTopoJets_flavor_component_ip2d_ntrk;
+vector<float>* AntiKt4LCTopoJets_flavor_component_ip3d_pu;
+vector<float>* AntiKt4LCTopoJets_flavor_component_ip3d_pb;
+vector<int>  * AntiKt4LCTopoJets_flavor_component_ip3d_isValid;
+vector<int>  * AntiKt4LCTopoJets_flavor_component_ip3d_ntrk;
+vector<int>  * AntiKt4LCTopoJets_flavor_component_jetprob_ntrk;
+vector<float>* AntiKt4LCTopoJets_flavor_component_sv1_pu;
+vector<float>* AntiKt4LCTopoJets_flavor_component_sv1_pb;
+vector<int>*   AntiKt4LCTopoJets_flavor_component_sv1_isValid;
+vector<float>* AntiKt4LCTopoJets_flavor_component_sv2_pu;
+vector<float>* AntiKt4LCTopoJets_flavor_component_sv2_pb;
+vector<int>*   AntiKt4LCTopoJets_flavor_component_sv2_isValid;
+vector<float>* AntiKt4LCTopoJets_flavor_component_jfit_pu;
+vector<float>* AntiKt4LCTopoJets_flavor_component_jfit_pb;
+vector<float>* AntiKt4LCTopoJets_flavor_component_jfit_pc;
+vector<int>*   AntiKt4LCTopoJets_flavor_component_jfit_isValid;
+vector<float>* AntiKt4LCTopoJets_flavor_component_jfitcomb_pu;
+vector<float>* AntiKt4LCTopoJets_flavor_component_jfitcomb_pb;
+vector<float>* AntiKt4LCTopoJets_flavor_component_jfitcomb_pc;
+vector<int>*   AntiKt4LCTopoJets_flavor_component_jfitcomb_isValid;
+vector<int>*   AntiKt4LCTopoJets_flavor_component_gbbnn_nMatchingTracks;
+vector<double>* AntiKt4LCTopoJets_flavor_component_gbbnn_trkJetWidth;
+vector<double>* AntiKt4LCTopoJets_flavor_component_gbbnn_trkJetMaxDeltaR;
+vector<int>*   AntiKt4LCTopoJets_flavor_component_jfit_nvtx;
+vector<int>*   AntiKt4LCTopoJets_flavor_component_jfit_nvtx1t;
+vector<int>*   AntiKt4LCTopoJets_flavor_component_jfit_ntrkAtVx;
+vector<float>* AntiKt4LCTopoJets_flavor_component_jfit_efrc;
+vector<float>* AntiKt4LCTopoJets_flavor_component_jfit_mass;
+vector<float>* AntiKt4LCTopoJets_flavor_component_jfit_sig3d;
+vector<float>* AntiKt4LCTopoJets_flavor_component_jfit_deltaPhi;
+vector<float>* AntiKt4LCTopoJets_flavor_component_jfit_deltaEta;
+vector<vector<float> >* AntiKt4LCTopoJets_flavor_component_ipplus_trk_d0val;
+vector<vector<float> >* AntiKt4LCTopoJets_flavor_component_ipplus_trk_d0sig;
+vector<vector<float> >* AntiKt4LCTopoJets_flavor_component_ipplus_trk_z0val;
+vector<vector<float> >* AntiKt4LCTopoJets_flavor_component_ipplus_trk_z0sig;
+vector<vector<float> >* AntiKt4LCTopoJets_flavor_component_ipplus_trk_w2D;
+vector<vector<float> >* AntiKt4LCTopoJets_flavor_component_ipplus_trk_w3D;
+vector<vector<float> >* AntiKt4LCTopoJets_flavor_component_ipplus_trk_pJP;
+vector<vector<float> >* AntiKt4LCTopoJets_flavor_component_ipplus_trk_pJPneg;
+vector<vector<int> >* AntiKt4LCTopoJets_flavor_component_ipplus_trk_grade;
+vector<vector<int> >* AntiKt4LCTopoJets_flavor_component_ipplus_trk_isFromV0;
+vector<int>* AntiKt4LCTopoJets_flavor_component_svp_isValid;
+vector<int>* AntiKt4LCTopoJets_flavor_component_svp_ntrkv;
+vector<int>* AntiKt4LCTopoJets_flavor_component_svp_ntrkj;
+vector<int>* AntiKt4LCTopoJets_flavor_component_svp_n2t;
+vector<float>* AntiKt4LCTopoJets_flavor_component_svp_mass;
+vector<float>* AntiKt4LCTopoJets_flavor_component_svp_efrc;
+vector<float>* AntiKt4LCTopoJets_flavor_component_svp_x;
+vector<float>* AntiKt4LCTopoJets_flavor_component_svp_y;
+vector<float>* AntiKt4LCTopoJets_flavor_component_svp_z;
+vector<float>* AntiKt4LCTopoJets_flavor_component_svp_err_x;
+vector<float>* AntiKt4LCTopoJets_flavor_component_svp_err_y;
+vector<float>* AntiKt4LCTopoJets_flavor_component_svp_err_z;
+vector<float>* AntiKt4LCTopoJets_flavor_component_svp_cov_xy;
+vector<float>* AntiKt4LCTopoJets_flavor_component_svp_cov_xz;
+vector<float>* AntiKt4LCTopoJets_flavor_component_svp_cov_yz;
+vector<float>* AntiKt4LCTopoJets_flavor_component_svp_chi2;
+vector<int>*  AntiKt4LCTopoJets_flavor_component_svp_ndof;
+vector<int>*  AntiKt4LCTopoJets_flavor_component_svp_ntrk;
+vector<int>*  AntiKt4LCTopoJets_flavor_component_sv0p_isValid;
+vector<int>*  AntiKt4LCTopoJets_flavor_component_sv0p_ntrkv;
+vector<int>*  AntiKt4LCTopoJets_flavor_component_sv0p_ntrkj;
+vector<int>*  AntiKt4LCTopoJets_flavor_component_sv0p_n2t;
+vector<float>* AntiKt4LCTopoJets_flavor_component_sv0p_mass;
+vector<float>* AntiKt4LCTopoJets_flavor_component_sv0p_efrc;
+vector<float>* AntiKt4LCTopoJets_flavor_component_sv0p_x;
+vector<float>* AntiKt4LCTopoJets_flavor_component_sv0p_y;
+vector<float>* AntiKt4LCTopoJets_flavor_component_sv0p_z;
+vector<float>* AntiKt4LCTopoJets_flavor_component_sv0p_err_x;
+vector<float>* AntiKt4LCTopoJets_flavor_component_sv0p_err_y;
+vector<float>* AntiKt4LCTopoJets_flavor_component_sv0p_err_z;
+vector<float>* AntiKt4LCTopoJets_flavor_component_sv0p_cov_xy;
+vector<float>* AntiKt4LCTopoJets_flavor_component_sv0p_cov_xz;
+vector<float>* AntiKt4LCTopoJets_flavor_component_sv0p_cov_yz;
+vector<float>* AntiKt4LCTopoJets_flavor_component_sv0p_chi2;
+vector<int>*   AntiKt4LCTopoJets_flavor_component_sv0p_ndof;
+vector<int>*   AntiKt4LCTopoJets_flavor_component_sv0p_ntrk;
+vector<vector<float> >* AntiKt4LCTopoJets_flavor_component_softmuoninfo_muon_w;
+vector<vector<float> >* AntiKt4LCTopoJets_flavor_component_softmuoninfo_muon_pTRel;
+vector<vector<float> >* AntiKt4LCTopoJets_flavor_component_softmuoninfo_muon_dRJet;
+vector<vector<float> >* AntiKt4LCTopoJets_flavor_component_softmuonchi2info_muon_w;
+vector<vector<float> >* AntiKt4LCTopoJets_flavor_component_softmuonchi2info_muon_pTRel;
+vector<vector<float> >* AntiKt4LCTopoJets_flavor_component_softmuonchi2info_muon_dRJet;
+vector<float>* AntiKt4LCTopoJets_el_dr;
+vector<int>*   AntiKt4LCTopoJets_el_matched;
+vector<float>* AntiKt4LCTopoJets_mu_dr;
+vector<int>*   AntiKt4LCTopoJets_mu_matched;
+vector<float>* AntiKt4LCTopoJets_L1_dr;
+vector<int>*   AntiKt4LCTopoJets_L1_matched;
+vector<float>* AntiKt4LCTopoJets_L2_dr;
+vector<int>*   AntiKt4LCTopoJets_L2_matched;
+vector<float>* AntiKt4LCTopoJets_EF_dr;
+vector<int>*   AntiKt4LCTopoJets_EF_matched;
+vector<float>* AntiKt4LCTopoJets_LikeLihood_0;
+vector<float>* AntiKt4LCTopoJets_ActiveArea;
+vector<float>* AntiKt4LCTopoJets_ActiveAreaPx;
+vector<float>* AntiKt4LCTopoJets_ActiveAreaPy;
+vector<float>* AntiKt4LCTopoJets_ActiveAreaPz;
+vector<float>* AntiKt4LCTopoJets_ActiveAreaE;
+vector<float>* AntiKt4LCTopoJets_VoronoiArea;
+vector<float>* AntiKt4LCTopoJets_VoronoiAreaPx;
+vector<float>* AntiKt4LCTopoJets_VoronoiAreaPy;
+vector<float>* AntiKt4LCTopoJets_VoronoiAreaPz;
+vector<float>* AntiKt4LCTopoJets_VoronoiAreaE;
+vector<float>* AntiKt4LCTopoJets_LowEtConstituentsFrac;
+vector<float>* AntiKt4LCTopoJets_pt_truth;
+vector<float>* AntiKt4LCTopoJets_IsoKR20Perp;
+vector<float>* AntiKt4LCTopoJets_IsoKR20Par;
+vector<float>* AntiKt4LCTopoJets_IsoKR20SumPt;
+vector<float>* AntiKt4LCTopoJets_IsoDelta2Perp;
+vector<float>* AntiKt4LCTopoJets_IsoDelta2Par;
+vector<float>* AntiKt4LCTopoJets_IsoDelta2SumPt;
+vector<float>* AntiKt4LCTopoJets_IsoFixedCone8Perp;
+vector<float>* AntiKt4LCTopoJets_IsoFixedCone8Par;
+vector<float>* AntiKt4LCTopoJets_IsoFixedCone8SumPt;
+vector<float>* AntiKt4LCTopoJets_IsoFixedArea13Perp;
+vector<float>* AntiKt4LCTopoJets_IsoFixedArea13Par;
+vector<float>* AntiKt4LCTopoJets_IsoFixedArea13SumPt;
+vector<float>* AntiKt4LCTopoJets_Iso6To88Perp;
+vector<float>* AntiKt4LCTopoJets_Iso6To88Par;
+vector<float>* AntiKt4LCTopoJets_Iso6To88SumPt;
+vector<float>* AntiKt4LCTopoJets_KtDr;
+vector<float>* AntiKt4LCTopoJets_Centroid_r;
+vector<float>* AntiKt4LCTopoJets_nTrk_pv0_1GeV;
+vector<float>* AntiKt4LCTopoJets_sumPtTrk_pv0_1GeV;
+vector<float>* AntiKt4LCTopoJets_nTrk_allpv_1GeV;
+vector<float>* AntiKt4LCTopoJets_sumPtTrk_allpv_1GeV;
+vector<float>* AntiKt4LCTopoJets_nTrk_pv0_500MeV;
+vector<float>* AntiKt4LCTopoJets_sumPtTrk_pv0_500MeV;
+vector<float>* AntiKt4LCTopoJets_trackWIDTH_pv0_1GeV;
+vector<float>* AntiKt4LCTopoJets_trackWIDTH_allpv_1GeV;
+vector<float>* AntiKt4LCTopoJets_TrackMFindex;
+vector<float>* AntiKt4LCTopoJets_TrackMFPt;
+vector<float>* AntiKt4LCTopoJets_TruthMFindex;
+vector<float>* AntiKt4LCTopoJets_TruthMFPt;
 
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
@@ -829,17 +839,35 @@ float MET_CellOut_Eflow_phi;
 float MET_CellOut_Eflow_et;
 float MET_CellOut_Eflow_sumet;
 
+float MET_SoftJets_etx;
+float MET_SoftJets_ety;
+float MET_SoftJets_phi;
+float MET_SoftJets_et;
+float MET_SoftJets_sumet;
+
 float MET_Track_etx;
 float MET_Track_ety;
 float MET_Track_phi;
 float MET_Track_et;
 float MET_Track_sumet;
 
-float MET_Staco_etx;
-float MET_Staco_ety;
-float MET_Staco_phi;
-float MET_Staco_et;
-float MET_Staco_sumet;
+float MET_MuonBoy_etx;
+float MET_MuonBoy_ety;
+float MET_MuonBoy_phi;
+float MET_MuonBoy_et;
+float MET_MuonBoy_sumet;
+
+float MET_Muon_etx;
+float MET_Muon_ety;
+float MET_Muon_phi;
+float MET_Muon_et;
+float MET_Muon_sumet;
+
+float MET_Muons_etx;
+float MET_Muons_ety;
+float MET_Muons_phi;
+float MET_Muons_et;
+float MET_Muons_sumet;
 
 float MET_Muid_etx;
 float MET_Muid_ety;
@@ -864,12 +892,6 @@ float MET_RefJet_ety;
 float MET_RefJet_phi;
 float MET_RefJet_et;
 float MET_RefJet_sumet;
-
-float MET_SoftJets_etx;
-float MET_SoftJets_ety;
-float MET_SoftJets_phi;
-float MET_SoftJets_et;
-float MET_SoftJets_sumet;
 
 float MET_Truth_NonInt_etx;
 float MET_Truth_NonInt_ety;
@@ -938,51 +960,98 @@ vector<float>* tau_m;
 vector<float>* tau_eta;
 vector<float>* tau_phi;
 
-int  el_MET_n;
-vector<vector<float> > *el_MET_wpx;
-vector<vector<float> > *el_MET_wpy;
-vector<vector<float> > *el_MET_wet;
-vector<vector<unsigned int> > *el_MET_statusWord;
-int           ph_MET_n;
-vector<vector<float> > *ph_MET_wpx;
-vector<vector<float> > *ph_MET_wpy;
-vector<vector<float> > *ph_MET_wet;
-vector<vector<unsigned int> > *ph_MET_statusWord;
-int           mu_staco_MET_n;
-vector<vector<float> > *mu_staco_MET_wpx;
-vector<vector<float> > *mu_staco_MET_wpy;
-vector<vector<float> > *mu_staco_MET_wet;
-vector<vector<unsigned int> > *mu_staco_MET_statusWord;
-int           mu_muid_MET_n;
-vector<vector<float> > *mu_muid_MET_wpx;
-vector<vector<float> > *mu_muid_MET_wpy;
-vector<vector<float> > *mu_muid_MET_wet;
-vector<vector<unsigned int> > *mu_muid_MET_statusWord;
-int           mu_MET_n;
-vector<vector<float> > *mu_MET_wpx;
-vector<vector<float> > *mu_MET_wpy;
-vector<vector<float> > *mu_MET_wet;
-vector<vector<unsigned int> > *mu_MET_statusWord;
-int           tau_MET_n;
-vector<vector<float> > *tau_MET_wpx;
-vector<vector<float> > *tau_MET_wpy;
-vector<vector<float> > *tau_MET_wet;
-vector<vector<unsigned int> > *tau_MET_statusWord;
-int           jet_antikt4LCtopo_MET_n;
-vector<vector<float> > *jet_antikt4LCtopo_MET_wpx;
-vector<vector<float> > *jet_antikt4LCtopo_MET_wpy;
-vector<vector<float> > *jet_antikt4LCtopo_MET_wet;
-vector<vector<unsigned int> > *jet_antikt4LCtopo_MET_statusWord;
-int           cl_MET_n;
-vector<vector<float> > *cl_MET_wpx;
-vector<vector<float> > *cl_MET_wpy;
-vector<vector<float> > *cl_MET_wet;
-vector<vector<unsigned int> > *cl_MET_statusWord;
-int           trk_MET_n;
-vector<vector<float> > *trk_MET_wpx;
-vector<vector<float> > *trk_MET_wpy;
-vector<vector<float> > *trk_MET_wet;
-vector<vector<unsigned int> > *trk_MET_statusWord;
+int  el_MET_RefFinal_comp_n;
+vector<vector<float> > *el_MET_RefFinal_comp_wpx;
+vector<vector<float> > *el_MET_RefFinal_comp_wpy;
+vector<vector<float> > *el_MET_RefFinal_comp_wet;
+vector<vector<unsigned int> > *el_MET_RefFinal_comp_statusWord;
+int           ph_MET_RefFinal_comp_n;
+vector<vector<float> > *ph_MET_RefFinal_comp_wpx;
+vector<vector<float> > *ph_MET_RefFinal_comp_wpy;
+vector<vector<float> > *ph_MET_RefFinal_comp_wet;
+vector<vector<unsigned int> > *ph_MET_RefFinal_comp_statusWord;
+int           mu_staco_MET_RefFinal_comp_n;
+vector<vector<float> > *mu_staco_MET_RefFinal_comp_wpx;
+vector<vector<float> > *mu_staco_MET_RefFinal_comp_wpy;
+vector<vector<float> > *mu_staco_MET_RefFinal_comp_wet;
+vector<vector<unsigned int> > *mu_staco_MET_RefFinal_comp_statusWord;
+int           mu_muid_MET_RefFinal_comp_n;
+vector<vector<float> > *mu_muid_MET_RefFinal_comp_wpx;
+vector<vector<float> > *mu_muid_MET_RefFinal_comp_wpy;
+vector<vector<float> > *mu_muid_MET_RefFinal_comp_wet;
+vector<vector<unsigned int> > *mu_muid_MET_RefFinal_comp_statusWord;
+int           mu_MET_RefFinal_comp_n;
+vector<vector<float> > *mu_MET_RefFinal_comp_wpx;
+vector<vector<float> > *mu_MET_RefFinal_comp_wpy;
+vector<vector<float> > *mu_MET_RefFinal_comp_wet;
+vector<vector<unsigned int> > *mu_MET_RefFinal_comp_statusWord;
+int           tau_MET_RefFinal_comp_n;
+vector<vector<float> > *tau_MET_RefFinal_comp_wpx;
+vector<vector<float> > *tau_MET_RefFinal_comp_wpy;
+vector<vector<float> > *tau_MET_RefFinal_comp_wet;
+vector<vector<unsigned int> > *tau_MET_RefFinal_comp_statusWord;
+int           jet_antikt4LCtopo_MET_RefFinal_comp_n;
+vector<vector<float> > *jet_antikt4LCtopo_MET_RefFinal_comp_wpx;
+vector<vector<float> > *jet_antikt4LCtopo_MET_RefFinal_comp_wpy;
+vector<vector<float> > *jet_antikt4LCtopo_MET_RefFinal_comp_wet;
+vector<vector<unsigned int> > *jet_antikt4LCtopo_MET_RefFinal_comp_statusWord;
+int           cl_MET_RefFinal_comp_n;
+vector<vector<float> > *cl_MET_RefFinal_comp_wpx;
+vector<vector<float> > *cl_MET_RefFinal_comp_wpy;
+vector<vector<float> > *cl_MET_RefFinal_comp_wet;
+vector<vector<unsigned int> > *cl_MET_RefFinal_comp_statusWord;
+int           trk_MET_RefFinal_comp_n;
+vector<vector<float> > *trk_MET_RefFinal_comp_wpx;
+vector<vector<float> > *trk_MET_RefFinal_comp_wpy;
+vector<vector<float> > *trk_MET_RefFinal_comp_wet;
+vector<vector<unsigned int> > *trk_MET_RefFinal_comp_statusWord;
+
+
+int  el_MET_Muons_comp_n;
+vector<vector<float> > *el_MET_Muons_comp_wpx;
+vector<vector<float> > *el_MET_Muons_comp_wpy;
+vector<vector<float> > *el_MET_Muons_comp_wet;
+vector<vector<unsigned int> > *el_MET_Muons_comp_statusWord;
+int           ph_MET_Muons_comp_n;
+vector<vector<float> > *ph_MET_Muons_comp_wpx;
+vector<vector<float> > *ph_MET_Muons_comp_wpy;
+vector<vector<float> > *ph_MET_Muons_comp_wet;
+vector<vector<unsigned int> > *ph_MET_Muons_comp_statusWord;
+int           mu_staco_MET_Muons_comp_n;
+vector<vector<float> > *mu_staco_MET_Muons_comp_wpx;
+vector<vector<float> > *mu_staco_MET_Muons_comp_wpy;
+vector<vector<float> > *mu_staco_MET_Muons_comp_wet;
+vector<vector<unsigned int> > *mu_staco_MET_Muons_comp_statusWord;
+int           mu_muid_MET_Muons_comp_n;
+vector<vector<float> > *mu_muid_MET_Muons_comp_wpx;
+vector<vector<float> > *mu_muid_MET_Muons_comp_wpy;
+vector<vector<float> > *mu_muid_MET_Muons_comp_wet;
+vector<vector<unsigned int> > *mu_muid_MET_Muons_comp_statusWord;
+int           mu_MET_Muons_comp_n;
+vector<vector<float> > *mu_MET_Muons_comp_wpx;
+vector<vector<float> > *mu_MET_Muons_comp_wpy;
+vector<vector<float> > *mu_MET_Muons_comp_wet;
+vector<vector<unsigned int> > *mu_MET_Muons_comp_statusWord;
+int           tau_MET_Muons_comp_n;
+vector<vector<float> > *tau_MET_Muons_comp_wpx;
+vector<vector<float> > *tau_MET_Muons_comp_wpy;
+vector<vector<float> > *tau_MET_Muons_comp_wet;
+vector<vector<unsigned int> > *tau_MET_Muons_comp_statusWord;
+int           jet_antikt4LCtopo_MET_Muons_comp_n;
+vector<vector<float> > *jet_antikt4LCtopo_MET_Muons_comp_wpx;
+vector<vector<float> > *jet_antikt4LCtopo_MET_Muons_comp_wpy;
+vector<vector<float> > *jet_antikt4LCtopo_MET_Muons_comp_wet;
+vector<vector<unsigned int> > *jet_antikt4LCtopo_MET_Muons_comp_statusWord;
+int           cl_MET_Muons_comp_n;
+vector<vector<float> > *cl_MET_Muons_comp_wpx;
+vector<vector<float> > *cl_MET_Muons_comp_wpy;
+vector<vector<float> > *cl_MET_Muons_comp_wet;
+vector<vector<unsigned int> > *cl_MET_Muons_comp_statusWord;
+int           trk_MET_Muons_comp_n;
+vector<vector<float> > *trk_MET_Muons_comp_wpx;
+vector<vector<float> > *trk_MET_Muons_comp_wpy;
+vector<vector<float> > *trk_MET_Muons_comp_wet;
+vector<vector<unsigned int> > *trk_MET_Muons_comp_statusWord;
 
 
 float rhorhoKt3EM;
@@ -1067,16 +1136,13 @@ void finalizePileup()
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
 
-TLorentzVector getCalibratedJet(unsigned int jet)
-{
-	if(calibJets.size()==0) _FATAL("calibJets size is 0");
-	return calibJets[jet];
-}
-
 BCHTool::BCHCleaningToolRoot* BCH;
 Root::TTileTripReader* TTR;
 void initBCH(bool isData)
 {
+	if(TTR) delete TTR;
+	if(BCH) delete BCH;
+
 	TTR = new Root::TTileTripReader("TileTripReader");	
 	TTR->setTripFile("/afs/cern.ch/user/h/hod/TileTripReader/data/CompleteTripList_2011-2012.root" );
 	
@@ -1092,11 +1158,11 @@ bool isBadCalibJetBCH(unsigned int jet)
 	if(randomRunNumber>0)
 	{
 		randomLumiBlockNumber = pileupTool->GetRandomLumiBlockNumber(randomRunNumber);
-		double calibrated_calo_jet_pt  = AntiKt4LCTopoLets_calibrated_pt->at(jet);
-		double calibrated_calo_jet_eta = AntiKt4LCTopoLets_calibrated_eta->at(jet);
-		double calibrated_calo_jet_phi = AntiKt4LCTopoLets_calibrated_phi->at(jet);
-		double BCH_CORR_CELL           = AntiKt4LCTopoLets_BCH_CORR_CELL->at(jet);
-		double emfrac                  = AntiKt4LCTopoLets_emfrac->at(jet);
+		double calibrated_calo_jet_pt  = AntiKt4LCTopoJets_calibrated_pt->at(jet);
+		double calibrated_calo_jet_eta = AntiKt4LCTopoJets_calibrated_eta->at(jet);
+		double calibrated_calo_jet_phi = AntiKt4LCTopoJets_calibrated_phi->at(jet);
+		double BCH_CORR_CELL           = AntiKt4LCTopoJets_BCH_CORR_CELL->at(jet);
+		double emfrac                  = AntiKt4LCTopoJets_emfrac->at(jet);
 		int isUp                       = 0; // isUp (MC only, default=0): variation due to flavor dependence, can be either -1 (sample = 100% light quark jets), 0 (default QCD composition), 1 (sample = 100% gluon jets)
 		
 		 bool isBad = false;
@@ -1124,17 +1190,17 @@ bool isGoodJet(unsigned int jet, TString configuration = "VeryLooseBad")
 	if(badBCHJets.size()>0 && badBCHJets[jet]) return false;
 	
 	// then the rest of usual jet cleaning
-	double emf          = AntiKt4LCTopoLets_emfrac->at(jet);
-	double hecf         = AntiKt4LCTopoLets_hecf->at(jet);
-	double larq         = AntiKt4LCTopoLets_LArQuality->at(jet);
-	double hecq         = AntiKt4LCTopoLets_HECQuality->at(jet);
-	double time         = AntiKt4LCTopoLets_Timing->at(jet); //in ns
-	double sumpttrk     = AntiKt4LCTopoLets_sumPtTrk_pv0_500MeV->at(jet); //in MeV, same as sumpttrk
-	double eta          = AntiKt4LCTopoLets_emscale_eta->at(jet); //emscale Eta // AntiKt4LCTopoLets_eta->at(jet);  ?
-	double pt           = (skim) ? AntiKt4LCTopoLets_pt->at(jet) : AntiKt4LCTopoLets_calibrated_pt->at(jet)/*getCalibratedJet(jet).Pt()*/; // should be calibrated jet pT in the analysis mode (!skim)
-	double fmax         = AntiKt4LCTopoLets_fracSamplingMax->at(jet);
-	double negE         = AntiKt4LCTopoLets_NegativeE->at(jet); //in MeV
-	double AverageLArQF = AntiKt4LCTopoLets_AverageLArQF->at(jet);
+	double emf          = AntiKt4LCTopoJets_emfrac->at(jet);
+	double hecf         = AntiKt4LCTopoJets_hecf->at(jet);
+	double larq         = AntiKt4LCTopoJets_LArQuality->at(jet);
+	double hecq         = AntiKt4LCTopoJets_HECQuality->at(jet);
+	double time         = AntiKt4LCTopoJets_Timing->at(jet); //in ns
+	double sumpttrk     = AntiKt4LCTopoJets_sumPtTrk_pv0_500MeV->at(jet); //in MeV, same as sumpttrk
+	double eta          = AntiKt4LCTopoJets_constscale_eta->at(jet); // constscale/emscale Eta
+	double pt           = (skim) ? AntiKt4LCTopoJets_pt->at(jet) : AntiKt4LCTopoJets_calibrated_pt->at(jet); // should be calibrated jet pT in the analysis mode (!skim)
+	double fmax         = AntiKt4LCTopoJets_fracSamplingMax->at(jet);
+	double negE         = AntiKt4LCTopoJets_NegativeE->at(jet); //in MeV
+	double AverageLArQF = AntiKt4LCTopoJets_AverageLArQF->at(jet);
 	
 	// -----------------------------------------------------------
 	// Do the actual selection
@@ -1202,22 +1268,23 @@ bool isGoodJet(unsigned int jet, TString configuration = "VeryLooseBad")
 //////////////////////////////////////////////////////////////////////
 
 JetAnalysisCalib::JetCalibrationTool* JES;
-void initJES(bool isdata, TString tag="Moriond", TString jetAlgo="AntiKt4TopoEM") 
+void initJES(bool isdata, TString tag="Moriond") 
 {
 	if(JES) delete JES;
 	
-	if(AntiKt4LCTopoLets_calibrated_pt)  delete AntiKt4LCTopoLets_calibrated_pt;
-	if(AntiKt4LCTopoLets_calibrated_E)   delete AntiKt4LCTopoLets_calibrated_E;
-	if(AntiKt4LCTopoLets_calibrated_m)   delete AntiKt4LCTopoLets_calibrated_m;
-	if(AntiKt4LCTopoLets_calibrated_eta) delete AntiKt4LCTopoLets_calibrated_eta;
-	if(AntiKt4LCTopoLets_calibrated_phi) delete AntiKt4LCTopoLets_calibrated_phi;
-	AntiKt4LCTopoLets_calibrated_pt  = new vector<float>;
-    AntiKt4LCTopoLets_calibrated_E   = new vector<float>;
-    AntiKt4LCTopoLets_calibrated_m   = new vector<float>;
-    AntiKt4LCTopoLets_calibrated_eta = new vector<float>;
-    AntiKt4LCTopoLets_calibrated_phi = new vector<float>;
+	if(AntiKt4LCTopoJets_calibrated_pt)  delete AntiKt4LCTopoJets_calibrated_pt;
+	if(AntiKt4LCTopoJets_calibrated_E)   delete AntiKt4LCTopoJets_calibrated_E;
+	if(AntiKt4LCTopoJets_calibrated_m)   delete AntiKt4LCTopoJets_calibrated_m;
+	if(AntiKt4LCTopoJets_calibrated_eta) delete AntiKt4LCTopoJets_calibrated_eta;
+	if(AntiKt4LCTopoJets_calibrated_phi) delete AntiKt4LCTopoJets_calibrated_phi;
+	AntiKt4LCTopoJets_calibrated_pt  = new vector<float>;
+	AntiKt4LCTopoJets_calibrated_E   = new vector<float>;
+	AntiKt4LCTopoJets_calibrated_m   = new vector<float>;
+	AntiKt4LCTopoJets_calibrated_eta = new vector<float>;
+	AntiKt4LCTopoJets_calibrated_phi = new vector<float>;
 
 	TString JES_config_file = "../ApplyJetCalibration/data/CalibrationConfigs/";
+	TString jetAlgo="AntiKt4LCTopo";
 	
 	if(tag=="Moriond") JES_config_file += "JES_Full2012dataset_Preliminary_Jan13.config"; // Data/MC12 Configuration file
 	else
@@ -1252,8 +1319,8 @@ int findMuspContainer(float jet_eta, float jet_phi)
 }
 double getNsegments(unsigned int jet)
 {
-	double eta_det   = AntiKt4LCTopoLets_emscale_eta->at(jet);
-	double phi       = AntiKt4LCTopoLets_emscale_phi->at(jet);
+	double eta_det   = AntiKt4LCTopoJets_constscale_eta->at(jet);
+	double phi       = AntiKt4LCTopoJets_constscale_phi->at(jet);
 	double Nsegments = 0;  //see below
 	int musp_index = findMuspContainer(eta_det, phi); //Detector jet eta and phi, obtained as above.
 	if(musp_index>=0) Nsegments = musp_innerSegments->at(musp_index) + musp_outerSegments->at(musp_index) + musp_middleSegments->at(musp_index);
@@ -1272,23 +1339,23 @@ int getNPV()
 }
 void clearCalibratedJets()
 {
-	if(!AntiKt4LCTopoLets_calibrated_pt) return;
+	if(!AntiKt4LCTopoJets_calibrated_pt) return;
 	
-	AntiKt4LCTopoLets_calibrated_pt->clear();
-	AntiKt4LCTopoLets_calibrated_E->clear();
-	AntiKt4LCTopoLets_calibrated_m->clear();
-	AntiKt4LCTopoLets_calibrated_eta->clear();
-	AntiKt4LCTopoLets_calibrated_phi->clear();
+	AntiKt4LCTopoJets_calibrated_pt->clear();
+	AntiKt4LCTopoJets_calibrated_E->clear();
+	AntiKt4LCTopoJets_calibrated_m->clear();
+	AntiKt4LCTopoJets_calibrated_eta->clear();
+	AntiKt4LCTopoJets_calibrated_phi->clear();
 }
 void addCalibratedJet(TLorentzVector Jet)
 {
-	if(!AntiKt4LCTopoLets_calibrated_pt) return;
+	if(!AntiKt4LCTopoJets_calibrated_pt) return;
 	
-	AntiKt4LCTopoLets_calibrated_pt->push_back(Jet.Pt());
-	AntiKt4LCTopoLets_calibrated_E->push_back(Jet.E());
-	AntiKt4LCTopoLets_calibrated_m->push_back(Jet.M());
-	AntiKt4LCTopoLets_calibrated_eta->push_back(Jet.Eta());
-	AntiKt4LCTopoLets_calibrated_phi->push_back(Jet.Phi());
+	AntiKt4LCTopoJets_calibrated_pt->push_back(Jet.Pt());
+	AntiKt4LCTopoJets_calibrated_E->push_back(Jet.E());
+	AntiKt4LCTopoJets_calibrated_m->push_back(Jet.M());
+	AntiKt4LCTopoJets_calibrated_eta->push_back(Jet.Eta());
+	AntiKt4LCTopoJets_calibrated_phi->push_back(Jet.Phi());
 }
 
 TLorentzVector getJES(unsigned int jet, TString tag="Moriond")
@@ -1297,15 +1364,15 @@ TLorentzVector getJES(unsigned int jet, TString tag="Moriond")
 	
 	if(tag=="Moriond")
 	{
-		double Eraw = AntiKt4LCTopoLets_emscale_E->at(jet);
-		double eta  = AntiKt4LCTopoLets_emscale_eta->at(jet);
-		double phi  = AntiKt4LCTopoLets_emscale_phi->at(jet);
-		double m    = AntiKt4LCTopoLets_emscale_m->at(jet);
-		double Ax   = AntiKt4LCTopoLets_ActiveAreaPx->at(jet);
-		double Ay   = AntiKt4LCTopoLets_ActiveAreaPy->at(jet);
-		double Az   = AntiKt4LCTopoLets_ActiveAreaPz->at(jet);
-		double Ae   = AntiKt4LCTopoLets_ActiveAreaE->at(jet);
-		double rho  = rhorhoKt4EM;
+		double Eraw = AntiKt4LCTopoJets_constscale_E->at(jet);
+		double eta  = AntiKt4LCTopoJets_constscale_eta->at(jet);
+		double phi  = AntiKt4LCTopoJets_constscale_phi->at(jet);
+		double m    = AntiKt4LCTopoJets_constscale_m->at(jet);
+		double Ax   = AntiKt4LCTopoJets_ActiveAreaPx->at(jet);
+		double Ay   = AntiKt4LCTopoJets_ActiveAreaPy->at(jet);
+		double Az   = AntiKt4LCTopoJets_ActiveAreaPz->at(jet);
+		double Ae   = AntiKt4LCTopoJets_ActiveAreaE->at(jet);
+		double rho  = rhorhoKt4LC; // or rhorhoKt4EM;
 		
 		// For the pile-up correction, we need mu and NPV(2+ tracks)
 		double mu = phys_averageIntPerXing;
@@ -1315,22 +1382,22 @@ TLorentzVector getJES(unsigned int jet, TString tag="Moriond")
 	}
 	else
 	{
-		double Eraw       = AntiKt4LCTopoLets_emscale_E->at(jet);
-		double eta_det    = AntiKt4LCTopoLets_emscale_eta->at(jet);
-		double phi        = AntiKt4LCTopoLets_emscale_phi->at(jet);
-		double m          = AntiKt4LCTopoLets_emscale_m->at(jet);
-		double eta_origin = AntiKt4LCTopoLets_EtaOrigin->at(jet);
-		double phi_origin = AntiKt4LCTopoLets_PhiOrigin->at(jet);
-		double m_origin   = AntiKt4LCTopoLets_MOrigin->at(jet);
-		double Ax         = AntiKt4LCTopoLets_ActiveAreaPx->at(jet);
-		double Ay         = AntiKt4LCTopoLets_ActiveAreaPy->at(jet);
-		double Az         = AntiKt4LCTopoLets_ActiveAreaPz->at(jet);
-		double Ae         = AntiKt4LCTopoLets_ActiveAreaE->at(jet);
+		double Eraw       = AntiKt4LCTopoJets_constscale_E->at(jet);
+		double eta_det    = AntiKt4LCTopoJets_constscale_eta->at(jet);
+		double phi        = AntiKt4LCTopoJets_constscale_phi->at(jet);
+		double m          = AntiKt4LCTopoJets_constscale_m->at(jet);
+		double eta_origin = AntiKt4LCTopoJets_EtaOrigin->at(jet);
+		double phi_origin = AntiKt4LCTopoJets_PhiOrigin->at(jet);
+		double m_origin   = AntiKt4LCTopoJets_MOrigin->at(jet);
+		double Ax         = AntiKt4LCTopoJets_ActiveAreaPx->at(jet);
+		double Ay         = AntiKt4LCTopoJets_ActiveAreaPy->at(jet);
+		double Az         = AntiKt4LCTopoJets_ActiveAreaPz->at(jet);
+		double Ae         = AntiKt4LCTopoJets_ActiveAreaE->at(jet);
 		double rho        = rhorhoKt4EM;       
-		double fEM3       = (AntiKt4LCTopoLets_e_EMB3->at(jet)+AntiKt4LCTopoLets_e_EME3->at(jet))/AntiKt4LCTopoLets_emscale_E->at(jet);
-		double fTile0     = (AntiKt4LCTopoLets_e_TileBar0->at(jet)+AntiKt4LCTopoLets_e_TileExt0->at(jet))/AntiKt4LCTopoLets_emscale_E->at(jet);
-		double nTrk       = AntiKt4LCTopoLets_nTrk_pv0_1GeV->at(jet); 
-		double trackWIDTH = AntiKt4LCTopoLets_trackWIDTH_pv0_1GeV->at(jet); //This variable may also be called AntiKt4LCTopoLets_trackWIDTH_pv0_1GeV
+		double fEM3       = (AntiKt4LCTopoJets_e_EMB3->at(jet)+AntiKt4LCTopoJets_e_EME3->at(jet))/AntiKt4LCTopoJets_constscale_E->at(jet);
+		double fTile0     = (AntiKt4LCTopoJets_e_TileBar0->at(jet)+AntiKt4LCTopoJets_e_TileExt0->at(jet))/AntiKt4LCTopoJets_constscale_E->at(jet);
+		double nTrk       = AntiKt4LCTopoJets_nTrk_pv0_1GeV->at(jet); 
+		double trackWIDTH = AntiKt4LCTopoJets_trackWIDTH_pv0_1GeV->at(jet); //This variable may also be called AntiKt4LCTopoJets_trackWIDTH_pv0_1GeV
 		double Nsegments = getNsegments(jet);
 				
 		// For the pile-up correction, we need mu and NPV(2+ tracks)
@@ -1460,23 +1527,26 @@ double getJUNC(unsigned int jet, TLorentzVector Jet, TMapVL& JetShiftsUp, TMapVL
 JetSmearingTool* JER;
 void initJER()
 {
+	if(JER) delete JER;
+
 	TString JERinputFile = "/afs/cern.ch/user/h/hod/JetResolution/share/JERProviderPlots_2012.root";
 	TString jetAlgo = "AntiKt4LCTopo";
 	JER = new JetSmearingTool(jetAlgo,JERinputFile);
 	JER->init();
 }
-
 void seedJER()
 {
 	JER->SetSeed(phys_RunNumber);
 }
-
-TLorentzVector getJER(TLorentzVector Jet)
+TLorentzVector getJER(TLorentzVector Jet, double& shift)
 {
 	TLorentzVector smearedJet = Jet;
 	// The below is systematic evaluation, and ONLY for MC
 	// Smear the jet to match the MC resolution+1 sigma!
-	JER->SmearJet_Syst(smearedJet); // FOR 7 TeV 2011 and 8 TeV 2012 MC12 Fullsim
+	// JER->SmearJet_Syst(smearedJet); // FOR 7 TeV 2011 and 8 TeV 2012 MC12 Fullsim
+	double factor = JER->GetRandomSmearingFactorSyst(Jet);
+	smearedJet *= factor;
+	shift = fabs(factor-1.);
 	return smearedJet;
 }
 
@@ -1484,7 +1554,12 @@ TLorentzVector getJER(TLorentzVector Jet)
 METUtility *METU;
 void initMET()
 {
+	if(METU) delete METU;
+
 	METU = new METUtility;
+	
+	METU->configMissingET(true,false);
+	
 	// METU->setVerbosity(isVerbose);
 	// METU->setSoftJetCut(20); // soft jet cut
 	
@@ -1493,46 +1568,110 @@ void initMET()
 	// // region = METUtil::Central, METUtil::EndCap or METUtil::Forward
 	// // or set eta cuts explicitly
 	// m_util->setObjectEtaCut(etaLow, etaHigh);
-}
 
+	if(akt4lc_jet_pt)  akt4lc_jet_pt->clear();  else akt4lc_jet_pt  = new vector<float>;
+	if(akt4lc_jet_E)   akt4lc_jet_E->clear();   else akt4lc_jet_E   = new vector<float>;
+	if(akt4lc_jet_eta) akt4lc_jet_eta->clear(); else akt4lc_jet_eta = new vector<float>;
+	if(akt4lc_jet_phi) akt4lc_jet_phi->clear(); else akt4lc_jet_phi = new vector<float>;
+}
+void setJetVectorPointers(vector<TLorentzVector>& nominalJets, vector<double>& shifts, int shift_code)
+{
+	akt4lc_jet_pt->clear();
+	akt4lc_jet_E->clear();
+	akt4lc_jet_eta->clear();
+	akt4lc_jet_phi->clear();
+	
+	unsigned int nJets = nominalJets.size();
+	for(unsigned int jet=0 ; jet<nJets ; ++jet)
+	{
+		TLorentzVector Jet = nominalJets[jet];
+		double shift = shifts[jet];
+		if     (shift_code==SHIFTUP)  Jet *= (1.+shift);
+		else if(shift_code==SHIFTDWN) Jet *= (1.-shift);
+		else if(shift_code==NOSHIFT)  Jet *= 1.;
+		else _FATAL("unsupported shift code = "+_s(shift_code));
+	
+		// cout << "jet=" << jet << ", shift_code=" << shift_code << ", shift=" << shift << ", pT:" << nominalJets[jet].Pt() << " --> " << Jet.Pt() << endl;
+		
+		akt4lc_jet_pt->push_back(Jet.Pt());
+		akt4lc_jet_E->push_back(Jet.E());
+		akt4lc_jet_eta->push_back(Jet.Eta());
+		akt4lc_jet_phi->push_back(Jet.Phi());
+	}
+}
+void setJetVectorPointers(vector<TLorentzVector>& Jets)
+{
+	akt4lc_jet_pt->clear();
+	akt4lc_jet_E->clear();
+	akt4lc_jet_eta->clear();
+	akt4lc_jet_phi->clear();
+	
+	unsigned int nJets = Jets.size();
+	for(unsigned int jet=0 ; jet<nJets ; ++jet)
+	{
+		TLorentzVector Jet = Jets[jet];
+		
+		akt4lc_jet_pt->push_back(Jet.Pt());
+		akt4lc_jet_E->push_back(Jet.E());
+		akt4lc_jet_eta->push_back(Jet.Eta());
+		akt4lc_jet_phi->push_back(Jet.Phi());
+	}
+}
 METUtil::METObject getMETU()
 {
 	METU->reset();
 
-	if(el_pt==NULL || el_MET_wet==NULL) _FATAL("");
-
-	METU->setMETTerm(METUtil::RefMuon, MET_RefMuon_etx, MET_RefMuon_ety, MET_RefMuon_sumet); // must be done in addition to the staco code below
-	METU->setMETTerm(METUtil::RefTau, MET_RefTau_etx, MET_RefTau_ety, MET_RefTau_sumet);
+	if(el_pt==NULL || el_MET_RefFinal_comp_wet==NULL) _FATAL("");
+	
+	METU->defineMissingET(true,true,true,true,true,true,true);
+	// METU->setIsMuid(true);
+	// METU->setIsMuons(true);
+	
+	
+	METU->setMETTerm(METUtil::RefMuon,   MET_RefMuon_etx, MET_RefMuon_ety, MET_RefMuon_sumet); // must be done in addition to the staco code below
+	METU->setMETTerm(METUtil::RefTau,    MET_RefTau_etx,  MET_RefTau_ety,  MET_RefTau_sumet);
+	// METU->setMETTerm(METUtil::SoftTerms, MET_CellOut_Eflow_etx+MET_SoftJets_etx, MET_CellOut_Eflow_ety+MET_SoftJets_ety, MET_CellOut_Eflow_sumet+MET_SoftJets_sumet);
 	METU->setMETTerm(METUtil::SoftTerms, MET_CellOut_Eflow_etx, MET_CellOut_Eflow_ety, MET_CellOut_Eflow_sumet);
 	
-	//METU->setElectronParameters(el_pt, el_eta, el_phi,
-	//			    el_MET_wet, el_MET_wpx, el_MET_wpy, el_MET_statusWord);
+	// METU->setElectronParameters(el_pt, el_eta, el_phi, el_MET_RefFinal_comp_wet, el_MET_RefFinal_comp_wpx, el_MET_RefFinal_comp_wpy, el_MET_RefFinal_comp_statusWord);
 	METU->setMETTerm(METUtil::RefEle, MET_RefEle_etx, MET_RefEle_ety, MET_RefEle_sumet);
 
-	//METU->setPhotonParameters(ph_pt, ph_eta, ph_phi,
-	//		 	  ph_MET_wet, ph_MET_wpx, ph_MET_wpy, ph_MET_statusWord);
+	// METU->setPhotonParameters(ph_pt, ph_eta, ph_phi, ph_MET_RefFinal_comp_wet, ph_MET_RefFinal_comp_wpx, ph_MET_RefFinal_comp_wpy, ph_MET_RefFinal_comp_statusWord);
 	METU->setMETTerm(METUtil::RefGamma, MET_RefGamma_etx, MET_RefGamma_ety, MET_RefGamma_sumet);
 	
-	METU->setJetParameters(AntiKt4LCTopoLets_calibrated_pt,AntiKt4LCTopoLets_calibrated_eta,AntiKt4LCTopoLets_calibrated_phi,AntiKt4LCTopoLets_calibrated_E,
-						   jet_antikt4LCtopo_MET_wet, jet_antikt4LCtopo_MET_wpx, jet_antikt4LCtopo_MET_wpy, jet_antikt4LCtopo_MET_statusWord);
+	METU->setJetParameters(akt4lc_jet_pt, akt4lc_jet_eta, akt4lc_jet_phi,akt4lc_jet_E, jet_antikt4LCtopo_MET_RefFinal_comp_wet, jet_antikt4LCtopo_MET_RefFinal_comp_wpx, jet_antikt4LCtopo_MET_RefFinal_comp_wpy, jet_antikt4LCtopo_MET_RefFinal_comp_statusWord);
+	// METU->setJetParameters(AntiKt4LCTopoJets_pt, AntiKt4LCTopoJets_eta, AntiKt4LCTopoJets_phi,AntiKt4LCTopoJets_E, jet_antikt4LCtopo_MET_RefFinal_comp_wet, jet_antikt4LCtopo_MET_RefFinal_comp_wpx, jet_antikt4LCtopo_MET_RefFinal_comp_wpy, jet_antikt4LCtopo_MET_RefFinal_comp_statusWord);
 	// METU->setMETTerm(METUtil::RefJet, MET_RefJet_etx, MET_RefJet_ety, MET_RefJet_sumet);
 
-	METU->setMuonParameters(mu_staco_pt, mu_staco_eta, mu_staco_phi,
-							mu_staco_MET_wet, mu_staco_MET_wpx, mu_staco_MET_wpy, mu_staco_MET_statusWord);
+
+	// METU->setMuonParameters(mu_staco_pt, mu_staco_eta, mu_staco_phi, mu_staco_MET_RefFinal_comp_wet, mu_staco_MET_RefFinal_comp_wpx, mu_staco_MET_RefFinal_comp_wpy, mu_staco_MET_RefFinal_comp_statusWord);
 	// The default pt for muons is from the combined ID/MS track.
 	// Spectro-only muons need to have the MS momentum set separately.
 	// This version of the method uses commonly available D3PD branches.
-	METU->setExtraMuonParameters(mu_staco_ms_qoverp, mu_staco_ms_theta, mu_staco_ms_phi, mu_staco_charge);
-
+	// METU->setExtraMuonParameters(mu_staco_ms_qoverp, mu_staco_ms_theta, mu_staco_ms_phi, mu_staco_charge);
+	METU->setMETTerm(METUtil::MuonTotal, MET_MuonBoy_etx, MET_MuonBoy_ety, MET_MuonBoy_sumet);
+	
+	// METU->setMuonParameters(mu_muons_pt, mu_muons_eta, mu_muons_phi, mu_MET_RefFinal_comp_wet, mu_MET_RefFinal_comp_wpx, mu_MET_RefFinal_comp_wpy, mu_MET_RefFinal_comp_statusWord);
+	// // The default pt for muons is from the combined ID/MS track.
+	// // Spectro-only muons need to have the MS momentum set separately.
+	// // This version of the method uses commonly available D3PD branches.
+	// METU->setExtraMuonParameters(mu_muons_ms_qoverp, mu_muons_ms_theta, mu_muons_ms_phi, mu_muons_charge);
+	// // METU->setMETTerm(METUtil::MuonTotal, MET_Muons_etx, MET_Muons_ety, MET_Muons_sumet);
+	
 	
 	//// Now get the MET (RefFinal)
 	METUtil::METObject refFinal = METU->getMissingET(METUtil::RefFinal);
-	
 	// METUtil::METObject refFinal_test(MET_RefFinal_etx, MET_RefFinal_ety, MET_RefFinal_sumet);
 	// bool check_refFinal = METU->checkConsistency(refFinal_test,METUtil::RefFinal);
 	// if(check_refFinal) cout << "RefFinal checks out!" << endl;
 	// else               cout << "RefFinal doesn't check out!" << endl;
 	
+	// if(MET_RefEle_et>0 || MET_RefGamma_et>0)
+	// {
+	// 	cout << "MET_RefJet_et="   << MET_RefJet_et   << ", refJet_et="   << METU->getMissingET(METUtil::RefJet).et() << endl;
+	// 	cout << "MET_RefEle_et="   << MET_RefEle_et   << ", refEle_et="   << METU->getMissingET(METUtil::RefEle).et() << endl;
+	// 	cout << "MET_RefGamma_et=" << MET_RefGamma_et << ", refGamma_et=" << METU->getMissingET(METUtil::RefGamma).et() << endl;
+	// }
  	return refFinal;
 }
 
@@ -1572,17 +1711,17 @@ METUtil::METObject getMETU()
 
 void fillJetCalibrationHistos(unsigned int jet, TLorentzVector Jet, TLorentzVector smearedJet, TString name, TMapTSP2TH1& histos, TMapTSP2TH2& histos2, double wgt)
 {
-	double pTreldiff  = Jet.Pt()/AntiKt4LCTopoLets_pt->at(jet) - 1.;
-	double Ereldiff   = Jet.E()/AntiKt4LCTopoLets_E->at(jet) - 1.;
-	double mreldiff   = Jet.M()/AntiKt4LCTopoLets_m->at(jet) - 1.;
-	double etareldiff = Jet.Eta()/AntiKt4LCTopoLets_eta->at(jet) - 1.;
-	double phireldiff = Jet.Phi()/AntiKt4LCTopoLets_phi->at(jet) - 1.;
+	double pTreldiff  = Jet.Pt()/AntiKt4LCTopoJets_pt->at(jet) - 1.;
+	double Ereldiff   = Jet.E()/AntiKt4LCTopoJets_E->at(jet) - 1.;
+	double mreldiff   = Jet.M()/AntiKt4LCTopoJets_m->at(jet) - 1.;
+	double etareldiff = Jet.Eta()/AntiKt4LCTopoJets_eta->at(jet) - 1.;
+	double phireldiff = Jet.Phi()/AntiKt4LCTopoJets_phi->at(jet) - 1.;
 	
-	double pTJetUncalib  = AntiKt4LCTopoLets_pt->at(jet);
-	double EJetUncalib   = AntiKt4LCTopoLets_E->at(jet);
-	double mJetUncalib   = AntiKt4LCTopoLets_m->at(jet);
-	double etaJetUncalib = AntiKt4LCTopoLets_eta->at(jet);
-	double phiJetUncalib = AntiKt4LCTopoLets_phi->at(jet);
+	double pTJetUncalib  = AntiKt4LCTopoJets_pt->at(jet);
+	double EJetUncalib   = AntiKt4LCTopoJets_E->at(jet);
+	double mJetUncalib   = AntiKt4LCTopoJets_m->at(jet);
+	double etaJetUncalib = AntiKt4LCTopoJets_eta->at(jet);
+	double phiJetUncalib = AntiKt4LCTopoJets_phi->at(jet);
 	
 	// if(pTJetUncalib>15.*GeV2MeV && fabs(etaJetUncalib)<4.5 && isGoodJet(jet,JetQuality))
 	// {
@@ -3064,11 +3203,45 @@ void fillFlatoutTree(vector<vertex>& vertices, int allPassing)
 		flatout_vfloats["jet_vtxf2"]    ->push_back( v.jetVtxFrac(1));
 		flatout_vfloats["jet_vtxf3"]    ->push_back( v.jetVtxFrac(2));
 		flatout_vfloats["jet_vtxf4"]    ->push_back( v.jetVtxFrac(3));
-		flatout_vfloats["jet_sumpt12"]  ->push_back( v.jetSumPt());
-		flatout_vfloats["jet_dphi3muJ1"]->push_back( v.jetDphi3body());
-		flatout_vfloats["jet_dR3muJ1"]  ->push_back( v.jetDR3body());
-		flatout_vfloats["jet_dphiJ1J2"] ->push_back( v.jetDphi12());
-		flatout_vfloats["jet_dRJ1J2"]   ->push_back( v.jetDR12());
+		flatout_vfloats["jet_sumpt12"]  ->push_back( v.jetSumPt(NOMINAL));
+		flatout_vfloats["jet_dphi3muJ1"]->push_back( v.jetDphi3body(NOMINAL));
+		flatout_vfloats["jet_dR3muJ1"]  ->push_back( v.jetDR3body(NOMINAL));
+		flatout_vfloats["jet_dphiJ1J2"] ->push_back( v.jetDphi12(NOMINAL));
+		flatout_vfloats["jet_dRJ1J2"]   ->push_back( v.jetDR12(NOMINAL));
+		
+		_DEBUG("");
+	
+		flatout_vfloats["jet_JES_shift1"]       ->push_back((v.jetN()>0) ? v.jetShiftJES(0) : 0.);
+		flatout_vfloats["jet_JES_shift2"]       ->push_back((v.jetN()>1) ? v.jetShiftJES(1) : 0.);
+		flatout_vfloats["jet_JES_shift3"]       ->push_back((v.jetN()>2) ? v.jetShiftJES(2) : 0.);
+		flatout_vfloats["jet_JES_shift4"]       ->push_back((v.jetN()>3) ? v.jetShiftJES(3) : 0.);
+		                                                                                   
+		flatout_vfloats["jet_JER_shift1"]       ->push_back((v.jetN()>0) ? v.jetShiftJER(0) : 0.);
+		flatout_vfloats["jet_JER_shift2"]       ->push_back((v.jetN()>1) ? v.jetShiftJER(1) : 0.);
+		flatout_vfloats["jet_JER_shift3"]       ->push_back((v.jetN()>2) ? v.jetShiftJER(2) : 0.);
+		flatout_vfloats["jet_JER_shift4"]       ->push_back((v.jetN()>3) ? v.jetShiftJER(3) : 0.);
+
+		flatout_vfloats["jet_sumpt12_jes_up"]  ->push_back( v.jetSumPt(JESUP));
+		flatout_vfloats["jet_dphi3muJ1_jes_up"]->push_back( v.jetDphi3body(JESUP));
+		flatout_vfloats["jet_dR3muJ1_jes_up"]  ->push_back( v.jetDR3body(JESUP));
+		flatout_vfloats["jet_dphiJ1J2_jes_up"] ->push_back( v.jetDphi12(JESUP));
+		flatout_vfloats["jet_dRJ1J2_jes_up"]   ->push_back( v.jetDR12(JESUP));
+		flatout_vfloats["jet_sumpt12_jes_dwn"]  ->push_back( v.jetSumPt(JESDWN));
+		flatout_vfloats["jet_dphi3muJ1_jes_dwn"]->push_back( v.jetDphi3body(JESDWN));
+		flatout_vfloats["jet_dR3muJ1_jes_dwn"]  ->push_back( v.jetDR3body(JESDWN));
+		flatout_vfloats["jet_dphiJ1J2_jes_dwn"] ->push_back( v.jetDphi12(JESDWN));
+		flatout_vfloats["jet_dRJ1J2_jes_dwn"]   ->push_back( v.jetDR12(JESDWN));
+		
+		flatout_vfloats["jet_sumpt12_jer_up"]  ->push_back( v.jetSumPt(JERUP));
+		flatout_vfloats["jet_dphi3muJ1_jer_up"]->push_back( v.jetDphi3body(JERUP));
+		flatout_vfloats["jet_dR3muJ1_jer_up"]  ->push_back( v.jetDR3body(JERUP));
+		flatout_vfloats["jet_dphiJ1J2_jer_up"] ->push_back( v.jetDphi12(JERUP));
+		flatout_vfloats["jet_dRJ1J2_jer_up"]   ->push_back( v.jetDR12(JERUP));
+		flatout_vfloats["jet_sumpt12_jer_dwn"]  ->push_back( v.jetSumPt(JERDWN));
+		flatout_vfloats["jet_dphi3muJ1_jer_dwn"]->push_back( v.jetDphi3body(JERDWN));
+		flatout_vfloats["jet_dR3muJ1_jer_dwn"]  ->push_back( v.jetDR3body(JERDWN));
+		flatout_vfloats["jet_dphiJ1J2_jer_dwn"] ->push_back( v.jetDphi12(JERDWN));
+		flatout_vfloats["jet_dRJ1J2_jer_dwn"]   ->push_back( v.jetDR12(JERDWN));
 		
 		_DEBUG("");
 		
@@ -3123,14 +3296,42 @@ void fillFlatoutTree(vector<vertex>& vertices, int allPassing)
 		flatout_vfloats["vtx_isolation028"]->push_back(v.vtxIsolation(19));
 		flatout_vfloats["vtx_isolation030"]->push_back(v.vtxIsolation(20));
 		
-		flatout_vfloats["met_reffinal_mT"]     ->push_back(v.metMt());
-		flatout_vfloats["met_reffinal_dPhi3mu"]->push_back(v.metDphi3body());
+		_DEBUG("");
+		
+		flatout_vfloats["met_reffinal_mT"]     ->push_back(v.metMt(NOJES));
+		flatout_vfloats["met_reffinal_dPhi3mu"]->push_back(v.metDphi3body(NOJES));
+	
+		flatout_vfloats["met_reffinal_JESnominal_mT"]     ->push_back(v.metMt(NOMINAL));
+		flatout_vfloats["met_reffinal_JESnominal_dPhi3mu"]->push_back(v.metDphi3body(NOMINAL));
+		
+		flatout_vfloats["met_reffinal_JESup_mT"]     ->push_back(v.metMt(JESUP));
+		flatout_vfloats["met_reffinal_JESup_dPhi3mu"]->push_back(v.metDphi3body(JESUP));
+		flatout_vfloats["met_reffinal_JESdwn_mT"]     ->push_back(v.metMt(JESDWN));
+		flatout_vfloats["met_reffinal_JESdwn_dPhi3mu"]->push_back(v.metDphi3body(JESDWN));
+		
+		flatout_vfloats["met_reffinal_JERup_mT"]     ->push_back(v.metMt(JERUP));
+		flatout_vfloats["met_reffinal_JERup_dPhi3mu"]->push_back(v.metDphi3body(JERUP));
+		flatout_vfloats["met_reffinal_JERdwn_mT"]     ->push_back(v.metMt(JERDWN));
+		flatout_vfloats["met_reffinal_JERdwn_dPhi3mu"]->push_back(v.metDphi3body(JERDWN));
 	}
 	
 	_DEBUG("");
 	
-	flatout_floats["met_reffinal_et"]      = MET_RefFinal_et;
-	flatout_floats["met_reffinal_phi"]     = MET_RefFinal_phi;
+	flatout_floats["met_reffinal_et"]  = MET_RefFinal_et;
+	flatout_floats["met_reffinal_phi"] = MET_RefFinal_phi;
+	
+	flatout_floats["met_reffinal_JESnominal_et"]  = calibMET_nominal.et();
+	flatout_floats["met_reffinal_JESnominal_phi"] = calibMET_nominal.phi();
+	                            
+	flatout_floats["met_reffinal_JESup_et"]  = calibMET_jes_up.et();
+	flatout_floats["met_reffinal_JESup_phi"] = calibMET_jes_up.phi();
+	flatout_floats["met_reffinal_JESdwn_et"]  = calibMET_jes_dwn.et();
+	flatout_floats["met_reffinal_JESdwn_phi"] = calibMET_jes_dwn.phi();
+	                            
+	flatout_floats["met_reffinal_JERup_et"]  = calibMET_jer_up.et();
+	flatout_floats["met_reffinal_JERup_phi"] = calibMET_jer_up.phi();
+	flatout_floats["met_reffinal_JERdwn_et"]  = calibMET_jer_dwn.et();
+	flatout_floats["met_reffinal_JERdwn_phi"] = calibMET_jer_dwn.phi();
 	
 	_DEBUG("");
 	
@@ -3197,10 +3398,10 @@ bool isMV1btag(bool isTight=true)
 	// }
 	// return false;
 
-	for(int i=0 ; i<AntiKt4LCTopoLets_n ; i++)
+	for(int i=0 ; i<AntiKt4LCTopoJets_n ; i++)
 	{
 		if(!isGoodJet(i,JetQuality))  continue;
-		bool isBtag = (isTight) ? isTightBtag(AntiKt4LCTopoLets_flavor_weight_MV1->at(i)) : isStandardBtag(AntiKt4LCTopoLets_flavor_weight_MV1->at(i));
+		bool isBtag = (isTight) ? isTightBtag(AntiKt4LCTopoJets_flavor_weight_MV1->at(i)) : isStandardBtag(AntiKt4LCTopoJets_flavor_weight_MV1->at(i));
 		if(isBtag) return true;
 	}
 	return false;
@@ -3222,10 +3423,10 @@ int bestOverlapingJet(TLorentzVector lvX)
 	// }
 	// return idRmin;
 	
-	for(int i=0 ; i<AntiKt4LCTopoLets_n ; i++)
+	for(int i=0 ; i<AntiKt4LCTopoJets_n ; i++)
 	{
 		if(!isGoodJet(i,JetQuality))  continue;
-		lvJet.SetPtEtaPhiE(AntiKt4LCTopoLets_pt->at(i),AntiKt4LCTopoLets_eta->at(i),AntiKt4LCTopoLets_phi->at(i),AntiKt4LCTopoLets_E->at(i));
+		lvJet.SetPtEtaPhiE(AntiKt4LCTopoJets_pt->at(i),AntiKt4LCTopoJets_eta->at(i),AntiKt4LCTopoJets_phi->at(i),AntiKt4LCTopoJets_E->at(i));
 		float dR = lvJet.DeltaR(lvX);
 		if(dR<dRmin) { dRmin=dR; idRmin=i; }
 	}
@@ -3962,86 +4163,86 @@ void setBranches(TString tType, TChain* t)
 {
 	if(tType=="physics")
 	{
-		AntiKt4LCTopoLets_E = 0;
-		AntiKt4LCTopoLets_pt = 0;
-		AntiKt4LCTopoLets_m = 0;
-		AntiKt4LCTopoLets_eta = 0;
-		AntiKt4LCTopoLets_phi = 0;
+		AntiKt4LCTopoJets_E = 0;
+		AntiKt4LCTopoJets_pt = 0;
+		AntiKt4LCTopoJets_m = 0;
+		AntiKt4LCTopoJets_eta = 0;
+		AntiKt4LCTopoJets_phi = 0;
 		
-		AntiKt4LCTopoLets_emfrac = 0;
-		AntiKt4LCTopoLets_hecf = 0;
-		AntiKt4LCTopoLets_LArQuality = 0;
-		AntiKt4LCTopoLets_HECQuality = 0;
-		AntiKt4LCTopoLets_Timing = 0;
-		AntiKt4LCTopoLets_sumPtTrk_pv0_500MeV = 0;
-		AntiKt4LCTopoLets_eta = 0;
-		AntiKt4LCTopoLets_pt = 0;
-		AntiKt4LCTopoLets_fracSamplingMax = 0;
-		AntiKt4LCTopoLets_NegativeE = 0;
-		AntiKt4LCTopoLets_AverageLArQF = 0;
+		AntiKt4LCTopoJets_emfrac = 0;
+		AntiKt4LCTopoJets_hecf = 0;
+		AntiKt4LCTopoJets_LArQuality = 0;
+		AntiKt4LCTopoJets_HECQuality = 0;
+		AntiKt4LCTopoJets_Timing = 0;
+		AntiKt4LCTopoJets_sumPtTrk_pv0_500MeV = 0;
+		AntiKt4LCTopoJets_eta = 0;
+		AntiKt4LCTopoJets_pt = 0;
+		AntiKt4LCTopoJets_fracSamplingMax = 0;
+		AntiKt4LCTopoJets_NegativeE = 0;
+		AntiKt4LCTopoJets_AverageLArQF = 0;
 		
-		AntiKt4LCTopoLets_EtaOrigin = 0;
-		AntiKt4LCTopoLets_PhiOrigin = 0;
-		AntiKt4LCTopoLets_MOrigin = 0;
-		AntiKt4LCTopoLets_WIDTH = 0;
-		AntiKt4LCTopoLets_n90 = 0;
-		AntiKt4LCTopoLets_nTrk = 0;
-		AntiKt4LCTopoLets_sumPtTrk = 0;
-		AntiKt4LCTopoLets_OriginIndex = 0;
+		AntiKt4LCTopoJets_EtaOrigin = 0;
+		AntiKt4LCTopoJets_PhiOrigin = 0;
+		AntiKt4LCTopoJets_MOrigin = 0;
+		AntiKt4LCTopoJets_WIDTH = 0;
+		AntiKt4LCTopoJets_n90 = 0;
+		AntiKt4LCTopoJets_nTrk = 0;
+		AntiKt4LCTopoJets_sumPtTrk = 0;
+		AntiKt4LCTopoJets_OriginIndex = 0;
         
-		AntiKt4LCTopoLets_BCH_CORR_CELL = 0;
-		AntiKt4LCTopoLets_BCH_CORR_DOTX = 0;
-		AntiKt4LCTopoLets_BCH_CORR_JET = 0;
-		AntiKt4LCTopoLets_BCH_CORR_JET_FORCELL = 0;
-		AntiKt4LCTopoLets_ENG_BAD_CELLS = 0;
-		AntiKt4LCTopoLets_N_BAD_CELLS = 0;
-		AntiKt4LCTopoLets_N_BAD_CELLS_CORR = 0;
-		AntiKt4LCTopoLets_BAD_CELLS_CORR_E = 0;
+		AntiKt4LCTopoJets_BCH_CORR_CELL = 0;
+		AntiKt4LCTopoJets_BCH_CORR_DOTX = 0;
+		AntiKt4LCTopoJets_BCH_CORR_JET = 0;
+		AntiKt4LCTopoJets_BCH_CORR_JET_FORCELL = 0;
+		AntiKt4LCTopoJets_ENG_BAD_CELLS = 0;
+		AntiKt4LCTopoJets_N_BAD_CELLS = 0;
+		AntiKt4LCTopoJets_N_BAD_CELLS_CORR = 0;
+		AntiKt4LCTopoJets_BAD_CELLS_CORR_E = 0;
         
-		AntiKt4LCTopoLets_isUgly = 0;
-		AntiKt4LCTopoLets_isBadLooseMinus = 0;
-		AntiKt4LCTopoLets_isBadLoose = 0;
-		AntiKt4LCTopoLets_isBadMedium = 0;
-		AntiKt4LCTopoLets_isBadTight = 0;
+		AntiKt4LCTopoJets_isUgly = 0;
+		AntiKt4LCTopoJets_isBadLooseMinus = 0;
+		AntiKt4LCTopoJets_isBadLoose = 0;
+		AntiKt4LCTopoJets_isBadMedium = 0;
+		AntiKt4LCTopoJets_isBadTight = 0;
         
-		AntiKt4LCTopoLets_Offset = 0;
-		AntiKt4LCTopoLets_EMJES = 0;
-		AntiKt4LCTopoLets_EMJES_EtaCorr = 0;
-		AntiKt4LCTopoLets_EMJESnooffset = 0;
+		AntiKt4LCTopoJets_Offset = 0;
+		AntiKt4LCTopoJets_EMJES = 0;
+		AntiKt4LCTopoJets_EMJES_EtaCorr = 0;
+		AntiKt4LCTopoJets_EMJESnooffset = 0;
         
-		AntiKt4LCTopoLets_emscale_E = 0;
-		AntiKt4LCTopoLets_emscale_pt = 0;
-		AntiKt4LCTopoLets_emscale_m = 0;
-		AntiKt4LCTopoLets_emscale_eta = 0;
-		AntiKt4LCTopoLets_emscale_phi = 0;
+		AntiKt4LCTopoJets_emscale_E = 0;
+		AntiKt4LCTopoJets_emscale_pt = 0;
+		AntiKt4LCTopoJets_emscale_m = 0;
+		AntiKt4LCTopoJets_emscale_eta = 0;
+		AntiKt4LCTopoJets_emscale_phi = 0;
 		
-		AntiKt4LCTopoLets_jvtx_x = 0;
-		AntiKt4LCTopoLets_jvtx_y = 0;
-		AntiKt4LCTopoLets_jvtx_z = 0;
-		AntiKt4LCTopoLets_jvtxf = 0;
+		AntiKt4LCTopoJets_jvtx_x = 0;
+		AntiKt4LCTopoJets_jvtx_y = 0;
+		AntiKt4LCTopoJets_jvtx_z = 0;
+		AntiKt4LCTopoJets_jvtxf = 0;
 		
-		AntiKt4LCTopoLets_LikeLihood_0 = 0;
-		AntiKt4LCTopoLets_ActiveArea = 0;
-		AntiKt4LCTopoLets_ActiveAreaPx = 0;
-		AntiKt4LCTopoLets_ActiveAreaPy = 0;
-		AntiKt4LCTopoLets_ActiveAreaPz = 0;
-		AntiKt4LCTopoLets_ActiveAreaE = 0;
-		AntiKt4LCTopoLets_VoronoiArea = 0;
-		AntiKt4LCTopoLets_VoronoiAreaPx = 0;
-		AntiKt4LCTopoLets_VoronoiAreaPy = 0;
-		AntiKt4LCTopoLets_VoronoiAreaPz = 0;
-		AntiKt4LCTopoLets_VoronoiAreaE = 0;
-		AntiKt4LCTopoLets_LowEtConstituentsFrac = 0;
+		AntiKt4LCTopoJets_LikeLihood_0 = 0;
+		AntiKt4LCTopoJets_ActiveArea = 0;
+		AntiKt4LCTopoJets_ActiveAreaPx = 0;
+		AntiKt4LCTopoJets_ActiveAreaPy = 0;
+		AntiKt4LCTopoJets_ActiveAreaPz = 0;
+		AntiKt4LCTopoJets_ActiveAreaE = 0;
+		AntiKt4LCTopoJets_VoronoiArea = 0;
+		AntiKt4LCTopoJets_VoronoiAreaPx = 0;
+		AntiKt4LCTopoJets_VoronoiAreaPy = 0;
+		AntiKt4LCTopoJets_VoronoiAreaPz = 0;
+		AntiKt4LCTopoJets_VoronoiAreaE = 0;
+		AntiKt4LCTopoJets_LowEtConstituentsFrac = 0;
 		
-		AntiKt4LCTopoLets_constscale_E = 0;
-		AntiKt4LCTopoLets_constscale_pt = 0;
-		AntiKt4LCTopoLets_constscale_m = 0;
-		AntiKt4LCTopoLets_constscale_eta = 0;
-		AntiKt4LCTopoLets_constscale_phi = 0;
-		AntiKt4LCTopoLets_LArBadHVEnergy = 0;
-		AntiKt4LCTopoLets_LArBadHVRatio = 0;
+		AntiKt4LCTopoJets_constscale_E = 0;
+		AntiKt4LCTopoJets_constscale_pt = 0;
+		AntiKt4LCTopoJets_constscale_m = 0;
+		AntiKt4LCTopoJets_constscale_eta = 0;
+		AntiKt4LCTopoJets_constscale_phi = 0;
+		AntiKt4LCTopoJets_LArBadHVEnergy = 0;
+		AntiKt4LCTopoJets_LArBadHVRatio = 0;
 		
-		AntiKt4LCTopoLets_flavor_weight_MV1 = 0;
+		AntiKt4LCTopoJets_flavor_weight_MV1 = 0;
 		
 		trk_pt = 0;
 		trk_eta = 0;
@@ -4097,42 +4298,42 @@ void setBranches(TString tType, TChain* t)
 		tau_eta = 0;
 		tau_phi = 0;
         
-		el_MET_wpx = 0;
-		el_MET_wpy = 0;
-		el_MET_wet = 0;
-		el_MET_statusWord = 0;
-		ph_MET_wpx = 0;
-		ph_MET_wpy = 0;
-		ph_MET_wet = 0;
-		ph_MET_statusWord = 0;
-		mu_staco_MET_wpx = 0;
-		mu_staco_MET_wpy = 0;
-		mu_staco_MET_wet = 0;
-		mu_staco_MET_statusWord = 0;
-		mu_muid_MET_wpx = 0;
-		mu_muid_MET_wpy = 0;
-		mu_muid_MET_wet = 0;
-		mu_muid_MET_statusWord = 0;
-		mu_MET_wpx = 0;
-		mu_MET_wpy = 0;
-		mu_MET_wet = 0;
-		mu_MET_statusWord = 0;
-		tau_MET_wpx = 0;
-		tau_MET_wpy = 0;
-		tau_MET_wet = 0;
-		tau_MET_statusWord = 0;
-		jet_antikt4LCtopo_MET_wpx = 0;
-		jet_antikt4LCtopo_MET_wpy = 0;
-		jet_antikt4LCtopo_MET_wet = 0;
-		jet_antikt4LCtopo_MET_statusWord = 0;
-		cl_MET_wpx = 0;
-		cl_MET_wpy = 0;
-		cl_MET_wet = 0;
-		cl_MET_statusWord = 0;
-		trk_MET_wpx = 0;
-		trk_MET_wpy = 0;
-		trk_MET_wet = 0;
-		trk_MET_statusWord = 0;
+		el_MET_RefFinal_comp_wpx = 0;
+		el_MET_RefFinal_comp_wpy = 0;
+		el_MET_RefFinal_comp_wet = 0;
+		el_MET_RefFinal_comp_statusWord = 0;
+		ph_MET_RefFinal_comp_wpx = 0;
+		ph_MET_RefFinal_comp_wpy = 0;
+		ph_MET_RefFinal_comp_wet = 0;
+		ph_MET_RefFinal_comp_statusWord = 0;
+		mu_staco_MET_RefFinal_comp_wpx = 0;
+		mu_staco_MET_RefFinal_comp_wpy = 0;
+		mu_staco_MET_RefFinal_comp_wet = 0;
+		mu_staco_MET_RefFinal_comp_statusWord = 0;
+		mu_muid_MET_RefFinal_comp_wpx = 0;
+		mu_muid_MET_RefFinal_comp_wpy = 0;
+		mu_muid_MET_RefFinal_comp_wet = 0;
+		mu_muid_MET_RefFinal_comp_statusWord = 0;
+		mu_MET_RefFinal_comp_wpx = 0;
+		mu_MET_RefFinal_comp_wpy = 0;
+		mu_MET_RefFinal_comp_wet = 0;
+		mu_MET_RefFinal_comp_statusWord = 0;
+		tau_MET_RefFinal_comp_wpx = 0;
+		tau_MET_RefFinal_comp_wpy = 0;
+		tau_MET_RefFinal_comp_wet = 0;
+		tau_MET_RefFinal_comp_statusWord = 0;
+		jet_antikt4LCtopo_MET_RefFinal_comp_wpx = 0;
+		jet_antikt4LCtopo_MET_RefFinal_comp_wpy = 0;
+		jet_antikt4LCtopo_MET_RefFinal_comp_wet = 0;
+		jet_antikt4LCtopo_MET_RefFinal_comp_statusWord = 0;
+		cl_MET_RefFinal_comp_wpx = 0;
+		cl_MET_RefFinal_comp_wpy = 0;
+		cl_MET_RefFinal_comp_wet = 0;
+		cl_MET_RefFinal_comp_statusWord = 0;
+		trk_MET_RefFinal_comp_wpx = 0;
+		trk_MET_RefFinal_comp_wpy = 0;
+		trk_MET_RefFinal_comp_wet = 0;
+		trk_MET_RefFinal_comp_statusWord = 0;
 		
 		musp_eta = 0;
 		musp_phi = 0;
@@ -4142,6 +4343,7 @@ void setBranches(TString tType, TChain* t)
 		
 		vxp_nTracks = 0;
 		
+		TString typo = (glob_isSig) ? "Jets" : "Lets";
 		
 		
 		t->SetBranchAddress("RunNumber",&phys_RunNumber);
@@ -4153,87 +4355,87 @@ void setBranches(TString tType, TChain* t)
 		t->SetBranchAddress("actualIntPerXing",&phys_actualIntPerXing);
 		t->SetBranchAddress("averageIntPerXing",&phys_averageIntPerXing);
 
-		t->SetBranchAddress("AntiKt4LCTopoLets_n", &AntiKt4LCTopoLets_n);
-		t->SetBranchAddress("AntiKt4LCTopoLets_E", &AntiKt4LCTopoLets_E);
-		t->SetBranchAddress("AntiKt4LCTopoLets_pt", &AntiKt4LCTopoLets_pt);
-		t->SetBranchAddress("AntiKt4LCTopoLets_m", &AntiKt4LCTopoLets_m);
-		t->SetBranchAddress("AntiKt4LCTopoLets_eta", &AntiKt4LCTopoLets_eta);
-		t->SetBranchAddress("AntiKt4LCTopoLets_phi", &AntiKt4LCTopoLets_phi);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_n", &AntiKt4LCTopoJets_n);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_E", &AntiKt4LCTopoJets_E);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_pt", &AntiKt4LCTopoJets_pt);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_m", &AntiKt4LCTopoJets_m);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_eta", &AntiKt4LCTopoJets_eta);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_phi", &AntiKt4LCTopoJets_phi);
 		
-		t->SetBranchAddress("AntiKt4LCTopoLets_emfrac", &AntiKt4LCTopoLets_emfrac);
-		t->SetBranchAddress("AntiKt4LCTopoLets_hecf", &AntiKt4LCTopoLets_hecf);
-		t->SetBranchAddress("AntiKt4LCTopoLets_LArQuality", &AntiKt4LCTopoLets_LArQuality);
-		t->SetBranchAddress("AntiKt4LCTopoLets_HECQuality", &AntiKt4LCTopoLets_HECQuality);
-		t->SetBranchAddress("AntiKt4LCTopoLets_Timing", &AntiKt4LCTopoLets_Timing);
-		t->SetBranchAddress("AntiKt4LCTopoLets_sumPtTrk_pv0_500MeV", &AntiKt4LCTopoLets_sumPtTrk_pv0_500MeV);
-		t->SetBranchAddress("AntiKt4LCTopoLets_eta", &AntiKt4LCTopoLets_eta);
-		t->SetBranchAddress("AntiKt4LCTopoLets_pt", &AntiKt4LCTopoLets_pt);
-		t->SetBranchAddress("AntiKt4LCTopoLets_fracSamplingMax", &AntiKt4LCTopoLets_fracSamplingMax);
-		t->SetBranchAddress("AntiKt4LCTopoLets_NegativeE", &AntiKt4LCTopoLets_NegativeE);
-		t->SetBranchAddress("AntiKt4LCTopoLets_AverageLArQF", &AntiKt4LCTopoLets_AverageLArQF);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_emfrac", &AntiKt4LCTopoJets_emfrac);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_hecf", &AntiKt4LCTopoJets_hecf);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_LArQuality", &AntiKt4LCTopoJets_LArQuality);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_HECQuality", &AntiKt4LCTopoJets_HECQuality);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_Timing", &AntiKt4LCTopoJets_Timing);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_sumPtTrk_pv0_500MeV", &AntiKt4LCTopoJets_sumPtTrk_pv0_500MeV);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_eta", &AntiKt4LCTopoJets_eta);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_pt", &AntiKt4LCTopoJets_pt);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_fracSamplingMax", &AntiKt4LCTopoJets_fracSamplingMax);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_NegativeE", &AntiKt4LCTopoJets_NegativeE);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_AverageLArQF", &AntiKt4LCTopoJets_AverageLArQF);
 		
-		t->SetBranchAddress("AntiKt4LCTopoLets_EtaOrigin", &AntiKt4LCTopoLets_EtaOrigin);
-		t->SetBranchAddress("AntiKt4LCTopoLets_PhiOrigin", &AntiKt4LCTopoLets_PhiOrigin);
-		t->SetBranchAddress("AntiKt4LCTopoLets_MOrigin", &AntiKt4LCTopoLets_MOrigin);
-		t->SetBranchAddress("AntiKt4LCTopoLets_WIDTH", &AntiKt4LCTopoLets_WIDTH);
-		t->SetBranchAddress("AntiKt4LCTopoLets_n90", &AntiKt4LCTopoLets_n90);
-		t->SetBranchAddress("AntiKt4LCTopoLets_nTrk", &AntiKt4LCTopoLets_nTrk);
-		t->SetBranchAddress("AntiKt4LCTopoLets_sumPtTrk", &AntiKt4LCTopoLets_sumPtTrk);
-		t->SetBranchAddress("AntiKt4LCTopoLets_OriginIndex", &AntiKt4LCTopoLets_OriginIndex);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_EtaOrigin", &AntiKt4LCTopoJets_EtaOrigin);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_PhiOrigin", &AntiKt4LCTopoJets_PhiOrigin);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_MOrigin", &AntiKt4LCTopoJets_MOrigin);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_WIDTH", &AntiKt4LCTopoJets_WIDTH);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_n90", &AntiKt4LCTopoJets_n90);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_nTrk", &AntiKt4LCTopoJets_nTrk);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_sumPtTrk", &AntiKt4LCTopoJets_sumPtTrk);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_OriginIndex", &AntiKt4LCTopoJets_OriginIndex);
 
-		t->SetBranchAddress("AntiKt4LCTopoLets_BCH_CORR_CELL", &AntiKt4LCTopoLets_BCH_CORR_CELL);
-		t->SetBranchAddress("AntiKt4LCTopoLets_BCH_CORR_DOTX", &AntiKt4LCTopoLets_BCH_CORR_DOTX);
-		t->SetBranchAddress("AntiKt4LCTopoLets_BCH_CORR_JET", &AntiKt4LCTopoLets_BCH_CORR_JET);
-		t->SetBranchAddress("AntiKt4LCTopoLets_BCH_CORR_JET_FORCELL", &AntiKt4LCTopoLets_BCH_CORR_JET_FORCELL);
-		t->SetBranchAddress("AntiKt4LCTopoLets_ENG_BAD_CELLS", &AntiKt4LCTopoLets_ENG_BAD_CELLS);
-		t->SetBranchAddress("AntiKt4LCTopoLets_N_BAD_CELLS", &AntiKt4LCTopoLets_N_BAD_CELLS);
-		t->SetBranchAddress("AntiKt4LCTopoLets_N_BAD_CELLS_CORR", &AntiKt4LCTopoLets_N_BAD_CELLS_CORR);
-		t->SetBranchAddress("AntiKt4LCTopoLets_BAD_CELLS_CORR_E", &AntiKt4LCTopoLets_BAD_CELLS_CORR_E);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_BCH_CORR_CELL", &AntiKt4LCTopoJets_BCH_CORR_CELL);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_BCH_CORR_DOTX", &AntiKt4LCTopoJets_BCH_CORR_DOTX);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_BCH_CORR_JET", &AntiKt4LCTopoJets_BCH_CORR_JET);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_BCH_CORR_JET_FORCELL", &AntiKt4LCTopoJets_BCH_CORR_JET_FORCELL);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_ENG_BAD_CELLS", &AntiKt4LCTopoJets_ENG_BAD_CELLS);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_N_BAD_CELLS", &AntiKt4LCTopoJets_N_BAD_CELLS);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_N_BAD_CELLS_CORR", &AntiKt4LCTopoJets_N_BAD_CELLS_CORR);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_BAD_CELLS_CORR_E", &AntiKt4LCTopoJets_BAD_CELLS_CORR_E);
 
-		t->SetBranchAddress("AntiKt4LCTopoLets_isUgly", &AntiKt4LCTopoLets_isUgly);
-		t->SetBranchAddress("AntiKt4LCTopoLets_isBadLooseMinus", &AntiKt4LCTopoLets_isBadLooseMinus);
-		t->SetBranchAddress("AntiKt4LCTopoLets_isBadLoose", &AntiKt4LCTopoLets_isBadLoose);
-		t->SetBranchAddress("AntiKt4LCTopoLets_isBadMedium", &AntiKt4LCTopoLets_isBadMedium);
-		t->SetBranchAddress("AntiKt4LCTopoLets_isBadTight", &AntiKt4LCTopoLets_isBadTight);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_isUgly", &AntiKt4LCTopoJets_isUgly);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_isBadLooseMinus", &AntiKt4LCTopoJets_isBadLooseMinus);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_isBadLoose", &AntiKt4LCTopoJets_isBadLoose);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_isBadMedium", &AntiKt4LCTopoJets_isBadMedium);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_isBadTight", &AntiKt4LCTopoJets_isBadTight);
 
-		t->SetBranchAddress("AntiKt4LCTopoLets_Offset", &AntiKt4LCTopoLets_Offset);
-		t->SetBranchAddress("AntiKt4LCTopoLets_EMJES", &AntiKt4LCTopoLets_EMJES);
-		t->SetBranchAddress("AntiKt4LCTopoLets_EMJES_EtaCorr", &AntiKt4LCTopoLets_EMJES_EtaCorr);
-		t->SetBranchAddress("AntiKt4LCTopoLets_EMJESnooffset", &AntiKt4LCTopoLets_EMJESnooffset);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_Offset", &AntiKt4LCTopoJets_Offset);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_EMJES", &AntiKt4LCTopoJets_EMJES);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_EMJES_EtaCorr", &AntiKt4LCTopoJets_EMJES_EtaCorr);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_EMJESnooffset", &AntiKt4LCTopoJets_EMJESnooffset);
 
-		t->SetBranchAddress("AntiKt4LCTopoLets_emscale_E", &AntiKt4LCTopoLets_emscale_E);
-		t->SetBranchAddress("AntiKt4LCTopoLets_emscale_pt", &AntiKt4LCTopoLets_emscale_pt);
-		t->SetBranchAddress("AntiKt4LCTopoLets_emscale_m", &AntiKt4LCTopoLets_emscale_m);
-		t->SetBranchAddress("AntiKt4LCTopoLets_emscale_eta", &AntiKt4LCTopoLets_emscale_eta);
-		t->SetBranchAddress("AntiKt4LCTopoLets_emscale_phi", &AntiKt4LCTopoLets_emscale_phi);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_emscale_E", &AntiKt4LCTopoJets_emscale_E);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_emscale_pt", &AntiKt4LCTopoJets_emscale_pt);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_emscale_m", &AntiKt4LCTopoJets_emscale_m);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_emscale_eta", &AntiKt4LCTopoJets_emscale_eta);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_emscale_phi", &AntiKt4LCTopoJets_emscale_phi);
 		
-		t->SetBranchAddress("AntiKt4LCTopoLets_jvtx_x", &AntiKt4LCTopoLets_jvtx_x);
-		t->SetBranchAddress("AntiKt4LCTopoLets_jvtx_y", &AntiKt4LCTopoLets_jvtx_y);
-		t->SetBranchAddress("AntiKt4LCTopoLets_jvtx_z", &AntiKt4LCTopoLets_jvtx_z);
-		t->SetBranchAddress("AntiKt4LCTopoLets_jvtxf", &AntiKt4LCTopoLets_jvtxf);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_jvtx_x", &AntiKt4LCTopoJets_jvtx_x);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_jvtx_y", &AntiKt4LCTopoJets_jvtx_y);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_jvtx_z", &AntiKt4LCTopoJets_jvtx_z);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_jvtxf", &AntiKt4LCTopoJets_jvtxf);
 		
-		t->SetBranchAddress("AntiKt4LCTopoLets_LikeLihood_0", &AntiKt4LCTopoLets_LikeLihood_0);
-		t->SetBranchAddress("AntiKt4LCTopoLets_ActiveArea", &AntiKt4LCTopoLets_ActiveArea);
-		t->SetBranchAddress("AntiKt4LCTopoLets_ActiveAreaPx", &AntiKt4LCTopoLets_ActiveAreaPx);
-		t->SetBranchAddress("AntiKt4LCTopoLets_ActiveAreaPy", &AntiKt4LCTopoLets_ActiveAreaPy);
-		t->SetBranchAddress("AntiKt4LCTopoLets_ActiveAreaPz", &AntiKt4LCTopoLets_ActiveAreaPz);
-		t->SetBranchAddress("AntiKt4LCTopoLets_ActiveAreaE", &AntiKt4LCTopoLets_ActiveAreaE);
-		t->SetBranchAddress("AntiKt4LCTopoLets_VoronoiArea", &AntiKt4LCTopoLets_VoronoiArea);
-		t->SetBranchAddress("AntiKt4LCTopoLets_VoronoiAreaPx", &AntiKt4LCTopoLets_VoronoiAreaPx);
-		t->SetBranchAddress("AntiKt4LCTopoLets_VoronoiAreaPy", &AntiKt4LCTopoLets_VoronoiAreaPy);
-		t->SetBranchAddress("AntiKt4LCTopoLets_VoronoiAreaPz", &AntiKt4LCTopoLets_VoronoiAreaPz);
-		t->SetBranchAddress("AntiKt4LCTopoLets_VoronoiAreaE", &AntiKt4LCTopoLets_VoronoiAreaE);
-		t->SetBranchAddress("AntiKt4LCTopoLets_LowEtConstituentsFrac", &AntiKt4LCTopoLets_LowEtConstituentsFrac);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_LikeLihood_0", &AntiKt4LCTopoJets_LikeLihood_0);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_ActiveArea", &AntiKt4LCTopoJets_ActiveArea);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_ActiveAreaPx", &AntiKt4LCTopoJets_ActiveAreaPx);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_ActiveAreaPy", &AntiKt4LCTopoJets_ActiveAreaPy);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_ActiveAreaPz", &AntiKt4LCTopoJets_ActiveAreaPz);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_ActiveAreaE", &AntiKt4LCTopoJets_ActiveAreaE);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_VoronoiArea", &AntiKt4LCTopoJets_VoronoiArea);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_VoronoiAreaPx", &AntiKt4LCTopoJets_VoronoiAreaPx);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_VoronoiAreaPy", &AntiKt4LCTopoJets_VoronoiAreaPy);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_VoronoiAreaPz", &AntiKt4LCTopoJets_VoronoiAreaPz);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_VoronoiAreaE", &AntiKt4LCTopoJets_VoronoiAreaE);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_LowEtConstituentsFrac", &AntiKt4LCTopoJets_LowEtConstituentsFrac);
 		
-		t->SetBranchAddress("AntiKt4LCTopoLets_constscale_E", &AntiKt4LCTopoLets_constscale_E);
-		t->SetBranchAddress("AntiKt4LCTopoLets_constscale_pt", &AntiKt4LCTopoLets_constscale_pt);
-		t->SetBranchAddress("AntiKt4LCTopoLets_constscale_m", &AntiKt4LCTopoLets_constscale_m);
-		t->SetBranchAddress("AntiKt4LCTopoLets_constscale_eta", &AntiKt4LCTopoLets_constscale_eta);
-		t->SetBranchAddress("AntiKt4LCTopoLets_constscale_phi", &AntiKt4LCTopoLets_constscale_phi);
-		t->SetBranchAddress("AntiKt4LCTopoLets_LArBadHVEnergy", &AntiKt4LCTopoLets_LArBadHVEnergy);
-		t->SetBranchAddress("AntiKt4LCTopoLets_LArBadHVRatio", &AntiKt4LCTopoLets_LArBadHVRatio);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_constscale_E", &AntiKt4LCTopoJets_constscale_E);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_constscale_pt", &AntiKt4LCTopoJets_constscale_pt);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_constscale_m", &AntiKt4LCTopoJets_constscale_m);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_constscale_eta", &AntiKt4LCTopoJets_constscale_eta);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_constscale_phi", &AntiKt4LCTopoJets_constscale_phi);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_LArBadHVEnergy", &AntiKt4LCTopoJets_LArBadHVEnergy);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_LArBadHVRatio", &AntiKt4LCTopoJets_LArBadHVRatio);
 		
-		t->SetBranchAddress("AntiKt4LCTopoLets_flavor_weight_MV1", &AntiKt4LCTopoLets_flavor_weight_MV1);
+		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_flavor_weight_MV1", &AntiKt4LCTopoJets_flavor_weight_MV1);
 		
 		t->SetBranchAddress("MET_RefFinal_etx", &MET_RefFinal_etx);
 		t->SetBranchAddress("MET_RefFinal_ety", &MET_RefFinal_ety);
@@ -4261,6 +4463,12 @@ void setBranches(TString tType, TChain* t)
 			t->SetBranchAddress("MET_CellOut_Eflow_phi", &MET_CellOut_Eflow_phi);
 			t->SetBranchAddress("MET_CellOut_Eflow_et", &MET_CellOut_Eflow_et);
 			t->SetBranchAddress("MET_CellOut_Eflow_sumet", &MET_CellOut_Eflow_sumet);
+			
+			t->SetBranchAddress("MET_SoftJets_etx", &MET_SoftJets_etx);
+			t->SetBranchAddress("MET_SoftJets_ety", &MET_SoftJets_ety);
+			t->SetBranchAddress("MET_SoftJets_phi", &MET_SoftJets_phi);
+			t->SetBranchAddress("MET_SoftJets_et", &MET_SoftJets_et);
+			t->SetBranchAddress("MET_SoftJets_sumet", &MET_SoftJets_sumet);
         	
 			t->SetBranchAddress("MET_Track_etx", &MET_Track_etx);
 			t->SetBranchAddress("MET_Track_ety", &MET_Track_ety);
@@ -4268,12 +4476,24 @@ void setBranches(TString tType, TChain* t)
 			t->SetBranchAddress("MET_Track_et", &MET_Track_et);
 			t->SetBranchAddress("MET_Track_sumet", &MET_Track_sumet);
         	
-			t->SetBranchAddress("MET_Staco_etx", &MET_Staco_etx);
-			t->SetBranchAddress("MET_Staco_ety", &MET_Staco_ety);
-			t->SetBranchAddress("MET_Staco_phi", &MET_Staco_phi);
-			t->SetBranchAddress("MET_Staco_et", &MET_Staco_et);
-			t->SetBranchAddress("MET_Staco_sumet", &MET_Staco_sumet);
+			t->SetBranchAddress("MET_MuonBoy_etx", &MET_MuonBoy_etx);
+			t->SetBranchAddress("MET_MuonBoy_ety", &MET_MuonBoy_ety);
+			t->SetBranchAddress("MET_MuonBoy_phi", &MET_MuonBoy_phi);
+			t->SetBranchAddress("MET_MuonBoy_et", &MET_MuonBoy_et);
+			t->SetBranchAddress("MET_MuonBoy_sumet", &MET_MuonBoy_sumet);
         	
+			t->SetBranchAddress("MET_Muon_etx", &MET_Muon_etx);
+			t->SetBranchAddress("MET_Muon_ety", &MET_Muon_ety);
+			t->SetBranchAddress("MET_Muon_phi", &MET_Muon_phi);
+			t->SetBranchAddress("MET_Muon_et", &MET_Muon_et);
+			t->SetBranchAddress("MET_Muon_sumet", &MET_Muon_sumet);
+			
+			t->SetBranchAddress("MET_Muons_etx", &MET_Muons_etx);
+			t->SetBranchAddress("MET_Muons_ety", &MET_Muons_ety);
+			t->SetBranchAddress("MET_Muons_phi", &MET_Muons_phi);
+			t->SetBranchAddress("MET_Muons_et", &MET_Muons_et);
+			t->SetBranchAddress("MET_Muons_sumet", &MET_Muons_sumet);
+
 			t->SetBranchAddress("MET_Muid_etx", &MET_Muid_etx);
 			t->SetBranchAddress("MET_Muid_ety", &MET_Muid_ety);
 			t->SetBranchAddress("MET_Muid_phi", &MET_Muid_phi);
@@ -4298,12 +4518,6 @@ void setBranches(TString tType, TChain* t)
 			t->SetBranchAddress("MET_RefJet_et", &MET_RefJet_et);
 			t->SetBranchAddress("MET_RefJet_sumet", &MET_RefJet_sumet);
         	
-			t->SetBranchAddress("MET_SoftJets_etx", &MET_SoftJets_etx);
-			t->SetBranchAddress("MET_SoftJets_ety", &MET_SoftJets_ety);
-			t->SetBranchAddress("MET_SoftJets_phi", &MET_SoftJets_phi);
-			t->SetBranchAddress("MET_SoftJets_et", &MET_SoftJets_et);
-			t->SetBranchAddress("MET_SoftJets_sumet", &MET_SoftJets_sumet);
-        	
 			t->SetBranchAddress("MET_Truth_NonInt_etx", &MET_Truth_NonInt_etx);
 			t->SetBranchAddress("MET_Truth_NonInt_ety", &MET_Truth_NonInt_ety);
 			t->SetBranchAddress("MET_Truth_NonInt_phi", &MET_Truth_NonInt_phi);
@@ -4314,17 +4528,17 @@ void setBranches(TString tType, TChain* t)
 			// t->SetBranchAddress("trk_pt", &trk_pt);
 			// t->SetBranchAddress("trk_eta", &trk_eta);
 			// t->SetBranchAddress("trk_phi_wrtPV", &trk_phi_wrtPV);
-			//         	
-			// t->SetBranchAddress("mu_n", &mu_muons_n);
-			// t->SetBranchAddress("mu_E", &mu_muons_E);
-			// t->SetBranchAddress("mu_pt", &mu_muons_pt);
-			// t->SetBranchAddress("mu_m", &mu_muons_m);
-			// t->SetBranchAddress("mu_eta", &mu_muons_eta);
-			// t->SetBranchAddress("mu_phi", &mu_muons_phi);
-			// t->SetBranchAddress("mu_charge", &mu_muons_charge);
-			// t->SetBranchAddress("mu_ms_phi", &mu_muons_ms_phi);
-			// t->SetBranchAddress("mu_ms_theta", &mu_muons_ms_theta);
-			// t->SetBranchAddress("mu_ms_qoverp", &mu_muons_ms_qoverp);
+   	
+			t->SetBranchAddress("mu_n", &mu_muons_n);
+			t->SetBranchAddress("mu_E", &mu_muons_E);
+			t->SetBranchAddress("mu_pt", &mu_muons_pt);
+			t->SetBranchAddress("mu_m", &mu_muons_m);
+			t->SetBranchAddress("mu_eta", &mu_muons_eta);
+			t->SetBranchAddress("mu_phi", &mu_muons_phi);
+			t->SetBranchAddress("mu_charge", &mu_muons_charge);
+			t->SetBranchAddress("mu_ms_phi", &mu_muons_ms_phi);
+			t->SetBranchAddress("mu_ms_theta", &mu_muons_ms_theta);
+			t->SetBranchAddress("mu_ms_qoverp", &mu_muons_ms_qoverp);
         	
 			t->SetBranchAddress("mu_staco_n", &mu_staco_n);
 			t->SetBranchAddress("mu_staco_E", &mu_staco_E);
@@ -4337,17 +4551,17 @@ void setBranches(TString tType, TChain* t)
 			t->SetBranchAddress("mu_staco_ms_theta", &mu_staco_ms_theta);
 			t->SetBranchAddress("mu_staco_ms_qoverp", &mu_staco_ms_qoverp);
         	
-			// t->SetBranchAddress("mu_muid_n", &mu_muid_n);
-			// t->SetBranchAddress("mu_muid_E", &mu_muid_E);
-			// t->SetBranchAddress("mu_muid_pt", &mu_muid_pt);
-			// t->SetBranchAddress("mu_muid_m", &mu_muid_m);
-			// t->SetBranchAddress("mu_muid_eta", &mu_muid_eta);
-			// t->SetBranchAddress("mu_muid_phi", &mu_muid_phi);
-			// t->SetBranchAddress("mu_muid_charge", &mu_muid_charge);
-			// t->SetBranchAddress("mu_muid_ms_phi", &mu_muid_ms_phi);
-			// t->SetBranchAddress("mu_muid_ms_theta", &mu_muid_ms_theta);
-			// t->SetBranchAddress("mu_muid_ms_qoverp", &mu_muid_ms_qoverp);
-			//        	
+			t->SetBranchAddress("mu_muid_n", &mu_muid_n);
+			t->SetBranchAddress("mu_muid_E", &mu_muid_E);
+			t->SetBranchAddress("mu_muid_pt", &mu_muid_pt);
+			t->SetBranchAddress("mu_muid_m", &mu_muid_m);
+			t->SetBranchAddress("mu_muid_eta", &mu_muid_eta);
+			t->SetBranchAddress("mu_muid_phi", &mu_muid_phi);
+			t->SetBranchAddress("mu_muid_charge", &mu_muid_charge);
+			t->SetBranchAddress("mu_muid_ms_phi", &mu_muid_ms_phi);
+			t->SetBranchAddress("mu_muid_ms_theta", &mu_muid_ms_theta);
+			t->SetBranchAddress("mu_muid_ms_qoverp", &mu_muid_ms_qoverp);
+
 			t->SetBranchAddress("el_n", &el_n);
 			t->SetBranchAddress("el_E", &el_E);
 			t->SetBranchAddress("el_Et", &el_Et);
@@ -4371,51 +4585,51 @@ void setBranches(TString tType, TChain* t)
 			// t->SetBranchAddress("tau_eta", &tau_eta);
 			// t->SetBranchAddress("tau_phi", &tau_phi);
 
-			t->SetBranchAddress("el_MET_n", &el_MET_n);
-			t->SetBranchAddress("el_MET_wpx", &el_MET_wpx);
-			t->SetBranchAddress("el_MET_wpy", &el_MET_wpy);
-			t->SetBranchAddress("el_MET_wet", &el_MET_wet);
-			t->SetBranchAddress("el_MET_statusWord", &el_MET_statusWord);
-			t->SetBranchAddress("ph_MET_n", &ph_MET_n);
-			t->SetBranchAddress("ph_MET_wpx", &ph_MET_wpx);
-			t->SetBranchAddress("ph_MET_wpy", &ph_MET_wpy);
-			t->SetBranchAddress("ph_MET_wet", &ph_MET_wet);
-			t->SetBranchAddress("ph_MET_statusWord", &ph_MET_statusWord);
-			t->SetBranchAddress("mu_staco_MET_n", &mu_staco_MET_n);
-			t->SetBranchAddress("mu_staco_MET_wpx", &mu_staco_MET_wpx);
-			t->SetBranchAddress("mu_staco_MET_wpy", &mu_staco_MET_wpy);
-			t->SetBranchAddress("mu_staco_MET_wet", &mu_staco_MET_wet);
-			t->SetBranchAddress("mu_staco_MET_statusWord", &mu_staco_MET_statusWord);
-			// t->SetBranchAddress("mu_muid_MET_n", &mu_muid_MET_n);
-			// t->SetBranchAddress("mu_muid_MET_wpx", &mu_muid_MET_wpx);
-			// t->SetBranchAddress("mu_muid_MET_wpy", &mu_muid_MET_wpy);
-			// t->SetBranchAddress("mu_muid_MET_wet", &mu_muid_MET_wet);
-			// t->SetBranchAddress("mu_muid_MET_statusWord", &mu_muid_MET_statusWord);
-			// t->SetBranchAddress("mu_MET_n", &mu_MET_n);
-			// t->SetBranchAddress("mu_MET_wpx", &mu_MET_wpx);
-			// t->SetBranchAddress("mu_MET_wpy", &mu_MET_wpy);
-			// t->SetBranchAddress("mu_MET_wet", &mu_MET_wet);
-			// t->SetBranchAddress("mu_MET_statusWord", &mu_MET_statusWord);
-			// t->SetBranchAddress("tau_MET_n", &tau_MET_n);
-			// t->SetBranchAddress("tau_MET_wpx", &tau_MET_wpx);
-			// t->SetBranchAddress("tau_MET_wpy", &tau_MET_wpy);
-			// t->SetBranchAddress("tau_MET_wet", &tau_MET_wet);
-			// t->SetBranchAddress("tau_MET_statusWord", &tau_MET_statusWord);
-			t->SetBranchAddress("jet_antikt4LCtopo_MET_n", &jet_antikt4LCtopo_MET_n);
-			t->SetBranchAddress("jet_antikt4LCtopo_MET_wpx", &jet_antikt4LCtopo_MET_wpx);
-			t->SetBranchAddress("jet_antikt4LCtopo_MET_wpy", &jet_antikt4LCtopo_MET_wpy);
-			t->SetBranchAddress("jet_antikt4LCtopo_MET_wet", &jet_antikt4LCtopo_MET_wet);
-			t->SetBranchAddress("jet_antikt4LCtopo_MET_statusWord", &jet_antikt4LCtopo_MET_statusWord);
-			// t->SetBranchAddress("cl_MET_n", &cl_MET_n);
-			// t->SetBranchAddress("cl_MET_wpx", &cl_MET_wpx);
-			// t->SetBranchAddress("cl_MET_wpy", &cl_MET_wpy);
-			// t->SetBranchAddress("cl_MET_wet", &cl_MET_wet);
-			// t->SetBranchAddress("cl_MET_statusWord", &cl_MET_statusWord);
-			// t->SetBranchAddress("trk_MET_n", &trk_MET_n);
-			// t->SetBranchAddress("trk_MET_wpx", &trk_MET_wpx);
-			// t->SetBranchAddress("trk_MET_wpy", &trk_MET_wpy);
-			// t->SetBranchAddress("trk_MET_wet", &trk_MET_wet);
-			// t->SetBranchAddress("trk_MET_statusWord", &trk_MET_statusWord);
+			t->SetBranchAddress("el_MET_RefFinal_comp_n", &el_MET_RefFinal_comp_n);
+			t->SetBranchAddress("el_MET_RefFinal_comp_wpx", &el_MET_RefFinal_comp_wpx);
+			t->SetBranchAddress("el_MET_RefFinal_comp_wpy", &el_MET_RefFinal_comp_wpy);
+			t->SetBranchAddress("el_MET_RefFinal_comp_wet", &el_MET_RefFinal_comp_wet);
+			t->SetBranchAddress("el_MET_RefFinal_comp_statusWord", &el_MET_RefFinal_comp_statusWord);
+			t->SetBranchAddress("ph_MET_RefFinal_comp_n", &ph_MET_RefFinal_comp_n);
+			t->SetBranchAddress("ph_MET_RefFinal_comp_wpx", &ph_MET_RefFinal_comp_wpx);
+			t->SetBranchAddress("ph_MET_RefFinal_comp_wpy", &ph_MET_RefFinal_comp_wpy);
+			t->SetBranchAddress("ph_MET_RefFinal_comp_wet", &ph_MET_RefFinal_comp_wet);
+			t->SetBranchAddress("ph_MET_RefFinal_comp_statusWord", &ph_MET_RefFinal_comp_statusWord);
+			t->SetBranchAddress("mu_staco_MET_RefFinal_comp_n", &mu_staco_MET_RefFinal_comp_n);
+			t->SetBranchAddress("mu_staco_MET_RefFinal_comp_wpx", &mu_staco_MET_RefFinal_comp_wpx);
+			t->SetBranchAddress("mu_staco_MET_RefFinal_comp_wpy", &mu_staco_MET_RefFinal_comp_wpy);
+			t->SetBranchAddress("mu_staco_MET_RefFinal_comp_wet", &mu_staco_MET_RefFinal_comp_wet);
+			t->SetBranchAddress("mu_staco_MET_RefFinal_comp_statusWord", &mu_staco_MET_RefFinal_comp_statusWord);
+			t->SetBranchAddress("mu_muid_MET_RefFinal_comp_n", &mu_muid_MET_RefFinal_comp_n);
+			t->SetBranchAddress("mu_muid_MET_RefFinal_comp_wpx", &mu_muid_MET_RefFinal_comp_wpx);
+			t->SetBranchAddress("mu_muid_MET_RefFinal_comp_wpy", &mu_muid_MET_RefFinal_comp_wpy);
+			t->SetBranchAddress("mu_muid_MET_RefFinal_comp_wet", &mu_muid_MET_RefFinal_comp_wet);
+			t->SetBranchAddress("mu_muid_MET_RefFinal_comp_statusWord", &mu_muid_MET_RefFinal_comp_statusWord);
+			t->SetBranchAddress("mu_MET_RefFinal_comp_n", &mu_MET_RefFinal_comp_n);
+			t->SetBranchAddress("mu_MET_RefFinal_comp_wpx", &mu_MET_RefFinal_comp_wpx);
+			t->SetBranchAddress("mu_MET_RefFinal_comp_wpy", &mu_MET_RefFinal_comp_wpy);
+			t->SetBranchAddress("mu_MET_RefFinal_comp_wet", &mu_MET_RefFinal_comp_wet);
+			t->SetBranchAddress("mu_MET_RefFinal_comp_statusWord", &mu_MET_RefFinal_comp_statusWord);
+			// t->SetBranchAddress("tau_MET_RefFinal_comp_n", &tau_MET_RefFinal_comp_n);
+			// t->SetBranchAddress("tau_MET_RefFinal_comp_wpx", &tau_MET_RefFinal_comp_wpx);
+			// t->SetBranchAddress("tau_MET_RefFinal_comp_wpy", &tau_MET_RefFinal_comp_wpy);
+			// t->SetBranchAddress("tau_MET_RefFinal_comp_wet", &tau_MET_RefFinal_comp_wet);
+			// t->SetBranchAddress("tau_MET_RefFinal_comp_statusWord", &tau_MET_RefFinal_comp_statusWord);
+			t->SetBranchAddress("jet_antikt4LCtopo_MET_RefFinal_comp_n", &jet_antikt4LCtopo_MET_RefFinal_comp_n);
+			t->SetBranchAddress("jet_antikt4LCtopo_MET_RefFinal_comp_wpx", &jet_antikt4LCtopo_MET_RefFinal_comp_wpx);
+			t->SetBranchAddress("jet_antikt4LCtopo_MET_RefFinal_comp_wpy", &jet_antikt4LCtopo_MET_RefFinal_comp_wpy);
+			t->SetBranchAddress("jet_antikt4LCtopo_MET_RefFinal_comp_wet", &jet_antikt4LCtopo_MET_RefFinal_comp_wet);
+			t->SetBranchAddress("jet_antikt4LCtopo_MET_RefFinal_comp_statusWord", &jet_antikt4LCtopo_MET_RefFinal_comp_statusWord);
+			// t->SetBranchAddress("cl_MET_RefFinal_comp_n", &cl_MET_RefFinal_comp_n);
+			// t->SetBranchAddress("cl_MET_RefFinal_comp_wpx", &cl_MET_RefFinal_comp_wpx);
+			// t->SetBranchAddress("cl_MET_RefFinal_comp_wpy", &cl_MET_RefFinal_comp_wpy);
+			// t->SetBranchAddress("cl_MET_RefFinal_comp_wet", &cl_MET_RefFinal_comp_wet);
+			// t->SetBranchAddress("cl_MET_RefFinal_comp_statusWord", &cl_MET_RefFinal_comp_statusWord);
+			// t->SetBranchAddress("trk_MET_RefFinal_comp_n", &trk_MET_RefFinal_comp_n);
+			// t->SetBranchAddress("trk_MET_RefFinal_comp_wpx", &trk_MET_RefFinal_comp_wpx);
+			// t->SetBranchAddress("trk_MET_RefFinal_comp_wpy", &trk_MET_RefFinal_comp_wpy);
+			// t->SetBranchAddress("trk_MET_RefFinal_comp_wet", &trk_MET_RefFinal_comp_wet);
+			// t->SetBranchAddress("trk_MET_RefFinal_comp_statusWord", &trk_MET_RefFinal_comp_statusWord);
 		}
 		
 		t->SetBranchAddress("rhorhoKt3EM", &rhorhoKt3EM);
@@ -4447,20 +4661,14 @@ void setBranches(TString tType, TChain* t)
 		  	t->SetBranchStatus("trig_*Upsi*",  0);
 		  	t->SetBranchStatus("trig_*Bmumux*",  0);
 		  	t->SetBranchStatus("trig_*_c4cchad_*",  0);
-		  	t->SetBranchStatus("AntiKt4LCTopoLets_ptconst_default*",  0);
+		  	t->SetBranchStatus("AntiKt4LCTopo"+typo+"_ptconst_default*",  0);
 		
 			if(glob_isSig)
 			{	
 				t->SetBranchStatus("trk_*", 0);
-				//t->SetBranchStatus("el_*", 0);
-				//t->SetBranchStatus("ph_*", 0);
 				t->SetBranchStatus("tau_*", 0);
 				t->SetBranchStatus("cl_*", 0);
 		    	
-				//t->SetBranchStatus("el_MET_*", 0);
-				//t->SetBranchStatus("ph_MET_*", 0);
-				t->SetBranchStatus("mu_muid_MET_*", 0);
-				t->SetBranchStatus("mu_MET_*", 0);
 				t->SetBranchStatus("tau_MET_*", 0);
 				t->SetBranchStatus("cl_MET_*", 0);
 				t->SetBranchStatus("trk_MET_*", 0);
@@ -5835,11 +6043,11 @@ bool isBtaggedEvent(int& btagj1, int& btagj2)
 	// 	if(thisbtagwgt>btagwgt2 && thisbtagwgt<btagwgt1) { btagwgt2=thisbtagwgt;  btagj2=i; } // second highest flavor weight
 	// }
 	
-	for(int i=0 ; i<AntiKt4LCTopoLets_n ; i++)
+	for(int i=0 ; i<AntiKt4LCTopoJets_n ; i++)
 	{
 		if(!isGoodJet(i,JetQuality))  continue;
 		
-		float thisbtagwgt = AntiKt4LCTopoLets_flavor_weight_MV1->at(i);
+		float thisbtagwgt = AntiKt4LCTopoJets_flavor_weight_MV1->at(i);
 
 		// highest and second highest flavor weight MV1
 		if(thisbtagwgt>btagwgt1)                         { btagwgt1=thisbtagwgt;  btagj1=i; } // highest flavor weight
@@ -5903,45 +6111,45 @@ void bTagging(TString name, TMapTSP2TH1& histos, TMapTSP2TH2& histos2, double we
 	// {
 	// 	bool isUgly = (jets_isUgly->at(i));
 	// 	if(isUgly)  continue;
-	for(int i=0 ; i<AntiKt4LCTopoLets_n ; i++)
+	for(int i=0 ; i<AntiKt4LCTopoJets_n ; i++)
 	{
 		if(!isGoodJet(i,JetQuality))  continue;
 		
 		nJet++;
 
-		bool isBtagS = isStandardBtag(AntiKt4LCTopoLets_flavor_weight_MV1->at(i));
-		bool isBtagT = isTightBtag(AntiKt4LCTopoLets_flavor_weight_MV1->at(i));
+		bool isBtagS = isStandardBtag(AntiKt4LCTopoJets_flavor_weight_MV1->at(i));
+		bool isBtagT = isTightBtag(AntiKt4LCTopoJets_flavor_weight_MV1->at(i));
 		if(isBtagT) nBtag++;
 		
 		// different pT thresholds
-		if(AntiKt4LCTopoLets_pt->at(i)>10*GeV2MeV) nJet10++;
-		if(AntiKt4LCTopoLets_pt->at(i)>20*GeV2MeV) nJet20++;
+		if(AntiKt4LCTopoJets_pt->at(i)>10*GeV2MeV) nJet10++;
+		if(AntiKt4LCTopoJets_pt->at(i)>20*GeV2MeV) nJet20++;
 		if(isBtagT)
 		{
-			if(AntiKt4LCTopoLets_pt->at(i)>10*GeV2MeV) nBtag10++;
-			if(AntiKt4LCTopoLets_pt->at(i)>20*GeV2MeV) nBtag20++;
+			if(AntiKt4LCTopoJets_pt->at(i)>10*GeV2MeV) nBtag10++;
+			if(AntiKt4LCTopoJets_pt->at(i)>20*GeV2MeV) nBtag20++;
 		}
 		
 		// some histos
-		histos[name+"_jet_E"]->Fill(AntiKt4LCTopoLets_E->at(i),weight);
-		histos[name+"_jet_pt"]->Fill(AntiKt4LCTopoLets_pt->at(i),weight);
-		histos[name+"_jet_m"]->Fill(AntiKt4LCTopoLets_m->at(i),weight);
-		histos[name+"_jet_eta"]->Fill(AntiKt4LCTopoLets_eta->at(i),weight);
-		histos[name+"_jet_phi"]->Fill(AntiKt4LCTopoLets_phi->at(i),weight);
+		histos[name+"_jet_E"]->Fill(AntiKt4LCTopoJets_E->at(i),weight);
+		histos[name+"_jet_pt"]->Fill(AntiKt4LCTopoJets_pt->at(i),weight);
+		histos[name+"_jet_m"]->Fill(AntiKt4LCTopoJets_m->at(i),weight);
+		histos[name+"_jet_eta"]->Fill(AntiKt4LCTopoJets_eta->at(i),weight);
+		histos[name+"_jet_phi"]->Fill(AntiKt4LCTopoJets_phi->at(i),weight);
 		if(isBtagT)
 		{
-			histos[name+"_bjet_E"]->Fill(AntiKt4LCTopoLets_E->at(i),weight);
-			histos[name+"_bjet_pt"]->Fill(AntiKt4LCTopoLets_pt->at(i),weight);
-			histos[name+"_bjet_m"]->Fill(AntiKt4LCTopoLets_m->at(i),weight);
-			histos[name+"_bjet_eta"]->Fill(AntiKt4LCTopoLets_eta->at(i),weight);
-			histos[name+"_bjet_phi"]->Fill(AntiKt4LCTopoLets_phi->at(i),weight);
+			histos[name+"_bjet_E"]->Fill(AntiKt4LCTopoJets_E->at(i),weight);
+			histos[name+"_bjet_pt"]->Fill(AntiKt4LCTopoJets_pt->at(i),weight);
+			histos[name+"_bjet_m"]->Fill(AntiKt4LCTopoJets_m->at(i),weight);
+			histos[name+"_bjet_eta"]->Fill(AntiKt4LCTopoJets_eta->at(i),weight);
+			histos[name+"_bjet_phi"]->Fill(AntiKt4LCTopoJets_phi->at(i),weight);
 		}
 		
 		// find the different tagger MAX weights
-		maxflwgt["MV1"] = (AntiKt4LCTopoLets_flavor_weight_MV1->at(i)>maxflwgt["MV1"]) ? AntiKt4LCTopoLets_flavor_weight_MV1->at(i) : maxflwgt["MV1"];
+		maxflwgt["MV1"] = (AntiKt4LCTopoJets_flavor_weight_MV1->at(i)>maxflwgt["MV1"]) ? AntiKt4LCTopoJets_flavor_weight_MV1->at(i) : maxflwgt["MV1"];
 		
-		float thisbtagwgt = AntiKt4LCTopoLets_flavor_weight_MV1->at(i);
-		float thisjetpt   = AntiKt4LCTopoLets_pt->at(i);
+		float thisbtagwgt = AntiKt4LCTopoJets_flavor_weight_MV1->at(i);
+		float thisjetpt   = AntiKt4LCTopoJets_pt->at(i);
 		
 		// leading and subleading jet pT
 		if(thisjetpt>=pTjet1)
@@ -6015,12 +6223,12 @@ void bTagging(TString name, TMapTSP2TH1& histos, TMapTSP2TH2& histos2, double we
 	// the pT leading jet flavor weight per tagger
 	if(ipTjet1!=-1)
 	{		
-		histos[name+"_jet_leadingJetFlvWgt_MV1"]->Fill(AntiKt4LCTopoLets_flavor_weight_MV1->at(ipTjet1), weight);
+		histos[name+"_jet_leadingJetFlvWgt_MV1"]->Fill(AntiKt4LCTopoJets_flavor_weight_MV1->at(ipTjet1), weight);
 	}
 	// the pT subleading jet flavor weight per tagger
 	if(ipTjet2!=-1)
 	{		
-		histos[name+"_jet_subleadingJetFlvWgt_MV1"]->Fill(AntiKt4LCTopoLets_flavor_weight_MV1->at(ipTjet2), weight);
+		histos[name+"_jet_subleadingJetFlvWgt_MV1"]->Fill(AntiKt4LCTopoJets_flavor_weight_MV1->at(ipTjet2), weight);
 	}
 		
 	TLorentzVector lvJet, lvJet1;
@@ -6030,10 +6238,10 @@ void bTagging(TString name, TMapTSP2TH1& histos, TMapTSP2TH2& histos2, double we
 	float wj2  = -1; 
 	if(ipTjet1!=-1)
 	{
-		lvJet.SetPtEtaPhiE(AntiKt4LCTopoLets_pt->at(ipTjet1),
-						   AntiKt4LCTopoLets_eta->at(ipTjet1),
-						   AntiKt4LCTopoLets_phi->at(ipTjet1),
-						   AntiKt4LCTopoLets_E->at(ipTjet1));
+		lvJet.SetPtEtaPhiE(AntiKt4LCTopoJets_pt->at(ipTjet1),
+						   AntiKt4LCTopoJets_eta->at(ipTjet1),
+						   AntiKt4LCTopoJets_phi->at(ipTjet1),
+						   AntiKt4LCTopoJets_E->at(ipTjet1));
 		dR   = lvJet.DeltaR(pMuSum);
 		dphi = fabs(lvJet.DeltaPhi(pMuSum));
 		histos[name+"_bjet_dR3muLeadingJet"]->Fill(dR,weight);
@@ -6041,31 +6249,31 @@ void bTagging(TString name, TMapTSP2TH1& histos, TMapTSP2TH2& histos2, double we
 	}
 	if(ipTjet2!=-1)
 	{
-		lvJet.SetPtEtaPhiE(AntiKt4LCTopoLets_pt->at(ipTjet2),
-						   AntiKt4LCTopoLets_eta->at(ipTjet2),
-						   AntiKt4LCTopoLets_phi->at(ipTjet2),
-						   AntiKt4LCTopoLets_E->at(ipTjet2));
+		lvJet.SetPtEtaPhiE(AntiKt4LCTopoJets_pt->at(ipTjet2),
+						   AntiKt4LCTopoJets_eta->at(ipTjet2),
+						   AntiKt4LCTopoJets_phi->at(ipTjet2),
+						   AntiKt4LCTopoJets_E->at(ipTjet2));
 		dR   = lvJet.DeltaR(pMuSum);
 		dphi = fabs(lvJet.DeltaPhi(pMuSum));
 		histos[name+"_bjet_dR3muSubleadingJet"]->Fill(dR,weight);
 		histos[name+"_bjet_dPhi3muSubleadingJet"]->Fill(dphi,weight);
 		
-		wj1 = AntiKt4LCTopoLets_flavor_weight_MV1->at(ipTjet1);
-		wj2 = AntiKt4LCTopoLets_flavor_weight_MV1->at(ipTjet2);
+		wj1 = AntiKt4LCTopoJets_flavor_weight_MV1->at(ipTjet1);
+		wj2 = AntiKt4LCTopoJets_flavor_weight_MV1->at(ipTjet2);
 		histos2[name+"_jet_wj1_vs_wj2"]->Fill(wj2,wj1,weight);
-		lvJet1.SetPtEtaPhiE(AntiKt4LCTopoLets_pt->at(ipTjet1),
-						   AntiKt4LCTopoLets_eta->at(ipTjet1),
-						   AntiKt4LCTopoLets_phi->at(ipTjet1),
-						   AntiKt4LCTopoLets_E->at(ipTjet1));
+		lvJet1.SetPtEtaPhiE(AntiKt4LCTopoJets_pt->at(ipTjet1),
+						   AntiKt4LCTopoJets_eta->at(ipTjet1),
+						   AntiKt4LCTopoJets_phi->at(ipTjet1),
+						   AntiKt4LCTopoJets_E->at(ipTjet1));
 		dphi = fabs(lvJet.DeltaPhi(lvJet1));
 		histos[name+"_bjet_dPhi_jet1_jet2"]->Fill(dphi,weight);
 	}
 	if(btagj1!=-1)
 	{
-		lvJet.SetPtEtaPhiE(AntiKt4LCTopoLets_pt->at(btagj1),
-						   AntiKt4LCTopoLets_eta->at(btagj1),
-						   AntiKt4LCTopoLets_phi->at(btagj1),
-						   AntiKt4LCTopoLets_E->at(btagj1));
+		lvJet.SetPtEtaPhiE(AntiKt4LCTopoJets_pt->at(btagj1),
+						   AntiKt4LCTopoJets_eta->at(btagj1),
+						   AntiKt4LCTopoJets_phi->at(btagj1),
+						   AntiKt4LCTopoJets_E->at(btagj1));
 		dR   = lvJet.DeltaR(pMuSum);
 		dphi = fabs(lvJet.DeltaPhi(pMuSum));
 		histos[name+"_bjet_dR3muBjet_btagwgt1"]->Fill(dR,weight);
@@ -6075,20 +6283,20 @@ void bTagging(TString name, TMapTSP2TH1& histos, TMapTSP2TH2& histos2, double we
 	}
 	if(btagj2!=-1)
 	{
-		lvJet.SetPtEtaPhiE(AntiKt4LCTopoLets_pt->at(btagj2),
-						   AntiKt4LCTopoLets_eta->at(btagj2),
-						   AntiKt4LCTopoLets_phi->at(btagj2),
-						   AntiKt4LCTopoLets_E->at(btagj2));
+		lvJet.SetPtEtaPhiE(AntiKt4LCTopoJets_pt->at(btagj2),
+						   AntiKt4LCTopoJets_eta->at(btagj2),
+						   AntiKt4LCTopoJets_phi->at(btagj2),
+						   AntiKt4LCTopoJets_E->at(btagj2));
 		dR   = lvJet.DeltaR(pMuSum);
 		dphi = fabs(lvJet.DeltaPhi(pMuSum));
 		histos[name+"_bjet_dR3muBjet_btagwgt2"]->Fill(dR,weight);
 		histos[name+"_bjet_dPhi3muBjet_btagwgt2"]->Fill(dphi,weight);
 		histos2[name+"_bjet_dR3muBjet_btagwgt2_vs_btagwgt2"]->Fill(btagwgt2,dR,weight);
 		histos2[name+"_bjet_dPhi3muBjet_btagwgt2_vs_btagwgt2"]->Fill(btagwgt2,dphi,weight);
-		lvJet1.SetPtEtaPhiE(AntiKt4LCTopoLets_pt->at(btagj1),
-						   AntiKt4LCTopoLets_eta->at(btagj1),
-						   AntiKt4LCTopoLets_phi->at(btagj1),
-						   AntiKt4LCTopoLets_E->at(btagj1));
+		lvJet1.SetPtEtaPhiE(AntiKt4LCTopoJets_pt->at(btagj1),
+						   AntiKt4LCTopoJets_eta->at(btagj1),
+						   AntiKt4LCTopoJets_phi->at(btagj1),
+						   AntiKt4LCTopoJets_E->at(btagj1));
 		dphi = fabs(lvJet.DeltaPhi(lvJet1));
 		histos[name+"_bjet_dPhi_btagwgt1_btagwgt2"]->Fill(dphi,weight);
 		histos2[name+"_bjet_dPhib1b2_vs_b1"]->Fill(btagwgt1,dphi,weight);
@@ -6098,10 +6306,10 @@ void bTagging(TString name, TMapTSP2TH1& histos, TMapTSP2TH2& histos2, double we
 		
 	if(ipTjet1_noOvrlp!=-1)
 	{
-		lvJet.SetPtEtaPhiE(AntiKt4LCTopoLets_pt->at(ipTjet1_noOvrlp),
-						   AntiKt4LCTopoLets_eta->at(ipTjet1_noOvrlp),
-						   AntiKt4LCTopoLets_phi->at(ipTjet1_noOvrlp),
-						   AntiKt4LCTopoLets_E->at(ipTjet1_noOvrlp));
+		lvJet.SetPtEtaPhiE(AntiKt4LCTopoJets_pt->at(ipTjet1_noOvrlp),
+						   AntiKt4LCTopoJets_eta->at(ipTjet1_noOvrlp),
+						   AntiKt4LCTopoJets_phi->at(ipTjet1_noOvrlp),
+						   AntiKt4LCTopoJets_E->at(ipTjet1_noOvrlp));
 		dR   = lvJet.DeltaR(pMuSum);
 		dphi = fabs(lvJet.DeltaPhi(pMuSum));
 		histos[name+"_bjet_dR3muLeadingJet_noOvrlp"]->Fill(dR,weight);
@@ -6109,31 +6317,31 @@ void bTagging(TString name, TMapTSP2TH1& histos, TMapTSP2TH2& histos2, double we
 	}
 	if(ipTjet2_noOvrlp!=-1)
 	{
-		lvJet.SetPtEtaPhiE(AntiKt4LCTopoLets_pt->at(ipTjet2_noOvrlp),
-						   AntiKt4LCTopoLets_eta->at(ipTjet2_noOvrlp),
-						   AntiKt4LCTopoLets_phi->at(ipTjet2_noOvrlp),
-						   AntiKt4LCTopoLets_E->at(ipTjet2_noOvrlp));
+		lvJet.SetPtEtaPhiE(AntiKt4LCTopoJets_pt->at(ipTjet2_noOvrlp),
+						   AntiKt4LCTopoJets_eta->at(ipTjet2_noOvrlp),
+						   AntiKt4LCTopoJets_phi->at(ipTjet2_noOvrlp),
+						   AntiKt4LCTopoJets_E->at(ipTjet2_noOvrlp));
 		dR   = lvJet.DeltaR(pMuSum);
 		dphi = fabs(lvJet.DeltaPhi(pMuSum));
 		histos[name+"_bjet_dR3muSubleadingJet_noOvrlp"]->Fill(dR,weight);
 		histos[name+"_bjet_dPhi3muSubleadingJet_noOvrlp"]->Fill(dphi,weight);
 		
-		wj1 = AntiKt4LCTopoLets_flavor_weight_MV1->at(ipTjet1_noOvrlp);
-		wj2 = AntiKt4LCTopoLets_flavor_weight_MV1->at(ipTjet2_noOvrlp);
+		wj1 = AntiKt4LCTopoJets_flavor_weight_MV1->at(ipTjet1_noOvrlp);
+		wj2 = AntiKt4LCTopoJets_flavor_weight_MV1->at(ipTjet2_noOvrlp);
 		histos2[name+"_jet_wj1_vs_wj2_noOvrlp"]->Fill(wj2,wj1,weight);
-		lvJet1.SetPtEtaPhiE(AntiKt4LCTopoLets_pt->at(ipTjet1_noOvrlp),
-						   AntiKt4LCTopoLets_eta->at(ipTjet1_noOvrlp),
-						   AntiKt4LCTopoLets_phi->at(ipTjet1_noOvrlp),
-						   AntiKt4LCTopoLets_E->at(ipTjet1_noOvrlp));
+		lvJet1.SetPtEtaPhiE(AntiKt4LCTopoJets_pt->at(ipTjet1_noOvrlp),
+						   AntiKt4LCTopoJets_eta->at(ipTjet1_noOvrlp),
+						   AntiKt4LCTopoJets_phi->at(ipTjet1_noOvrlp),
+						   AntiKt4LCTopoJets_E->at(ipTjet1_noOvrlp));
 		dphi = fabs(lvJet.DeltaPhi(lvJet1));
 		histos[name+"_bjet_dPhi_jet1_jet2_noOvrlp"]->Fill(dphi,weight);
 	}
 	if(btagj1_noOvrlp!=-1)
 	{
-		lvJet.SetPtEtaPhiE(AntiKt4LCTopoLets_pt->at(btagj1_noOvrlp),
-						   AntiKt4LCTopoLets_eta->at(btagj1_noOvrlp),
-						   AntiKt4LCTopoLets_phi->at(btagj1_noOvrlp),
-						   AntiKt4LCTopoLets_E->at(btagj1_noOvrlp));
+		lvJet.SetPtEtaPhiE(AntiKt4LCTopoJets_pt->at(btagj1_noOvrlp),
+						   AntiKt4LCTopoJets_eta->at(btagj1_noOvrlp),
+						   AntiKt4LCTopoJets_phi->at(btagj1_noOvrlp),
+						   AntiKt4LCTopoJets_E->at(btagj1_noOvrlp));
 		dR   = lvJet.DeltaR(pMuSum);
 		dphi = fabs(lvJet.DeltaPhi(pMuSum));
 		histos[name+"_bjet_dR3muBjet_btagwgt1_noOvrlp"]->Fill(dR,weight);
@@ -6143,20 +6351,20 @@ void bTagging(TString name, TMapTSP2TH1& histos, TMapTSP2TH2& histos2, double we
 	}
 	if(btagj2_noOvrlp!=-1)
 	{
-		lvJet.SetPtEtaPhiE(AntiKt4LCTopoLets_pt->at(btagj2_noOvrlp),
-						   AntiKt4LCTopoLets_eta->at(btagj2_noOvrlp),
-						   AntiKt4LCTopoLets_phi->at(btagj2_noOvrlp),
-						   AntiKt4LCTopoLets_E->at(btagj2_noOvrlp));
+		lvJet.SetPtEtaPhiE(AntiKt4LCTopoJets_pt->at(btagj2_noOvrlp),
+						   AntiKt4LCTopoJets_eta->at(btagj2_noOvrlp),
+						   AntiKt4LCTopoJets_phi->at(btagj2_noOvrlp),
+						   AntiKt4LCTopoJets_E->at(btagj2_noOvrlp));
 		dR   = lvJet.DeltaR(pMuSum);
 		dphi = fabs(lvJet.DeltaPhi(pMuSum));
 		histos[name+"_bjet_dR3muBjet_btagwgt2_noOvrlp"]->Fill(dR,weight);
 		histos[name+"_bjet_dPhi3muBjet_btagwgt2_noOvrlp"]->Fill(dphi,weight);
 		histos2[name+"_bjet_dR3muBjet_btagwgt2_vs_btagwgt2_noOvrlp"]->Fill(btagwgt2_noOvrlp,dR,weight);
 		histos2[name+"_bjet_dPhi3muBjet_btagwgt2_vs_btagwgt2_noOvrlp"]->Fill(btagwgt2_noOvrlp,dphi,weight);
-		lvJet1.SetPtEtaPhiE(AntiKt4LCTopoLets_pt->at(btagj1_noOvrlp),
-						   AntiKt4LCTopoLets_eta->at(btagj1_noOvrlp),
-						   AntiKt4LCTopoLets_phi->at(btagj1_noOvrlp),
-						   AntiKt4LCTopoLets_E->at(btagj1_noOvrlp));
+		lvJet1.SetPtEtaPhiE(AntiKt4LCTopoJets_pt->at(btagj1_noOvrlp),
+						   AntiKt4LCTopoJets_eta->at(btagj1_noOvrlp),
+						   AntiKt4LCTopoJets_phi->at(btagj1_noOvrlp),
+						   AntiKt4LCTopoJets_E->at(btagj1_noOvrlp));
 		dphi = fabs(lvJet.DeltaPhi(lvJet1));
 		histos[name+"_bjet_dPhi_btagwgt1_btagwgt2_noOvrlp"]->Fill(dphi,weight);
 		histos2[name+"_bjet_dPhib1b2_vs_b1_noOvrlp"]->Fill(btagwgt1_noOvrlp,dphi,weight);
@@ -6166,10 +6374,10 @@ void bTagging(TString name, TMapTSP2TH1& histos, TMapTSP2TH2& histos2, double we
 	
 	if(ipTjet1_stdMV1!=-1)
 	{
-		lvJet.SetPtEtaPhiE(AntiKt4LCTopoLets_pt->at(ipTjet1_stdMV1),
-						   AntiKt4LCTopoLets_eta->at(ipTjet1_stdMV1),
-						   AntiKt4LCTopoLets_phi->at(ipTjet1_stdMV1),
-						   AntiKt4LCTopoLets_E->at(ipTjet1_stdMV1));
+		lvJet.SetPtEtaPhiE(AntiKt4LCTopoJets_pt->at(ipTjet1_stdMV1),
+						   AntiKt4LCTopoJets_eta->at(ipTjet1_stdMV1),
+						   AntiKt4LCTopoJets_phi->at(ipTjet1_stdMV1),
+						   AntiKt4LCTopoJets_E->at(ipTjet1_stdMV1));
 		dR   = lvJet.DeltaR(pMuSum);
 		dphi = fabs(lvJet.DeltaPhi(pMuSum));
 		histos[name+"_bjet_dR3muLeadingJet_stdMV1"]->Fill(dR,weight);
@@ -6177,31 +6385,31 @@ void bTagging(TString name, TMapTSP2TH1& histos, TMapTSP2TH2& histos2, double we
 	}
 	if(ipTjet2_stdMV1!=-1)
 	{
-		lvJet.SetPtEtaPhiE(AntiKt4LCTopoLets_pt->at(ipTjet2_stdMV1),
-						   AntiKt4LCTopoLets_eta->at(ipTjet2_stdMV1),
-						   AntiKt4LCTopoLets_phi->at(ipTjet2_stdMV1),
-						   AntiKt4LCTopoLets_E->at(ipTjet2_stdMV1));
+		lvJet.SetPtEtaPhiE(AntiKt4LCTopoJets_pt->at(ipTjet2_stdMV1),
+						   AntiKt4LCTopoJets_eta->at(ipTjet2_stdMV1),
+						   AntiKt4LCTopoJets_phi->at(ipTjet2_stdMV1),
+						   AntiKt4LCTopoJets_E->at(ipTjet2_stdMV1));
 		dR   = lvJet.DeltaR(pMuSum);
 		dphi = fabs(lvJet.DeltaPhi(pMuSum));
 		histos[name+"_bjet_dR3muSubleadingJet_stdMV1"]->Fill(dR,weight);
 		histos[name+"_bjet_dPhi3muSubleadingJet_stdMV1"]->Fill(dphi,weight);
 		
-		wj1 = AntiKt4LCTopoLets_flavor_weight_MV1->at(ipTjet1_stdMV1);
-		wj2 = AntiKt4LCTopoLets_flavor_weight_MV1->at(ipTjet2_stdMV1);
+		wj1 = AntiKt4LCTopoJets_flavor_weight_MV1->at(ipTjet1_stdMV1);
+		wj2 = AntiKt4LCTopoJets_flavor_weight_MV1->at(ipTjet2_stdMV1);
 		histos2[name+"_jet_wj1_vs_wj2_stdMV1"]->Fill(wj2,wj1,weight);
-		lvJet1.SetPtEtaPhiE(AntiKt4LCTopoLets_pt->at(ipTjet1_stdMV1),
-						   AntiKt4LCTopoLets_eta->at(ipTjet1_stdMV1),
-						   AntiKt4LCTopoLets_phi->at(ipTjet1_stdMV1),
-						   AntiKt4LCTopoLets_E->at(ipTjet1_stdMV1));
+		lvJet1.SetPtEtaPhiE(AntiKt4LCTopoJets_pt->at(ipTjet1_stdMV1),
+						   AntiKt4LCTopoJets_eta->at(ipTjet1_stdMV1),
+						   AntiKt4LCTopoJets_phi->at(ipTjet1_stdMV1),
+						   AntiKt4LCTopoJets_E->at(ipTjet1_stdMV1));
 		dphi = fabs(lvJet.DeltaPhi(lvJet1));
 		histos[name+"_bjet_dPhi_jet1_jet2_stdMV1"]->Fill(dphi,weight);
 	}
 	if(btagj1_stdMV1!=-1)
 	{
-		lvJet.SetPtEtaPhiE(AntiKt4LCTopoLets_pt->at(btagj1_stdMV1),
-						   AntiKt4LCTopoLets_eta->at(btagj1_stdMV1),
-						   AntiKt4LCTopoLets_phi->at(btagj1_stdMV1),
-						   AntiKt4LCTopoLets_E->at(btagj1_stdMV1));
+		lvJet.SetPtEtaPhiE(AntiKt4LCTopoJets_pt->at(btagj1_stdMV1),
+						   AntiKt4LCTopoJets_eta->at(btagj1_stdMV1),
+						   AntiKt4LCTopoJets_phi->at(btagj1_stdMV1),
+						   AntiKt4LCTopoJets_E->at(btagj1_stdMV1));
 		dR   = lvJet.DeltaR(pMuSum);
 		dphi = fabs(lvJet.DeltaPhi(pMuSum));
 		histos[name+"_bjet_dR3muBjet_btagwgt1_stdMV1"]->Fill(dR,weight);
@@ -6211,20 +6419,20 @@ void bTagging(TString name, TMapTSP2TH1& histos, TMapTSP2TH2& histos2, double we
 	}
 	if(btagj2_stdMV1!=-1)
 	{
-		lvJet.SetPtEtaPhiE(AntiKt4LCTopoLets_pt->at(btagj2_stdMV1),
-						   AntiKt4LCTopoLets_eta->at(btagj2_stdMV1),
-						   AntiKt4LCTopoLets_phi->at(btagj2_stdMV1),
-						   AntiKt4LCTopoLets_E->at(btagj2_stdMV1));
+		lvJet.SetPtEtaPhiE(AntiKt4LCTopoJets_pt->at(btagj2_stdMV1),
+						   AntiKt4LCTopoJets_eta->at(btagj2_stdMV1),
+						   AntiKt4LCTopoJets_phi->at(btagj2_stdMV1),
+						   AntiKt4LCTopoJets_E->at(btagj2_stdMV1));
 		dR   = lvJet.DeltaR(pMuSum);
 		dphi = fabs(lvJet.DeltaPhi(pMuSum));
 		histos[name+"_bjet_dR3muBjet_btagwgt2_stdMV1"]->Fill(dR,weight);
 		histos[name+"_bjet_dPhi3muBjet_btagwgt2_stdMV1"]->Fill(dphi,weight);
 		histos2[name+"_bjet_dR3muBjet_btagwgt2_vs_btagwgt2_stdMV1"]->Fill(btagwgt2_stdMV1,dR,weight);
 		histos2[name+"_bjet_dPhi3muBjet_btagwgt2_vs_btagwgt2_stdMV1"]->Fill(btagwgt2_stdMV1,dphi,weight);
-		lvJet1.SetPtEtaPhiE(AntiKt4LCTopoLets_pt->at(btagj1_stdMV1),
-						   AntiKt4LCTopoLets_eta->at(btagj1_stdMV1),
-						   AntiKt4LCTopoLets_phi->at(btagj1_stdMV1),
-						   AntiKt4LCTopoLets_E->at(btagj1_stdMV1));
+		lvJet1.SetPtEtaPhiE(AntiKt4LCTopoJets_pt->at(btagj1_stdMV1),
+						   AntiKt4LCTopoJets_eta->at(btagj1_stdMV1),
+						   AntiKt4LCTopoJets_phi->at(btagj1_stdMV1),
+						   AntiKt4LCTopoJets_E->at(btagj1_stdMV1));
 		dphi = fabs(lvJet.DeltaPhi(lvJet1));
 		histos[name+"_bjet_dPhi_btagwgt1_btagwgt2_stdMV1"]->Fill(dphi,weight);
 		histos2[name+"_bjet_dPhib1b2_vs_b1_stdMV1"]->Fill(btagwgt1_stdMV1,dphi,weight);
@@ -6235,11 +6443,11 @@ void bTagging(TString name, TMapTSP2TH1& histos, TMapTSP2TH2& histos2, double we
 	// kinematics of the jet with the maximum flavor weight
 	if(btagj1!=-1)
 	{
-		histos[name+"_bjet_maxFlvWgt_E"]->Fill(AntiKt4LCTopoLets_E->at(btagj1),weight);
-		histos[name+"_bjet_maxFlvWgt_pt"]->Fill(AntiKt4LCTopoLets_pt->at(btagj1),weight);
-		histos[name+"_bjet_maxFlvWgt_m"]->Fill(AntiKt4LCTopoLets_m->at(btagj1),weight);
-		histos[name+"_bjet_maxFlvWgt_eta"]->Fill(AntiKt4LCTopoLets_eta->at(btagj1),weight);
-		histos[name+"_bjet_maxFlvWgt_phi"]->Fill(AntiKt4LCTopoLets_phi->at(btagj1),weight);
+		histos[name+"_bjet_maxFlvWgt_E"]->Fill(AntiKt4LCTopoJets_E->at(btagj1),weight);
+		histos[name+"_bjet_maxFlvWgt_pt"]->Fill(AntiKt4LCTopoJets_pt->at(btagj1),weight);
+		histos[name+"_bjet_maxFlvWgt_m"]->Fill(AntiKt4LCTopoJets_m->at(btagj1),weight);
+		histos[name+"_bjet_maxFlvWgt_eta"]->Fill(AntiKt4LCTopoJets_eta->at(btagj1),weight);
+		histos[name+"_bjet_maxFlvWgt_phi"]->Fill(AntiKt4LCTopoJets_phi->at(btagj1),weight);
 	}
 }
 
@@ -7763,18 +7971,44 @@ if(!skim)
 	m_metDphi3body = fabs(dPhi(MET_RefFinal_phi,psum.Phi()));
 	m_metMt        = mT(MET_RefFinal_et,MET_RefFinal_phi,psum.Pt(),psum.Phi());
 	
+	if(!skim)
+	{
+		m_met_jes_nominal          = calibMET_nominal.et();
+		m_metPhi_jes_nominal       = calibMET_nominal.phi();
+		m_metDphi3body_jes_nominal = fabs(dPhi(calibMET_nominal.phi(),psum.Phi()));
+		m_metMt_jes_nominal        = mT(calibMET_nominal.et(),calibMET_nominal.phi(),psum.Pt(),psum.Phi());
+		
+		m_met_jes_up          = calibMET_jes_up.et();
+		m_metPhi_jes_up       = calibMET_jes_up.phi();
+		m_metDphi3body_jes_up = fabs(dPhi(calibMET_jes_up.phi(),psum.Phi()));
+		m_metMt_jes_up        = mT(calibMET_jes_up.et(),calibMET_jes_up.phi(),psum.Pt(),psum.Phi());
+		
+		m_met_jes_dwn          = calibMET_jes_dwn.et();
+		m_metPhi_jes_dwn       = calibMET_jes_dwn.phi();
+		m_metDphi3body_jes_dwn = fabs(dPhi(calibMET_jes_dwn.phi(),psum.Phi()));
+		m_metMt_jes_dwn        = mT(calibMET_jes_dwn.et(),calibMET_jes_dwn.phi(),psum.Pt(),psum.Phi());
+		
+		m_met_jer_up          = calibMET_jer_up.et();
+		m_metPhi_jer_up       = calibMET_jer_up.phi();
+		m_metDphi3body_jer_up = fabs(dPhi(calibMET_jer_up.phi(),psum.Phi()));
+		m_metMt_jer_up        = mT(calibMET_jer_up.et(),calibMET_jer_up.phi(),psum.Pt(),psum.Phi());
+		
+		m_met_jer_dwn          = calibMET_jer_dwn.et();
+		m_metPhi_jer_dwn       = calibMET_jer_dwn.phi();
+		m_metDphi3body_jer_dwn = fabs(dPhi(calibMET_jer_dwn.phi(),psum.Phi()));
+		m_metMt_jer_dwn        = mT(calibMET_jer_dwn.et(),calibMET_jer_dwn.phi(),psum.Pt(),psum.Phi());
+	}
+	
 	_DEBUG("");
 
+	// sort the jets
 	multimap<double,int> pt2i;
 	vector<int> ijet;
-	// for(int i=0 ; i<(int)jets_pt->size() ; i++)
-	// {
-	// 	bool isUgly = (jets_isUgly->at(i));
-	// 	if(isUgly)  continue;
-	for(int i=0 ; i<AntiKt4LCTopoLets_n ; i++)
+	for(int i=0 ; i<AntiKt4LCTopoJets_n ; i++)
 	{
 		if(!isGoodJet(i,JetQuality))  continue;
-		pt2i.insert(make_pair(AntiKt4LCTopoLets_pt->at(i),i));
+		if(!skim && glob_isSig) pt2i.insert(make_pair(AntiKt4LCTopoJets_calibrated_pt->at(i),i));
+		else                    pt2i.insert(make_pair(AntiKt4LCTopoJets_pt->at(i),i));
 	}
 	for(multimap<double,int>::reverse_iterator rit=pt2i.rbegin() ; rit!=pt2i.rend() ; ++rit) ijet.push_back(rit->second);
 	unsigned int njet = ijet.size();
@@ -7782,19 +8016,76 @@ if(!skim)
 	double sumptj12     = -999.;
 	double dPhiJet1Jet2 = -999.; double dRJet1Jet2 = -999.;
 	double dPhi3muJet1  = -999.; double dR3muJet1  = -999.;
+	double sumptj12_jes_up     = -999.;
+	double dPhiJet1Jet2_jes_up = -999.; double dRJet1Jet2_jes_up = -999.;
+	double dPhi3muJet1_jes_up  = -999.; double dR3muJet1_jes_up  = -999.;
+	double sumptj12_jes_dwn     = -999.;
+	double dPhiJet1Jet2_jes_dwn = -999.; double dRJet1Jet2_jes_dwn = -999.;
+	double dPhi3muJet1_jes_dwn  = -999.; double dR3muJet1_jes_dwn  = -999.;
+	double sumptj12_jer_up     = -999.;
+	double dPhiJet1Jet2_jer_up = -999.; double dRJet1Jet2_jer_up = -999.;
+	double dPhi3muJet1_jer_up  = -999.; double dR3muJet1_jer_up  = -999.;
+	double sumptj12_jer_dwn     = -999.;
+	double dPhiJet1Jet2_jer_dwn = -999.; double dRJet1Jet2_jer_dwn = -999.;
+	double dPhi3muJet1_jer_dwn  = -999.; double dR3muJet1_jer_dwn  = -999.;
+	TLorentzVector J1_jes_up, J2_jes_up;
+	TLorentzVector J1_jes_dwn, J2_jes_dwn;
+	TLorentzVector J1_jer_up, J2_jer_up;
+	TLorentzVector J1_jer_dwn, J2_jer_dwn;
 	if(njet>0)
 	{
 		int j1 = ijet[0];
-		double phi1 = AntiKt4LCTopoLets_phi->at(j1);	
-		dPhi3muJet1 = fabs(dPhi(psum.Phi(),phi1));
-		dR3muJet1   = deltaR(psum.Eta(),psum.Phi(),AntiKt4LCTopoLets_eta->at(j1),AntiKt4LCTopoLets_phi->at(j1));
+		double ptj1  = (!skim && glob_isSig) ? AntiKt4LCTopoJets_calibrated_pt->at(j1)  : AntiKt4LCTopoJets_pt->at(j1);
+		double phij1 = (!skim && glob_isSig) ? AntiKt4LCTopoJets_calibrated_phi->at(j1) : AntiKt4LCTopoJets_phi->at(j1);
+		double etaj1 = (!skim && glob_isSig) ? AntiKt4LCTopoJets_calibrated_eta->at(j1) : AntiKt4LCTopoJets_eta->at(j1);
+		
+		dPhi3muJet1 = fabs(dPhi(psum.Phi(),phij1));
+		dR3muJet1   = deltaR(psum.Eta(),psum.Phi(),etaj1,phij1);
+		if(!skim && glob_isSig)
+		{
+			J1_jes_up  = calibJets[j1]*(1+calibJetsUnc[j1]);
+			J1_jes_dwn = calibJets[j1]*(1-calibJetsUnc[j1]);
+			J1_jer_up  = calibJets[j1]*(1+smearedJetsUnc[j1]);
+			J1_jer_dwn = calibJets[j1]*(1-smearedJetsUnc[j1]);
+			dPhi3muJet1_jes_up = fabs(dPhi(psum.Phi(),J1_jes_up.Phi()));
+			dR3muJet1_jes_up   = deltaR(psum.Eta(),psum.Phi(),J1_jes_up.Eta(),J1_jes_up.Phi());
+			dPhi3muJet1_jes_dwn = fabs(dPhi(psum.Phi(),J1_jes_dwn.Phi()));
+			dR3muJet1_jes_dwn   = deltaR(psum.Eta(),psum.Phi(),J1_jes_dwn.Eta(),J1_jes_dwn.Phi());			
+			dPhi3muJet1_jer_up = fabs(dPhi(psum.Phi(),J1_jer_up.Phi()));
+			dR3muJet1_jer_up   = deltaR(psum.Eta(),psum.Phi(),J1_jer_up.Eta(),J1_jer_up.Phi());
+			dPhi3muJet1_jer_dwn = fabs(dPhi(psum.Phi(),J1_jer_dwn.Phi()));
+			dR3muJet1_jer_dwn   = deltaR(psum.Eta(),psum.Phi(),J1_jer_dwn.Eta(),J1_jer_dwn.Phi());
+		}
+		
 		if(njet>1)
 		{
 			int j2 = ijet[1];
-			sumptj12 = AntiKt4LCTopoLets_pt->at(j1)+AntiKt4LCTopoLets_pt->at(j2);
-			double phi2  = AntiKt4LCTopoLets_phi->at(j2);
-			dPhiJet1Jet2 = fabs(dPhi(phi1,phi2));
-			dRJet1Jet2   = deltaR(AntiKt4LCTopoLets_eta->at(j1),AntiKt4LCTopoLets_phi->at(j1),AntiKt4LCTopoLets_eta->at(j2),AntiKt4LCTopoLets_phi->at(j2));
+			double ptj2  = (!skim && glob_isSig) ? AntiKt4LCTopoJets_calibrated_pt->at(j2)  : AntiKt4LCTopoJets_pt->at(j2);
+			double phij2 = (!skim && glob_isSig) ? AntiKt4LCTopoJets_calibrated_phi->at(j2) : AntiKt4LCTopoJets_phi->at(j2);
+			double etaj2 = (!skim && glob_isSig) ? AntiKt4LCTopoJets_calibrated_eta->at(j2) : AntiKt4LCTopoJets_eta->at(j2);
+			sumptj12     = ptj1+ptj2;
+			dPhiJet1Jet2 = fabs(dPhi(phij1,phij2));
+			dRJet1Jet2   = deltaR(etaj1,phij1,etaj2,phij2);
+			
+			if(!skim && glob_isSig)
+			{
+				J2_jes_up  = calibJets[j2]*(1+calibJetsUnc[j2]);
+				J2_jes_dwn = calibJets[j2]*(1-calibJetsUnc[j2]);
+				J2_jer_up  = calibJets[j2]*(1+smearedJetsUnc[j2]);
+				J2_jer_dwn = calibJets[j2]*(1-smearedJetsUnc[j2]);
+				sumptj12_jes_up     = J1_jes_up.Pt()+J2_jes_up.Pt();
+				dPhiJet1Jet2_jes_up = fabs(dPhi(J1_jes_up.Phi(),J2_jes_up.Phi()));
+				dRJet1Jet2_jes_up   = deltaR(J1_jes_up.Eta(),J1_jes_up.Phi(),J2_jes_up.Eta(),J2_jes_up.Phi());
+				sumptj12_jes_dwn     = J1_jes_dwn.Pt()+J2_jes_dwn.Pt();
+				dPhiJet1Jet2_jes_dwn = fabs(dPhi(J1_jes_dwn.Phi(),J2_jes_dwn.Phi()));
+				dRJet1Jet2_jes_dwn   = deltaR(J1_jes_dwn.Eta(),J1_jes_dwn.Phi(),J2_jes_dwn.Eta(),J2_jes_dwn.Phi());
+				sumptj12_jer_up     = J1_jer_up.Pt()+J2_jer_up.Pt();
+				dPhiJet1Jet2_jer_up = fabs(dPhi(J1_jer_up.Phi(),J2_jer_up.Phi()));
+				dRJet1Jet2_jer_up   = deltaR(J1_jer_up.Eta(),J1_jer_up.Phi(),J2_jer_up.Eta(),J2_jer_up.Phi());
+				sumptj12_jer_dwn     = J1_jer_dwn.Pt()+J2_jer_dwn.Pt();
+				dPhiJet1Jet2_jer_dwn = fabs(dPhi(J1_jer_dwn.Phi(),J2_jer_dwn.Phi()));
+				dRJet1Jet2_jer_dwn   = deltaR(J1_jer_dwn.Eta(),J1_jer_dwn.Phi(),J2_jer_dwn.Eta(),J2_jer_dwn.Phi());
+			}
 		}
 	}
 	
@@ -7804,13 +8095,64 @@ if(!skim)
 	for(int i=0 ; i<m_njets ; ++i)
 	{
 		int j = ijet[i];
-		m_jetPE[i].SetPtEtaPhiE(AntiKt4LCTopoLets_pt->at(j),AntiKt4LCTopoLets_eta->at(j),AntiKt4LCTopoLets_phi->at(j),AntiKt4LCTopoLets_E->at(j));
-		m_jetPM[i].SetPtEtaPhiM(AntiKt4LCTopoLets_pt->at(j),AntiKt4LCTopoLets_eta->at(j),AntiKt4LCTopoLets_phi->at(j),AntiKt4LCTopoLets_m->at(j));
-		m_jetMV1[i] = AntiKt4LCTopoLets_flavor_weight_MV1->at(j);
-		m_jetVtxFrac[i] = AntiKt4LCTopoLets_jvtxf->at(j);
+		
+		double ptj  = (!skim && glob_isSig) ? AntiKt4LCTopoJets_calibrated_pt->at(j)  : AntiKt4LCTopoJets_pt->at(j);
+		double Ej   = (!skim && glob_isSig) ? AntiKt4LCTopoJets_calibrated_E->at(j)   : AntiKt4LCTopoJets_E->at(j);
+		double mj   = (!skim && glob_isSig) ? AntiKt4LCTopoJets_calibrated_m->at(j)   : AntiKt4LCTopoJets_m->at(j);
+		double etaj = (!skim && glob_isSig) ? AntiKt4LCTopoJets_calibrated_eta->at(j) : AntiKt4LCTopoJets_eta->at(j);
+		double phij = (!skim && glob_isSig) ? AntiKt4LCTopoJets_calibrated_phi->at(j) : AntiKt4LCTopoJets_phi->at(j);
+		
+		m_jetPE[i].SetPtEtaPhiE(ptj,etaj,phij,Ej);
+		m_jetPM[i].SetPtEtaPhiM(ptj,etaj,phij,mj);
+		
+		if(!skim && glob_isSig)
+		{
+			m_jet_shiftJES[i] = calibJetsUnc[j];
+			m_jet_shiftJER[i] = smearedJetsUnc[j];
+		}
+		
+		m_jetMV1[i] = AntiKt4LCTopoJets_flavor_weight_MV1->at(j);
+		m_jetVtxFrac[i] = AntiKt4LCTopoJets_jvtxf->at(j);
 	}
-	if(m_njets>1) { m_jetDphi12 = dPhiJet1Jet2; m_jetDR12 = dRJet1Jet2; m_jetSumpt12 = sumptj12; }
-	if(m_njets>0) { m_jetDphi3body = dPhi3muJet1; m_jetDR3body = dR3muJet1; }
+	if(m_njets>1)
+	{	
+		m_jetSumpt12 = sumptj12;
+		m_jetDphi12  = dPhiJet1Jet2;
+		m_jetDR12    = dRJet1Jet2;
+		if(!skim && glob_isSig)
+		{
+			m_jetSumpt12_jes_up = sumptj12_jes_up;
+			m_jetDphi12_jes_up  = dPhiJet1Jet2_jes_up;
+			m_jetDR12_jes_up    = dRJet1Jet2_jes_up;
+			m_jetSumpt12_jes_dwn = sumptj12_jes_dwn;
+			m_jetDphi12_jes_dwn  = dPhiJet1Jet2_jes_dwn;
+			m_jetDR12_jes_dwn    = dRJet1Jet2_jes_dwn;
+			
+			m_jetSumpt12_jer_up = sumptj12_jer_up;
+			m_jetDphi12_jer_up  = dPhiJet1Jet2_jer_up;
+			m_jetDR12_jer_up    = dRJet1Jet2_jer_up;
+			m_jetSumpt12_jer_dwn = sumptj12_jer_dwn;
+			m_jetDphi12_jer_dwn  = dPhiJet1Jet2_jer_dwn;
+			m_jetDR12_jer_dwn    = dRJet1Jet2_jer_dwn;
+		}
+	}
+	if(m_njets>0)
+	{
+		m_jetDphi3body = dPhi3muJet1;
+		m_jetDR3body   = dR3muJet1;
+		if(!skim && glob_isSig)
+		{
+			m_jetDphi3body_jes_up = dPhi3muJet1_jes_up;
+			m_jetDR3body_jes_up   = dR3muJet1_jes_up;
+			m_jetDphi3body_jes_dwn = dPhi3muJet1_jes_dwn;
+			m_jetDR3body_jes_dwn   = dR3muJet1_jes_dwn;
+			
+			m_jetDphi3body_jer_up = dPhi3muJet1_jer_up;
+			m_jetDR3body_jer_up   = dR3muJet1_jer_up;
+			m_jetDphi3body_jer_dwn = dPhi3muJet1_jer_dwn;
+			m_jetDR3body_jer_dwn   = dR3muJet1_jer_dwn;
+		}
+	}
 	
 	_DEBUG("");
 }
@@ -8586,7 +8928,7 @@ bool acceptVtxMET(TString method, unsigned int vtx, vector<vertex>& vertices, TS
 		// for(int i=0 ; i<(int)jets_pt->size() ; i++)
 		// {
 		// 	bool isUgly = (jets_isUgly->at(i));
-		// 	// cout << "Jet["<<i<<"] isUgly(pt="<< jets_pt->at(i) <<")=" << jets_isUgly->at(i) << ", passCleaning("<< AntiKt4LCTopoLets_pt->at(i) << ")=" << isGoodJet(i,"TightBad") << "|" << isGoodJet(i,"MediumBad") << "|" << isGoodJet(i,JetQuality) << "|" << isGoodJet(i,"VeryLooseBad") << endl;
+		// 	// cout << "Jet["<<i<<"] isUgly(pt="<< jets_pt->at(i) <<")=" << jets_isUgly->at(i) << ", passCleaning("<< AntiKt4LCTopoJets_pt->at(i) << ")=" << isGoodJet(i,"TightBad") << "|" << isGoodJet(i,"MediumBad") << "|" << isGoodJet(i,JetQuality) << "|" << isGoodJet(i,"VeryLooseBad") << endl;
 		// 	if(isUgly)  continue;
 		// 	pt2i.insert(make_pair(jets_pt->at(i),i));
 		// }
@@ -8595,10 +8937,10 @@ bool acceptVtxMET(TString method, unsigned int vtx, vector<vertex>& vertices, TS
 		
 		multimap<double,int> pt2i;
 		vector<int> ijet;
-		for(int i=0 ; i<AntiKt4LCTopoLets_n ; i++)
+		for(int i=0 ; i<AntiKt4LCTopoJets_n ; i++)
 		{
 			if(!isGoodJet(i,JetQuality))  continue;
-			pt2i.insert(make_pair(AntiKt4LCTopoLets_pt->at(i),i));
+			pt2i.insert(make_pair(AntiKt4LCTopoJets_pt->at(i),i));
 		}
 		for(multimap<double,int>::reverse_iterator rit=pt2i.rbegin() ; rit!=pt2i.rend() ; ++rit) ijet.push_back(rit->second);
 		unsigned int njet = ijet.size();
@@ -8607,8 +8949,8 @@ bool acceptVtxMET(TString method, unsigned int vtx, vector<vertex>& vertices, TS
 		_DEBUG("");
 		
 		// Fill some histos before doing full had-cleaning		
-		if(njet>0 && AntiKt4LCTopoLets_pt->at(ijet[0])>20.*GeV2MeV)                                                  { histos2[name+"_dPhi3muJet1_vs_pTjet1_before_tightveto"]->Fill(AntiKt4LCTopoLets_pt->at(ijet[0]),fabs(dPhi(pMuSum.Phi(),AntiKt4LCTopoLets_phi->at(ijet[0]))),weight); histos[name+"_jets_dPhi3bodyJ1_before_tightveto"]->Fill(fabs(dPhi(pMuSum.Phi(),AntiKt4LCTopoLets_phi->at(ijet[0]))),weight); }
-		if(njet>1 && AntiKt4LCTopoLets_pt->at(ijet[0])>20.*GeV2MeV && AntiKt4LCTopoLets_pt->at(ijet[1])>20.*GeV2MeV) { histos2[name+"_dPhiJet1Jet2_vs_sumpTjet12_before_tightveto"]->Fill(AntiKt4LCTopoLets_pt->at(ijet[0])+AntiKt4LCTopoLets_pt->at(ijet[1]),fabs(dPhi(AntiKt4LCTopoLets_phi->at(ijet[0]),AntiKt4LCTopoLets_phi->at(ijet[1]))),weight); histos[name+"_jets_dPhiJ1J2_before_tightveto"]->Fill(fabs(dPhi(AntiKt4LCTopoLets_phi->at(ijet[0]),AntiKt4LCTopoLets_phi->at(ijet[1]))),weight); }
+		if(njet>0 && AntiKt4LCTopoJets_pt->at(ijet[0])>20.*GeV2MeV)                                                  { histos2[name+"_dPhi3muJet1_vs_pTjet1_before_tightveto"]->Fill(AntiKt4LCTopoJets_pt->at(ijet[0]),fabs(dPhi(pMuSum.Phi(),AntiKt4LCTopoJets_phi->at(ijet[0]))),weight); histos[name+"_jets_dPhi3bodyJ1_before_tightveto"]->Fill(fabs(dPhi(pMuSum.Phi(),AntiKt4LCTopoJets_phi->at(ijet[0]))),weight); }
+		if(njet>1 && AntiKt4LCTopoJets_pt->at(ijet[0])>20.*GeV2MeV && AntiKt4LCTopoJets_pt->at(ijet[1])>20.*GeV2MeV) { histos2[name+"_dPhiJet1Jet2_vs_sumpTjet12_before_tightveto"]->Fill(AntiKt4LCTopoJets_pt->at(ijet[0])+AntiKt4LCTopoJets_pt->at(ijet[1]),fabs(dPhi(AntiKt4LCTopoJets_phi->at(ijet[0]),AntiKt4LCTopoJets_phi->at(ijet[1]))),weight); histos[name+"_jets_dPhiJ1J2_before_tightveto"]->Fill(fabs(dPhi(AntiKt4LCTopoJets_phi->at(ijet[0]),AntiKt4LCTopoJets_phi->at(ijet[1]))),weight); }
 		
 		_DEBUG("");
 	
@@ -8616,14 +8958,14 @@ bool acceptVtxMET(TString method, unsigned int vtx, vector<vertex>& vertices, TS
 		if(isWsignal(name))
 		{
 			(*ofstr1) << EventNumber << " " << lbn << endl;
-			if(njet>0) (*ofstr1) << "  pt1=" << AntiKt4LCTopoLets_pt->at(ijet[0]) << ", dphi3muj1=" << fabs(dPhi(pMuSum.Phi(),AntiKt4LCTopoLets_phi->at(ijet[0]))) << endl;
-			if(njet>1) (*ofstr1) << "  pt1=" << AntiKt4LCTopoLets_pt->at(ijet[0]) << ", pt2=" << AntiKt4LCTopoLets_pt->at(ijet[1]) << ", dphij1j2=" << fabs(dPhi(AntiKt4LCTopoLets_phi->at(ijet[0]),AntiKt4LCTopoLets_phi->at(ijet[1]))) << endl;
+			if(njet>0) (*ofstr1) << "  pt1=" << AntiKt4LCTopoJets_pt->at(ijet[0]) << ", dphi3muj1=" << fabs(dPhi(pMuSum.Phi(),AntiKt4LCTopoJets_phi->at(ijet[0]))) << endl;
+			if(njet>1) (*ofstr1) << "  pt1=" << AntiKt4LCTopoJets_pt->at(ijet[0]) << ", pt2=" << AntiKt4LCTopoJets_pt->at(ijet[1]) << ", dphij1j2=" << fabs(dPhi(AntiKt4LCTopoJets_phi->at(ijet[0]),AntiKt4LCTopoJets_phi->at(ijet[1]))) << endl;
 			(*ofstr1) << "-------------------------------------------" << endl;
 		}
 	
 		// colinear jet veto
 		/////////////////////////////////////////////////////////////////////////////////////
-		bool isJet3muOverlap = (njet>0 && AntiKt4LCTopoLets_pt->at(ijet[0])>25.*GeV2MeV) ? (fabs(dPhi(pMuSum.Phi(),AntiKt4LCTopoLets_phi->at(ijet[0])))<0.2 || fabs(dPhi(pMuSum.Phi(),AntiKt4LCTopoLets_phi->at(ijet[0])))>2.5) : false;
+		bool isJet3muOverlap = (njet>0 && AntiKt4LCTopoJets_pt->at(ijet[0])>25.*GeV2MeV) ? (fabs(dPhi(pMuSum.Phi(),AntiKt4LCTopoJets_phi->at(ijet[0])))<0.2 || fabs(dPhi(pMuSum.Phi(),AntiKt4LCTopoJets_phi->at(ijet[0])))>2.5) : false;
 		if(isCounter("nPassing_jets_coljetveto") && isJet3muOverlap) return false; /////
 		incrementCounter("nPassing_jets_coljetveto",weight); /////////////////////////////
 		/////////////////////////////////////////////////////////////////////////////////////
@@ -8635,7 +8977,7 @@ bool acceptVtxMET(TString method, unsigned int vtx, vector<vertex>& vertices, TS
 
 		// di-jet veto
 		//////////////////////////////////////////////////////////////////////////
-		bool isDijets = (njet>1 && AntiKt4LCTopoLets_pt->at(ijet[0])>20.*GeV2MeV && AntiKt4LCTopoLets_pt->at(ijet[1])>20.*GeV2MeV) ? (AntiKt4LCTopoLets_pt->at(ijet[0])+AntiKt4LCTopoLets_pt->at(ijet[1])>60.*GeV2MeV && fabs(dPhi(AntiKt4LCTopoLets_phi->at(ijet[0]),AntiKt4LCTopoLets_phi->at(ijet[1])))>2.5) : false;
+		bool isDijets = (njet>1 && AntiKt4LCTopoJets_pt->at(ijet[0])>20.*GeV2MeV && AntiKt4LCTopoJets_pt->at(ijet[1])>20.*GeV2MeV) ? (AntiKt4LCTopoJets_pt->at(ijet[0])+AntiKt4LCTopoJets_pt->at(ijet[1])>60.*GeV2MeV && fabs(dPhi(AntiKt4LCTopoJets_phi->at(ijet[0]),AntiKt4LCTopoJets_phi->at(ijet[1])))>2.5) : false;
 		if(isCounter("nPassing_jets_dijetveto") && isDijets) return false; //////
 		incrementCounter("nPassing_jets_dijetveto",weight); //////////////////////
 		//////////////////////////////////////////////////////////////////////////
@@ -8643,8 +8985,8 @@ bool acceptVtxMET(TString method, unsigned int vtx, vector<vertex>& vertices, TS
 		_DEBUG("");
 		
 		// Fill some histos before doing full had-cleaning		
-		if(njet>0 && AntiKt4LCTopoLets_pt->at(ijet[0])>20.*GeV2MeV)                                                  { histos2[name+"_dPhi3muJet1_vs_pTjet1_after_tightveto"]->Fill(AntiKt4LCTopoLets_pt->at(ijet[0]),fabs(dPhi(pMuSum.Phi(),AntiKt4LCTopoLets_phi->at(ijet[0]))),weight); histos[name+"_jets_dPhi3bodyJ1_after_tightveto"]->Fill(fabs(dPhi(pMuSum.Phi(),AntiKt4LCTopoLets_phi->at(ijet[0]))),weight); }
-		if(njet>1 && AntiKt4LCTopoLets_pt->at(ijet[0])>20.*GeV2MeV && AntiKt4LCTopoLets_pt->at(ijet[1])>20.*GeV2MeV) { histos2[name+"_dPhiJet1Jet2_vs_sumpTjet12_after_tightveto"]->Fill(AntiKt4LCTopoLets_pt->at(ijet[0])+AntiKt4LCTopoLets_pt->at(ijet[1]),fabs(dPhi(AntiKt4LCTopoLets_phi->at(ijet[0]),AntiKt4LCTopoLets_phi->at(ijet[1]))),weight); histos[name+"_jets_dPhiJ1J2_after_tightveto"]->Fill(fabs(dPhi(AntiKt4LCTopoLets_phi->at(ijet[0]),AntiKt4LCTopoLets_phi->at(ijet[1]))),weight); }
+		if(njet>0 && AntiKt4LCTopoJets_pt->at(ijet[0])>20.*GeV2MeV)                                                  { histos2[name+"_dPhi3muJet1_vs_pTjet1_after_tightveto"]->Fill(AntiKt4LCTopoJets_pt->at(ijet[0]),fabs(dPhi(pMuSum.Phi(),AntiKt4LCTopoJets_phi->at(ijet[0]))),weight); histos[name+"_jets_dPhi3bodyJ1_after_tightveto"]->Fill(fabs(dPhi(pMuSum.Phi(),AntiKt4LCTopoJets_phi->at(ijet[0]))),weight); }
+		if(njet>1 && AntiKt4LCTopoJets_pt->at(ijet[0])>20.*GeV2MeV && AntiKt4LCTopoJets_pt->at(ijet[1])>20.*GeV2MeV) { histos2[name+"_dPhiJet1Jet2_vs_sumpTjet12_after_tightveto"]->Fill(AntiKt4LCTopoJets_pt->at(ijet[0])+AntiKt4LCTopoJets_pt->at(ijet[1]),fabs(dPhi(AntiKt4LCTopoJets_phi->at(ijet[0]),AntiKt4LCTopoJets_phi->at(ijet[1]))),weight); histos[name+"_jets_dPhiJ1J2_after_tightveto"]->Fill(fabs(dPhi(AntiKt4LCTopoJets_phi->at(ijet[0]),AntiKt4LCTopoJets_phi->at(ijet[1]))),weight); }
 		
 		_DEBUG("");
 		
@@ -9148,10 +9490,10 @@ bool acceptHadClean(unsigned int vtx, TString name, TMapTSP2TH1& histos, TMapTSP
 	
 	multimap<double,int> pt2i;
 	vector<int> ijet;
-	for(int i=0 ; i<AntiKt4LCTopoLets_n ; i++)
+	for(int i=0 ; i<AntiKt4LCTopoJets_n ; i++)
 	{
 		if(!isGoodJet(i,JetQuality))  continue;
-		pt2i.insert(make_pair(AntiKt4LCTopoLets_pt->at(i),i));
+		pt2i.insert(make_pair(AntiKt4LCTopoJets_pt->at(i),i));
 	}
 	for(multimap<double,int>::reverse_iterator rit=pt2i.rbegin() ; rit!=pt2i.rend() ; ++rit) ijet.push_back(rit->second);
 	unsigned int njet = ijet.size();
@@ -9161,9 +9503,9 @@ bool acceptHadClean(unsigned int vtx, TString name, TMapTSP2TH1& histos, TMapTSP
 	for(unsigned int i=0 ; i<njet && i<4 ; ++i)
 	{
 		int j = ijet[i];
-		double mj  = AntiKt4LCTopoLets_m->at(j);
-		double ptj = AntiKt4LCTopoLets_pt->at(j);
-		double MV1 = AntiKt4LCTopoLets_flavor_weight_MV1->at(j);
+		double mj  = AntiKt4LCTopoJets_m->at(j);
+		double ptj = AntiKt4LCTopoJets_pt->at(j);
+		double MV1 = AntiKt4LCTopoJets_flavor_weight_MV1->at(j);
 		histos2[name+"_flwMV1_vs_mjet"]->Fill(mj,MV1,weight);
 		histos2[name+"_flwMV1_vs_pTjet"]->Fill(ptj,MV1,weight);
 		if(ptj>20.*GeV2MeV && mj>4.*GeV2MeV && isStandardBtag(MV1)) nStdBtaggedJets20GeV++;
@@ -9180,9 +9522,9 @@ bool acceptHadClean(unsigned int vtx, TString name, TMapTSP2TH1& histos, TMapTSP
 	if(njet>0)
 	{
 		int j1 = ijet[0];
-		double phi1 = AntiKt4LCTopoLets_phi->at(j1);
+		double phi1 = AntiKt4LCTopoJets_phi->at(j1);
 		dPhi3muJet1 = fabs(dPhi(pMuSum.Phi(),phi1));
-		double pt1  = AntiKt4LCTopoLets_pt->at(j1);
+		double pt1  = AntiKt4LCTopoJets_pt->at(j1);
 
 		// for leadingjet-3mu(tau) overlap veto
 		if(pt1>25.*GeV2MeV && (dPhi3muJet1<0.2 || dPhi3muJet1>2.5))  nJet3muOverlaps++;
@@ -9191,9 +9533,9 @@ bool acceptHadClean(unsigned int vtx, TString name, TMapTSP2TH1& histos, TMapTSP
 		if(njet>1)
 		{
 			int j2 = ijet[1];
-			sumptj12 = AntiKt4LCTopoLets_pt->at(j1)+AntiKt4LCTopoLets_pt->at(j2);
-			double phi2  = AntiKt4LCTopoLets_phi->at(j2);
-			double pt2   = AntiKt4LCTopoLets_phi->at(j2);
+			sumptj12 = AntiKt4LCTopoJets_pt->at(j1)+AntiKt4LCTopoJets_pt->at(j2);
+			double phi2  = AntiKt4LCTopoJets_phi->at(j2);
+			double pt2   = AntiKt4LCTopoJets_phi->at(j2);
 			dPhiJet1Jet2 = fabs(dPhi(phi1,phi2));
 
 			// for dijet veto
@@ -9208,8 +9550,8 @@ bool acceptHadClean(unsigned int vtx, TString name, TMapTSP2TH1& histos, TMapTSP
 	JetPt1 = 0.; JetM1 = 0.; JetE1 = 0.; JetEta1 = +5.; JetPhi1 = TMath::Pi()*1.2; JetMV1w1 = 0.;
 	JetPt2 = 0.; JetM2 = 0.; JetE2 = 0.; JetEta2 = +5.; JetPhi2 = TMath::Pi()*1.2; JetMV1w2 = 0.;
 	JetSumPt12 = 0.; JetdPhiJ1J2 = TMath::Pi()*1.2; JetdPhi3bodyJ1 = TMath::Pi()*1.2;
-	if(njet>0 && AntiKt4LCTopoLets_pt->at(ijet[0])>20.*GeV2MeV) { JetPt1 = AntiKt4LCTopoLets_pt->at(ijet[0]); JetEta1 = AntiKt4LCTopoLets_eta->at(ijet[0]); JetPhi1 = AntiKt4LCTopoLets_phi->at(ijet[0]); JetM1 = AntiKt4LCTopoLets_m->at(ijet[0]); JetE1 = AntiKt4LCTopoLets_E->at(ijet[0]); JetMV1w1 = AntiKt4LCTopoLets_flavor_weight_MV1->at(ijet[0]); }
-	if(njet>1 && AntiKt4LCTopoLets_pt->at(ijet[1])>20.*GeV2MeV) { JetPt2 = AntiKt4LCTopoLets_pt->at(ijet[1]); JetEta2 = AntiKt4LCTopoLets_eta->at(ijet[1]); JetPhi2 = AntiKt4LCTopoLets_phi->at(ijet[1]); JetM2 = AntiKt4LCTopoLets_m->at(ijet[1]); JetE2 = AntiKt4LCTopoLets_E->at(ijet[1]); JetMV1w2 = AntiKt4LCTopoLets_flavor_weight_MV1->at(ijet[1]); }
+	if(njet>0 && AntiKt4LCTopoJets_pt->at(ijet[0])>20.*GeV2MeV) { JetPt1 = AntiKt4LCTopoJets_pt->at(ijet[0]); JetEta1 = AntiKt4LCTopoJets_eta->at(ijet[0]); JetPhi1 = AntiKt4LCTopoJets_phi->at(ijet[0]); JetM1 = AntiKt4LCTopoJets_m->at(ijet[0]); JetE1 = AntiKt4LCTopoJets_E->at(ijet[0]); JetMV1w1 = AntiKt4LCTopoJets_flavor_weight_MV1->at(ijet[0]); }
+	if(njet>1 && AntiKt4LCTopoJets_pt->at(ijet[1])>20.*GeV2MeV) { JetPt2 = AntiKt4LCTopoJets_pt->at(ijet[1]); JetEta2 = AntiKt4LCTopoJets_eta->at(ijet[1]); JetPhi2 = AntiKt4LCTopoJets_phi->at(ijet[1]); JetM2 = AntiKt4LCTopoJets_m->at(ijet[1]); JetE2 = AntiKt4LCTopoJets_E->at(ijet[1]); JetMV1w2 = AntiKt4LCTopoJets_flavor_weight_MV1->at(ijet[1]); }
 	if(njet>1 && JetPt1>20.*GeV2MeV && JetPt2>20.*GeV2MeV) { JetSumPt12 = sumptj12; JetdPhiJ1J2 = dPhiJet1Jet2; }
 	if(njet>0 && JetPt1>20.*GeV2MeV) { JetdPhi3bodyJ1 = dPhi3muJet1; }
 	
@@ -9224,8 +9566,8 @@ bool acceptHadClean(unsigned int vtx, TString name, TMapTSP2TH1& histos, TMapTSP
 	_DEBUG("");	
 	
 	// Fill some histos before doing loose had-cleaning
-	if(njet>0 && AntiKt4LCTopoLets_pt->at(ijet[0])>20.*GeV2MeV)                                                  { histos2[name+"_dPhi3muJet1_vs_pTjet1_before_looseveto"]->Fill(AntiKt4LCTopoLets_pt->at(ijet[0]),fabs(dPhi(pMuSum.Phi(),AntiKt4LCTopoLets_phi->at(ijet[0]))),weight); histos[name+"_jets_dPhi3bodyJ1_before_looseveto"]->Fill(fabs(dPhi(pMuSum.Phi(),AntiKt4LCTopoLets_phi->at(ijet[0]))),weight); }
-	if(njet>1 && AntiKt4LCTopoLets_pt->at(ijet[0])>20.*GeV2MeV && AntiKt4LCTopoLets_pt->at(ijet[1])>20.*GeV2MeV) { histos2[name+"_dPhiJet1Jet2_vs_sumpTjet12_before_looseveto"]->Fill(AntiKt4LCTopoLets_pt->at(ijet[0])+AntiKt4LCTopoLets_pt->at(ijet[1]),fabs(dPhi(AntiKt4LCTopoLets_phi->at(ijet[0]),AntiKt4LCTopoLets_phi->at(ijet[1]))),weight); histos[name+"_jets_dPhiJ1J2_before_looseveto"]->Fill(fabs(dPhi(AntiKt4LCTopoLets_phi->at(ijet[0]),AntiKt4LCTopoLets_phi->at(ijet[1]))),weight); }
+	if(njet>0 && AntiKt4LCTopoJets_pt->at(ijet[0])>20.*GeV2MeV)                                                  { histos2[name+"_dPhi3muJet1_vs_pTjet1_before_looseveto"]->Fill(AntiKt4LCTopoJets_pt->at(ijet[0]),fabs(dPhi(pMuSum.Phi(),AntiKt4LCTopoJets_phi->at(ijet[0]))),weight); histos[name+"_jets_dPhi3bodyJ1_before_looseveto"]->Fill(fabs(dPhi(pMuSum.Phi(),AntiKt4LCTopoJets_phi->at(ijet[0]))),weight); }
+	if(njet>1 && AntiKt4LCTopoJets_pt->at(ijet[0])>20.*GeV2MeV && AntiKt4LCTopoJets_pt->at(ijet[1])>20.*GeV2MeV) { histos2[name+"_dPhiJet1Jet2_vs_sumpTjet12_before_looseveto"]->Fill(AntiKt4LCTopoJets_pt->at(ijet[0])+AntiKt4LCTopoJets_pt->at(ijet[1]),fabs(dPhi(AntiKt4LCTopoJets_phi->at(ijet[0]),AntiKt4LCTopoJets_phi->at(ijet[1]))),weight); histos[name+"_jets_dPhiJ1J2_before_looseveto"]->Fill(fabs(dPhi(AntiKt4LCTopoJets_phi->at(ijet[0]),AntiKt4LCTopoJets_phi->at(ijet[1]))),weight); }
 	
 	_DEBUG("");	
 
@@ -9241,7 +9583,7 @@ bool acceptHadClean(unsigned int vtx, TString name, TMapTSP2TH1& histos, TMapTSP
 
 	
 	///////////////////////////////////////////////////////////////////////////////////////////
-	bool isJet3muOverlapLoose = (njet>0 && AntiKt4LCTopoLets_pt->at(ijet[0])>35.*GeV2MeV) ? (fabs(dPhi(pMuSum.Phi(),AntiKt4LCTopoLets_phi->at(ijet[0])))<0.2 || fabs(dPhi(pMuSum.Phi(),AntiKt4LCTopoLets_phi->at(ijet[0])))>2.95) : false;
+	bool isJet3muOverlapLoose = (njet>0 && AntiKt4LCTopoJets_pt->at(ijet[0])>35.*GeV2MeV) ? (fabs(dPhi(pMuSum.Phi(),AntiKt4LCTopoJets_phi->at(ijet[0])))<0.2 || fabs(dPhi(pMuSum.Phi(),AntiKt4LCTopoJets_phi->at(ijet[0])))>2.95) : false;
 	if(isCounter("nPassing_jets_coljetvetoLoose") && isJet3muOverlapLoose) return false; //////
 	incrementCounter("nPassing_jets_coljetvetoLoose",weight); /////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////////
@@ -9251,15 +9593,15 @@ bool acceptHadClean(unsigned int vtx, TString name, TMapTSP2TH1& histos, TMapTSP
 	_DEBUG("");
 	
 	////////////////////////////////////////////////////////////////////////////////////
-	bool isDijetsLoose = (njet>1 && AntiKt4LCTopoLets_pt->at(ijet[0])>20.*GeV2MeV && AntiKt4LCTopoLets_pt->at(ijet[1])>20.*GeV2MeV) ? (AntiKt4LCTopoLets_pt->at(ijet[0])+AntiKt4LCTopoLets_pt->at(ijet[1])>75.*GeV2MeV && fabs(dPhi(AntiKt4LCTopoLets_phi->at(ijet[0]),AntiKt4LCTopoLets_phi->at(ijet[1])))>2.5) : false;
+	bool isDijetsLoose = (njet>1 && AntiKt4LCTopoJets_pt->at(ijet[0])>20.*GeV2MeV && AntiKt4LCTopoJets_pt->at(ijet[1])>20.*GeV2MeV) ? (AntiKt4LCTopoJets_pt->at(ijet[0])+AntiKt4LCTopoJets_pt->at(ijet[1])>75.*GeV2MeV && fabs(dPhi(AntiKt4LCTopoJets_phi->at(ijet[0]),AntiKt4LCTopoJets_phi->at(ijet[1])))>2.5) : false;
 	if(isCounter("nPassing_jets_dijetvetoLoose") && isDijetsLoose) return false; //////
 	incrementCounter("nPassing_jets_dijetvetoLoose",weight); ///////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////
 	
 	_DEBUG("");
 	
-	if(njet>0 && AntiKt4LCTopoLets_pt->at(ijet[0])>20.*GeV2MeV)                                                  { histos2[name+"_dPhi3muJet1_vs_pTjet1_after_looseveto"]->Fill(AntiKt4LCTopoLets_pt->at(ijet[0]),fabs(dPhi(pMuSum.Phi(),AntiKt4LCTopoLets_phi->at(ijet[0]))),weight); histos[name+"_jets_dPhi3bodyJ1_after_looseveto"]->Fill(fabs(dPhi(pMuSum.Phi(),AntiKt4LCTopoLets_phi->at(ijet[0]))),weight); }
-	if(njet>1 && AntiKt4LCTopoLets_pt->at(ijet[0])>20.*GeV2MeV && AntiKt4LCTopoLets_pt->at(ijet[1])>20.*GeV2MeV) { histos2[name+"_dPhiJet1Jet2_vs_sumpTjet12_after_looseveto"]->Fill(AntiKt4LCTopoLets_pt->at(ijet[0])+AntiKt4LCTopoLets_pt->at(ijet[1]),fabs(dPhi(AntiKt4LCTopoLets_phi->at(ijet[0]),AntiKt4LCTopoLets_phi->at(ijet[1]))),weight); histos[name+"_jets_dPhiJ1J2_after_looseveto"]->Fill(fabs(dPhi(AntiKt4LCTopoLets_phi->at(ijet[0]),AntiKt4LCTopoLets_phi->at(ijet[1]))),weight); }
+	if(njet>0 && AntiKt4LCTopoJets_pt->at(ijet[0])>20.*GeV2MeV)                                                  { histos2[name+"_dPhi3muJet1_vs_pTjet1_after_looseveto"]->Fill(AntiKt4LCTopoJets_pt->at(ijet[0]),fabs(dPhi(pMuSum.Phi(),AntiKt4LCTopoJets_phi->at(ijet[0]))),weight); histos[name+"_jets_dPhi3bodyJ1_after_looseveto"]->Fill(fabs(dPhi(pMuSum.Phi(),AntiKt4LCTopoJets_phi->at(ijet[0]))),weight); }
+	if(njet>1 && AntiKt4LCTopoJets_pt->at(ijet[0])>20.*GeV2MeV && AntiKt4LCTopoJets_pt->at(ijet[1])>20.*GeV2MeV) { histos2[name+"_dPhiJet1Jet2_vs_sumpTjet12_after_looseveto"]->Fill(AntiKt4LCTopoJets_pt->at(ijet[0])+AntiKt4LCTopoJets_pt->at(ijet[1]),fabs(dPhi(AntiKt4LCTopoJets_phi->at(ijet[0]),AntiKt4LCTopoJets_phi->at(ijet[1]))),weight); histos[name+"_jets_dPhiJ1J2_after_looseveto"]->Fill(fabs(dPhi(AntiKt4LCTopoJets_phi->at(ijet[0]),AntiKt4LCTopoJets_phi->at(ijet[1]))),weight); }
 	
 	_DEBUG("");
 	
@@ -9473,46 +9815,98 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 
 		// if(!skim && (isdata || name=="Wtaunu_3mu"))
 		if(!skim && name=="Wtaunu_3mu")
-		{
+		{	
 			seedJER();
-			
 			calibJets.clear();
 			smearedJets.clear();
 			badBCHJets.clear();
 			calibJetsUnc.clear();
+			smearedJetsUnc.clear();
 			calibJetsIndex.clear();
 			clearCalibratedJets();
 			
-			unsigned int nJets = AntiKt4LCTopoLets_pt->size();
+			vector<TLorentzVector> jets_jes_nominal;
+			vector<TLorentzVector> jets_jes_up;
+			vector<TLorentzVector> jets_jes_dwn;
+			vector<TLorentzVector> jets_jer_up;
+			vector<TLorentzVector> jets_jer_dwn;
+			
+			unsigned int nJets = AntiKt4LCTopoJets_pt->size();
 			TMapVL JetShiftsUp, JetShiftsDwn;
 			
 			// cout << "\n\n--------- New Event, nJets=" << nJets << " ---------" << endl;
 			for(unsigned int jet=0 ; jet<nJets ; jet++)
 			{
 				TLorentzVector Jet = getJES(jet);
-				TLorentzVector smearedJet = Jet;
 				calibJets.push_back(Jet);
 				addCalibratedJet(Jet);
+				jets_jes_nominal.push_back(Jet);
 				
 				bool badBCHjet = isBadCalibJetBCH(jet);
 				badBCHJets.push_back(badBCHjet);
 				
-				double quad  = getJUNC(jet, Jet, JetShiftsUp, JetShiftsDwn);
-				calibJetsUnc.push_back(quad);
+				double quadJES  = getJUNC(jet, Jet, JetShiftsUp, JetShiftsDwn);
+				calibJetsUnc.push_back(quadJES);
 				calibJetsIndex.push_back(jet);
+				jets_jes_up.push_back(Jet*(1+quadJES));
+				jets_jes_dwn.push_back(Jet*(1-quadJES));
 				
-				smearedJet = getJER(Jet);
+				double quadJER = 0;
+				TLorentzVector smearedJet = getJER(Jet,quadJER);
 				smearedJets.push_back(smearedJet);
+				smearedJetsUnc.push_back(quadJER);
+				jets_jer_up.push_back(Jet*(1+quadJER));
+				jets_jer_dwn.push_back(Jet*(1-quadJER));
+				
+				double quadTOT = sqrt(quadJES*quadJES + quadJER*quadJER);
+				
 					
-				//cout << "  Jet index " << jet << "(pT:" << AntiKt4LCTopoLets_pt->at(jet) << " -> " << Jet.Pt() << " -> " << smearedJet.Pt() << ") -> quadrature=" << quad*100 << "\% " << ", badBCHjet=" << badBCHjet << endl;
+				// cout << "  Jet index " << jet << "(pT:" << AntiKt4LCTopoJets_pt->at(jet) << " -> " << Jet.Pt() << " -> " << smearedJet.Pt() << ") -> JESunc=" << quadJES*100 << "\%" << ", JERunc=" << quadJER*100 << "\%" << ", TOTunc=" << quadTOT*100 << "\%" << ", badBCHjet=" << badBCHjet << endl;
 				
 				fillJetCalibrationHistos(jet, Jet, smearedJet, name, histos, histos2, wgt);
 			}
 		
-			METUtil::METObject calibMET = getMETU();
-			// cout << " MET_RefFinal_et : " << MET_RefFinal_et << " -> " << calibMET.et() << endl;
-			// cout << " MET_RefFinal_phi: " << MET_RefFinal_phi << " -> " << calibMET.phi() << endl;
-			fillMETCalibrationHistos(calibMET, name, histos/*, histos2*/, wgt);
+			
+			// double METx = MET_RefMuon_etx+MET_RefTau_etx+MET_CellOut_Eflow_etx+MET_RefEle_etx+MET_RefGamma_etx+MET_RefJet_etx+MET_MuonBoy_etx;
+			// double METy = MET_RefMuon_ety+MET_RefTau_ety+MET_CellOut_Eflow_ety+MET_RefEle_ety+MET_RefGamma_ety+MET_RefJet_ety+MET_MuonBoy_ety;
+			// cout << "X: RefMuon=" << MET_RefMuon_etx << ", RefTau=" << MET_RefTau_etx << ", CellOut_Eflow=" << MET_CellOut_Eflow_etx << ", RefEle=" << MET_RefEle_etx << ", RefGamma=" << MET_RefGamma_etx << ", RefJet=" << MET_RefJet_etx << ", MuonBoy=" << MET_MuonBoy_etx << " --> Sum=" << METx << "  :  RefFinal=" << MET_RefFinal_etx << endl;
+			// cout << "Y: RefMuon=" << MET_RefMuon_ety << ", RefTau=" << MET_RefTau_ety << ", CellOut_Eflow=" << MET_CellOut_Eflow_ety << ", RefEle=" << MET_RefEle_ety << ", RefGamma=" << MET_RefGamma_ety << ", RefJet=" << MET_RefJet_ety << ", MuonBoy=" << MET_MuonBoy_ety << " --> Sum=" << METy << "  :  RefFinal=" << MET_RefFinal_ety << endl;
+			
+			// cout << "MET_RefFinal_et=" << MET_RefFinal_et << ", met_reffinal_et=" << met_RefFinal_et << endl;
+			setJetVectorPointers(jets_jes_nominal); calibMET_nominal = getMETU();
+			setJetVectorPointers(jets_jes_up);      calibMET_jes_up  = getMETU();
+			setJetVectorPointers(jets_jes_dwn);     calibMET_jes_dwn = getMETU();
+			setJetVectorPointers(jets_jer_up);      calibMET_jer_up  = getMETU();
+			setJetVectorPointers(jets_jer_dwn);     calibMET_jer_dwn = getMETU();
+			
+			// setJetVectorPointers(calibJets,calibJetsUnc,NOSHIFT);    calibMET_nominal = getMETU();
+			// setJetVectorPointers(calibJets,calibJetsUnc,SHIFTUP);    calibMET_jes_up  = getMETU();
+			// setJetVectorPointers(calibJets,calibJetsUnc,SHIFTDWN);   calibMET_jes_dwn = getMETU();
+			// setJetVectorPointers(calibJets,smearedJetsUnc,SHIFTUP);  calibMET_jer_up  = getMETU();
+			// setJetVectorPointers(calibJets,smearedJetsUnc,SHIFTDWN); calibMET_jer_dwn = getMETU();
+			// cout << "MET:" << endl;
+			// cout << "  MET_RefFinal_et : " << MET_RefFinal_et << " -> " << calibMET_nominal.et() << ", JES+1sig:" << calibMET_jes_up.et() << ", JES-1sig:" << calibMET_jes_dwn.et() << ", JER+1sig:" << calibMET_jer_up.et() << ", JER-1sig:" << calibMET_jer_dwn.et() << endl;
+			// cout << "  MET_RefFinal_phi: " << MET_RefFinal_phi << " -> " << calibMET_nominal.phi() << ", JES+1sig:" << calibMET_jes_up.phi() << ", JES-1sig:" << calibMET_jes_dwn.phi() << ", JER+1sig:" << calibMET_jer_up.phi() << ", JER-1sig:" << calibMET_jer_dwn.phi() << endl;
+			// cout << "mu_muons_pt->size()=" << mu_muons_pt->size() << ", muons->size()=" << muons_pt->size() << endl;
+			// for(unsigned int m=0 ; m<mu_muons_pt->size() ; m++)
+			// {
+			// 	cout << "[" << m << "]  mu_muons_pt=" << mu_muons_pt->at(m) << ", muons_pt=" << muons_pt->at(m) << endl;
+			// }
+			
+			// cout << "jet_antikt4LCtopo_MET_RefFinal_comp_n=" << jet_antikt4LCtopo_MET_RefFinal_comp_n << endl;
+			// for(int n=0 ; n<jet_antikt4LCtopo_MET_RefFinal_comp_n ; ++n)
+			// {
+			// 	cout << "jet_antikt4LCtopo_MET_RefFinal_comp_wet->at("<<n<<").size()=" << jet_antikt4LCtopo_MET_RefFinal_comp_wet->at(n).size() << endl;
+			// 	for(unsigned int m=0 ; m<jet_antikt4LCtopo_MET_RefFinal_comp_wet->at(n).size() ; ++m)
+			// 	{
+			// 		cout << "jet_antikt4LCtopo_MET_RefFinal_comp_wet->at("<<n<<")["<<m<<"]=" << jet_antikt4LCtopo_MET_RefFinal_comp_wet->at(n)[m] << endl;
+			// 		cout << "jet_antikt4LCtopo_MET_RefFinal_comp_wpx->at("<<n<<")["<<m<<"]=" << jet_antikt4LCtopo_MET_RefFinal_comp_wpx->at(n)[m] << endl;
+			// 		cout << "jet_antikt4LCtopo_MET_RefFinal_comp_wpy->at("<<n<<")["<<m<<"]=" << jet_antikt4LCtopo_MET_RefFinal_comp_wpy->at(n)[m] << endl;
+			// 		cout << "jet_antikt4LCtopo_MET_RefFinal_comp_statusWord->at("<<n<<")["<<m<<"]=" << jet_antikt4LCtopo_MET_RefFinal_comp_statusWord->at(n)[m] << endl;
+			// 	}
+			// }
+			
+			fillMETCalibrationHistos(calibMET_nominal, name, histos/*, histos2*/, wgt);
 		}
 
 
