@@ -17,6 +17,11 @@ enum vtx_uncertainties
 	VTX_JERUP, VTX_JERDWN
 };
 
+enum met_types
+{
+	METSTACO,METMUONS
+};
+
 
 class vertex
 {
@@ -136,6 +141,8 @@ public:
 	int            jetN()             { return m_njets;           };
 	TLorentzVector jetPE(int i)       { return m_jetPE[i];        };
 	TLorentzVector jetPM(int i)       { return m_jetPM[i];        };
+	TLorentzVector ucjetPE(int i)       { return m_uncalib_jetPE[i];        };
+        TLorentzVector ucjetPM(int i)       { return m_uncalib_jetPM[i];        };
 	double         jetShiftJES(int i) { return m_jet_shiftJES[i]; };
 	double         jetShiftJER(int i) { return m_jet_shiftJER[i]; };
 	TLorentzVector jetPE_JES(int i, int shift=VTX_NOSHIFT) { return m_jetPE[i]*(1+shift*jetShiftJES(i)); };
@@ -144,13 +151,17 @@ public:
 	TLorentzVector jetPM_JER(int i, int shift=VTX_NOSHIFT) { return m_jetPM[i]*(1+shift*jetShiftJER(i)); };
 	double         jetMV1(int i)      { return m_jetMV1[i];      };
 	double         jetVtxFrac(int i)  { return m_jetVtxFrac[i];  };
+	double         ucjetMV1(int i)      { return m_uncalib_jetMV1[i];      };
+        double         ucjetVtxFrac(int i)  { return m_uncalib_jetVtxFrac[i];  };
 	
-	//// jets+X
-	// double         jetSumPt()         { return m_jetSumpt12;     };
-	// double         jetDphi12()        { return m_jetDphi12;      };
-	// double         jetDR12()          { return m_jetDR12;        };
-	// double         jetDphi3body()     { return m_jetDphi3body;   };
-	// double         jetDR3body()       { return m_jetDR3body;     };
+	//// uncalibrated jets+X
+	double         ucjetSumPt()         { return m_uncalib_jetSumpt12;     };
+	double         ucjetDphi12()        { return m_uncalib_jetDphi12;      };
+	double         ucjetDR12()          { return m_uncalib_jetDR12;        };
+	double         ucjetDphi3body()     { return m_uncalib_jetDphi3body;   };
+	double         ucjetDR3body()       { return m_uncalib_jetDR3body;     };
+	
+	//// calibrated jets+X
 	double jetSumPt(int shift=VTX_NOMINAL)         
 	{
 		switch(shift)
@@ -223,58 +234,62 @@ public:
 	// double         metPhi()       { return m_metPhi;       };
 	// double         metDphi3body() { return m_metDphi3body; };
 	// double         metMt()        { return m_metMt;        };
-	double met(int shift=VTX_NOJES)
+	double met(int mettype, int shift=VTX_NOJES)
 	{
+		if(mettype!=METSTACO && mettype!=METMUONS) { cout << "unsupported MET type" << endl;  exit(-1); }
 		switch(shift)
 		{
-			case VTX_NOJES:   return m_met;
-			case VTX_NOMINAL: return m_met_jes_nominal;
-			case VTX_JESUP:   return m_met_jes_up;
-			case VTX_JESDWN:  return m_met_jes_dwn;
-			case VTX_JERUP:   return m_met_jer_up;
-			case VTX_JERDWN:  return m_met_jer_dwn;
+			case VTX_NOJES:   return (mettype==METSTACO) ? m_met             : m_mumet;
+			case VTX_NOMINAL: return (mettype==METSTACO) ? m_met_jes_nominal : m_mumet_jes_nominal;
+			case VTX_JESUP:   return (mettype==METSTACO) ? m_met_jes_up      : m_mumet_jes_up;
+			case VTX_JESDWN:  return (mettype==METSTACO) ? m_met_jes_dwn     : m_mumet_jes_dwn;
+			case VTX_JERUP:   return (mettype==METSTACO) ? m_met_jer_up      : m_mumet_jer_up;
+			case VTX_JERDWN:  return (mettype==METSTACO) ? m_met_jer_dwn     : m_mumet_jer_dwn;
 			default: break; // _FATAL("Unsupported shit code: "+_s(shit));
 		}
 		return -999.;
 	};
-	double metPhi(int shift=VTX_NOJES)
+	double metPhi(int mettype, int shift=VTX_NOJES)
 	{
+		if(mettype!=METSTACO && mettype!=METMUONS) { cout << "unsupported MET type" << endl;  exit(-1); }
 		switch(shift)
 		{
-			case VTX_NOJES:   return m_metPhi;
-			case VTX_NOMINAL: return m_metPhi_jes_nominal;
-			case VTX_JESUP:   return m_metPhi_jes_up;
-			case VTX_JESDWN:  return m_metPhi_jes_dwn;
-			case VTX_JERUP:   return m_metPhi_jer_up;
-			case VTX_JERDWN:  return m_metPhi_jer_dwn;
+			case VTX_NOJES:   return (mettype==METSTACO) ? m_metPhi             : m_mumetPhi;
+			case VTX_NOMINAL: return (mettype==METSTACO) ? m_metPhi_jes_nominal : m_mumetPhi_jes_nominal;
+			case VTX_JESUP:   return (mettype==METSTACO) ? m_metPhi_jes_up      : m_mumetPhi_jes_up;
+			case VTX_JESDWN:  return (mettype==METSTACO) ? m_metPhi_jes_dwn     : m_mumetPhi_jes_dwn;
+			case VTX_JERUP:   return (mettype==METSTACO) ? m_metPhi_jer_up      : m_mumetPhi_jer_up;
+			case VTX_JERDWN:  return (mettype==METSTACO) ? m_metPhi_jer_dwn     : m_mumetPhi_jer_dwn;
 			default: break; // _FATAL("Unsupported shit code: "+_s(shit));
 		}
 		return -999.;
 	};
-	double metDphi3body(int shift=VTX_NOJES)
+	double metDphi3body(int mettype, int shift=VTX_NOJES)
 	{
+		if(mettype!=METSTACO && mettype!=METMUONS) { cout << "unsupported MET type" << endl;  exit(-1); }
 		switch(shift)
 		{
-			case VTX_NOJES:   return m_metDphi3body;
-			case VTX_NOMINAL: return m_metDphi3body_jes_nominal;
-			case VTX_JESUP:   return m_metDphi3body_jes_up;
-			case VTX_JESDWN:  return m_metDphi3body_jes_dwn;
-			case VTX_JERUP:   return m_metDphi3body_jer_up;
-			case VTX_JERDWN:  return m_metDphi3body_jer_dwn;
+			case VTX_NOJES:   return (mettype==METSTACO) ? m_metDphi3body             : m_mumetDphi3body;
+			case VTX_NOMINAL: return (mettype==METSTACO) ? m_metDphi3body_jes_nominal : m_mumetDphi3body_jes_nominal;
+			case VTX_JESUP:   return (mettype==METSTACO) ? m_metDphi3body_jes_up      : m_mumetDphi3body_jes_up;
+			case VTX_JESDWN:  return (mettype==METSTACO) ? m_metDphi3body_jes_dwn     : m_mumetDphi3body_jes_dwn;
+			case VTX_JERUP:   return (mettype==METSTACO) ? m_metDphi3body_jer_up      : m_mumetDphi3body_jer_up;
+			case VTX_JERDWN:  return (mettype==METSTACO) ? m_metDphi3body_jer_dwn     : m_mumetDphi3body_jer_dwn;
 			default: break; // _FATAL("Unsupported shit code: "+_s(shit));
 		}
 		return -999.;
 	};
-	double metMt(int shift=VTX_NOJES)
+	double metMt(int mettype, int shift=VTX_NOJES)
 	{
+		if(mettype!=METSTACO && mettype!=METMUONS) { cout << "unsupported MET type" << endl;  exit(-1); }
 		switch(shift)
 		{
-			case VTX_NOJES:   return m_metMt;
-			case VTX_NOMINAL: return m_metMt_jes_nominal;
-			case VTX_JESUP:   return m_metMt_jes_up;
-			case VTX_JESDWN:  return m_metMt_jes_dwn;
-			case VTX_JERUP:   return m_metMt_jer_up;
-			case VTX_JERDWN:  return m_metMt_jer_dwn;
+			case VTX_NOJES:   return (mettype==METSTACO) ? m_metMt             : m_mumetMt;
+			case VTX_NOMINAL: return (mettype==METSTACO) ? m_metMt_jes_nominal : m_mumetMt_jes_nominal;
+			case VTX_JESUP:   return (mettype==METSTACO) ? m_metMt_jes_up      : m_mumetMt_jes_up;
+			case VTX_JESDWN:  return (mettype==METSTACO) ? m_metMt_jes_dwn     : m_mumetMt_jes_dwn;
+			case VTX_JERUP:   return (mettype==METSTACO) ? m_metMt_jer_up      : m_mumetMt_jer_up;
+			case VTX_JERDWN:  return (mettype==METSTACO) ? m_metMt_jer_dwn     : m_mumetMt_jer_dwn;
 			default: break; // _FATAL("Unsupported shit code: "+_s(shit));
 		}
 		return -999.;
@@ -292,8 +307,11 @@ private:
 	TLorentzVector m_trkP[nMaxTracks];
 	int m_njets;
 	TLorentzVector m_jetPE[4], m_jetPM[4];
+	TLorentzVector m_uncalib_jetPE[4], m_uncalib_jetPM[4];
 	double m_jet_shiftJES[4], m_jet_shiftJER[4];
 	double m_jetMV1[4], m_jetVtxFrac[4];
+	double m_uncalib_jetMV1[4], m_uncalib_jetVtxFrac[4];
+	double m_uncalib_jetSumpt12, m_uncalib_jetDphi12, m_uncalib_jetDphi3body, m_uncalib_jetDR12, m_uncalib_jetDR3body;
 	double m_jetSumpt12, m_jetDphi12, m_jetDphi3body, m_jetDR12, m_jetDR3body;
 	double m_jetSumpt12_jes_up,  m_jetDphi12_jes_up,  m_jetDphi3body_jes_up,  m_jetDR12_jes_up,  m_jetDR3body_jes_up;
 	double m_jetSumpt12_jes_dwn, m_jetDphi12_jes_dwn, m_jetDphi3body_jes_dwn, m_jetDR12_jes_dwn, m_jetDR3body_jes_dwn;
@@ -323,6 +341,14 @@ private:
 	double m_met_jes_dwn, m_metPhi_jes_dwn, m_metDphi3body_jes_dwn, m_metMt_jes_dwn;
 	double m_met_jer_up,  m_metPhi_jer_up,  m_metDphi3body_jer_up,  m_metMt_jer_up;
 	double m_met_jer_dwn, m_metPhi_jer_dwn, m_metDphi3body_jer_dwn, m_metMt_jer_dwn;
+	
+	double m_mumet, m_mumetPhi, m_mumetDphi3body, m_mumetMt;
+        double m_mumet_jes_nominal,  m_mumetPhi_jes_nominal,  m_mumetDphi3body_jes_nominal,  m_mumetMt_jes_nominal;
+        double m_mumet_jes_up,  m_mumetPhi_jes_up,  m_mumetDphi3body_jes_up,  m_mumetMt_jes_up;
+        double m_mumet_jes_dwn, m_mumetPhi_jes_dwn, m_mumetDphi3body_jes_dwn, m_mumetMt_jes_dwn;
+        double m_mumet_jer_up,  m_mumetPhi_jer_up,  m_mumetDphi3body_jer_up,  m_mumetMt_jer_up;
+        double m_mumet_jer_dwn, m_mumetPhi_jer_dwn, m_mumetDphi3body_jer_dwn, m_mumetMt_jer_dwn;
+	
 	double m_chi2, m_ndf, m_chi2ndf, m_pvalue, m_lxy, m_lxyErr, m_tau;
 	double m_a0, m_a0xy, m_cosT, m_cosTxy, m_charge, m_isolation[21], m_drmax, m_drmin;
 };

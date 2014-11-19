@@ -206,6 +206,38 @@ void flatout_book(TDirectory* olddir)
 	addBranch("met_reffinal_JERdwn_phi",     order, FLT);
 	addBranch("met_reffinal_JERdwn_mT",      order, VFLT);
 	addBranch("met_reffinal_JERdwn_dPhi3mu", order, VFLT);
+
+	
+	
+	// MET_Muons-based kinematics
+        addBranch("met_muons_et",      order, FLT);
+        addBranch("met_muons_phi",     order, FLT);
+        addBranch("met_muons_mT",      order, VFLT);
+        addBranch("met_muons_dPhi3mu", order, VFLT);
+
+        addBranch("met_muons_JESnominal_et",      order, FLT);
+        addBranch("met_muons_JESnominal_phi",     order, FLT);
+        addBranch("met_muons_JESnominal_mT",      order, VFLT);
+        addBranch("met_muons_JESnominal_dPhi3mu", order, VFLT);
+        addBranch("met_muons_JESup_et",           order, FLT);
+        addBranch("met_muons_JESup_phi",          order, FLT);
+        addBranch("met_muons_JESup_mT",           order, VFLT);
+        addBranch("met_muons_JESup_dPhi3mu",      order, VFLT);
+        addBranch("met_muons_JESdwn_et",          order, FLT);
+        addBranch("met_muons_JESdwn_phi",         order, FLT);
+        addBranch("met_muons_JESdwn_mT",          order, VFLT);
+        addBranch("met_muons_JESdwn_dPhi3mu",     order, VFLT);
+
+        addBranch("met_muons_JERup_et",      order, FLT);
+        addBranch("met_muons_JERup_phi",     order, FLT);
+        addBranch("met_muons_JERup_mT",      order, VFLT);
+        addBranch("met_muons_JERup_dPhi3mu", order, VFLT);
+        addBranch("met_muons_JERdwn_et",      order, FLT);
+        addBranch("met_muons_JERdwn_phi",     order, FLT);
+        addBranch("met_muons_JERdwn_mT",      order, VFLT);
+        addBranch("met_muons_JERdwn_dPhi3mu", order, VFLT);
+
+	
 	
 	// Muons
 	for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_order"+x,          order, VINT); }
@@ -265,22 +297,42 @@ void flatout_book(TDirectory* olddir)
 	addBranch("jet_pt2",       order, VFLT);
 	addBranch("jet_pt3",       order, VFLT);
 	addBranch("jet_pt4",       order, VFLT);
+	addBranch("jet_uncalib_pt1", order, VFLT);
+        addBranch("jet_uncalib_pt2", order, VFLT);
+        addBranch("jet_uncalib_pt3", order, VFLT);
+        addBranch("jet_uncalib_pt4", order, VFLT);
 	addBranch("jet_eta1",      order, VFLT);
 	addBranch("jet_eta2",      order, VFLT);
 	addBranch("jet_eta3",      order, VFLT);
 	addBranch("jet_eta4",      order, VFLT);
+	addBranch("jet_uncalib_eta1",order, VFLT);
+        addBranch("jet_uncalib_eta2",order, VFLT);
+        addBranch("jet_uncalib_eta3",order, VFLT);
+        addBranch("jet_uncalib_eta4",order, VFLT);
 	addBranch("jet_phi1",      order, VFLT);
 	addBranch("jet_phi2",      order, VFLT);
 	addBranch("jet_phi3",      order, VFLT);
 	addBranch("jet_phi4",      order, VFLT);
+	addBranch("jet_uncalib_phi1",order, VFLT);
+        addBranch("jet_uncalib_phi2",order, VFLT);
+        addBranch("jet_uncalib_phi3",order, VFLT);
+        addBranch("jet_uncalib_phi4",order, VFLT);
 	addBranch("jet_m1",        order, VFLT);
 	addBranch("jet_m2",        order, VFLT);
 	addBranch("jet_m3",        order, VFLT);
 	addBranch("jet_m4",        order, VFLT);
+	addBranch("jet_uncalib_m1",  order, VFLT);
+        addBranch("jet_uncalib_m2",  order, VFLT);
+        addBranch("jet_uncalib_m3",  order, VFLT);
+        addBranch("jet_uncalib_m4",  order, VFLT);
 	addBranch("jet_E1",        order, VFLT);
 	addBranch("jet_E2",        order, VFLT);
 	addBranch("jet_E3",        order, VFLT);
 	addBranch("jet_E4",        order, VFLT);
+	addBranch("jet_uncalib_E1",  order, VFLT);
+        addBranch("jet_uncalib_E2",  order, VFLT);
+        addBranch("jet_uncalib_E3",  order, VFLT);
+        addBranch("jet_uncalib_E4",  order, VFLT);
 	addBranch("jet_MV1w1",     order, VFLT);
 	addBranch("jet_MV1w2",     order, VFLT);
 	addBranch("jet_MV1w3",     order, VFLT);
@@ -289,6 +341,14 @@ void flatout_book(TDirectory* olddir)
 	addBranch("jet_vtxf2",     order, VFLT);
 	addBranch("jet_vtxf3",     order, VFLT);
 	addBranch("jet_vtxf4",     order, VFLT);
+	addBranch("jet_uncalib_MV1w1",     order, VFLT);
+        addBranch("jet_uncalib_MV1w2",     order, VFLT);
+        addBranch("jet_uncalib_MV1w3",     order, VFLT);
+        addBranch("jet_uncalib_MV1w4",     order, VFLT);
+        addBranch("jet_uncalib_vtxf1",     order, VFLT);
+        addBranch("jet_uncalib_vtxf2",     order, VFLT);
+        addBranch("jet_uncalib_vtxf3",     order, VFLT);
+        addBranch("jet_uncalib_vtxf4",     order, VFLT);
 	addBranch("jet_JES_shift1",     order, VFLT);
 	addBranch("jet_JES_shift2",     order, VFLT);
 	addBranch("jet_JES_shift3",     order, VFLT);
@@ -298,6 +358,11 @@ void flatout_book(TDirectory* olddir)
 	addBranch("jet_JER_shift3",     order, VFLT);
 	addBranch("jet_JER_shift4",     order, VFLT);
 	
+	addBranch("jet_uncalib_sumpt12",   order, VFLT);
+        addBranch("jet_uncalib_dphi3muJ1", order, VFLT);
+        addBranch("jet_uncalib_dR3muJ1",   order, VFLT);
+        addBranch("jet_uncalib_dphiJ1J2",  order, VFLT);
+        addBranch("jet_uncalib_dRJ1J2",    order, VFLT);
 	addBranch("jet_sumpt12",   order, VFLT);
 	addBranch("jet_dphi3muJ1", order, VFLT);
 	addBranch("jet_dR3muJ1",   order, VFLT);
