@@ -26,9 +26,11 @@
 #include "signalmc.h"
 #include "tmva.h"
 
-bool makepufile = false;
-bool glob_isMC  = true;
-bool glob_isWsig  = true;
+bool makepufile  = false;
+bool glob_isMC   = true;
+bool glob_isWsig = true;
+bool glob_doJetCalib = true;
+bool glob_doMETCalib = false;
 
 struct sources
 {
@@ -117,11 +119,13 @@ vector<float>* akt4lc_jet_pt;
 vector<float>* akt4lc_jet_E;
 vector<float>* akt4lc_jet_eta;
 vector<float>* akt4lc_jet_phi;
+METUtil::METObject uncalibMET;
 METUtil::METObject calibMET_nominal;
 METUtil::METObject calibMET_jes_up;
 METUtil::METObject calibMET_jes_dwn;
 METUtil::METObject calibMET_jer_up;
 METUtil::METObject calibMET_jer_dwn;
+METUtil::METObject uncalibMUMET;
 METUtil::METObject calibMUMET_nominal;
 METUtil::METObject calibMUMET_jes_up;
 METUtil::METObject calibMUMET_jes_dwn;
@@ -1203,7 +1207,7 @@ bool isGoodJet(unsigned int jet, TString configuration = "VeryLooseBad")
 	double time         = AntiKt4LCTopoJets_Timing->at(jet); //in ns
 	double sumpttrk     = AntiKt4LCTopoJets_sumPtTrk_pv0_500MeV->at(jet); //in MeV, same as sumpttrk
 	double eta          = AntiKt4LCTopoJets_constscale_eta->at(jet); // constscale/emscale Eta
-	double pt           = (!skim && glob_isWsig) ? AntiKt4LCTopoJets_calibrated_pt->at(jet) : AntiKt4LCTopoJets_pt->at(jet); // should be calibrated jet pT in the analysis mode (!skim)
+	double pt           = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_calibrated_pt->at(jet) : AntiKt4LCTopoJets_pt->at(jet); // should be calibrated jet pT in the analysis mode (!skim)
 	double fmax         = AntiKt4LCTopoJets_fracSamplingMax->at(jet);
 	double negE         = AntiKt4LCTopoJets_NegativeE->at(jet); //in MeV
 	double AverageLArQF = AntiKt4LCTopoJets_AverageLArQF->at(jet);
@@ -1528,7 +1532,6 @@ double getJUNC(unsigned int jet, TLorentzVector Jet, TMapVL& JetShiftsUp, TMapVL
 	
 	///////////////////////////////////////
 	//// b-tagging / flavor uncertainty
-	double Nsegments = getNsegments(jet);
 	shift = JUNCP->getRelFlavorCompUncert(Jet.Pt(),Jet.Eta(),true);  total_shift += shift*shift; // ONLY FOR LIGHT JETS
 	shift = JUNCP->getRelFlavorResponseUncert(Jet.Pt(),Jet.Eta());   total_shift += shift*shift; // ONLY FOR LIGHT JETS
 	shift = JUNCP->getRelBJESUncert(Jet.Pt(),Jet.Eta());             total_shift += shift*shift; // ONLY FOR b-JETS
@@ -1540,6 +1543,7 @@ double getJUNC(unsigned int jet, TLorentzVector Jet, TMapVL& JetShiftsUp, TMapVL
 	}
 	else
 	{
+		double Nsegments = getNsegments(jet);
 		shift = JUNCP->getRelPunchThroughUncert(Jet.Pt(),Jet.Eta(),Nsegments);  total_shift += shift*shift; // Punch throgh
 	}
 	
@@ -1643,30 +1647,33 @@ void setJetVectorPointers(vector<TLorentzVector>& Jets)
 METUtil::METObject getMETU(int mettype)
 {
 	METU->reset();
-
-	if(el_pt==NULL || el_MET_RefFinal_comp_wet==NULL) _FATAL("");
 	
 	METU->defineMissingET(true,true,true,true,true,true,true);
 	// METU->setIsMuid(true);
 	// METU->setIsMuons(true);
 	
-	
+	//// soft muons and other leptons
 	METU->setMETTerm(METUtil::RefMuon,   MET_RefMuon_etx, MET_RefMuon_ety, MET_RefMuon_sumet); // must be done in addition to the staco code below
 	METU->setMETTerm(METUtil::RefTau,    MET_RefTau_etx,  MET_RefTau_ety,  MET_RefTau_sumet);
-	// METU->setMETTerm(METUtil::SoftTerms, MET_CellOut_Eflow_etx+MET_SoftJets_etx, MET_CellOut_Eflow_ety+MET_SoftJets_ety, MET_CellOut_Eflow_sumet+MET_SoftJets_sumet);
-	METU->setMETTerm(METUtil::SoftTerms, MET_CellOut_Eflow_etx, MET_CellOut_Eflow_ety, MET_CellOut_Eflow_sumet);
-	
 	// METU->setElectronParameters(el_pt, el_eta, el_phi, el_MET_RefFinal_comp_wet, el_MET_RefFinal_comp_wpx, el_MET_RefFinal_comp_wpy, el_MET_RefFinal_comp_statusWord);
 	METU->setMETTerm(METUtil::RefEle, MET_RefEle_etx, MET_RefEle_ety, MET_RefEle_sumet);
-
 	// METU->setPhotonParameters(ph_pt, ph_eta, ph_phi, ph_MET_RefFinal_comp_wet, ph_MET_RefFinal_comp_wpx, ph_MET_RefFinal_comp_wpy, ph_MET_RefFinal_comp_statusWord);
 	METU->setMETTerm(METUtil::RefGamma, MET_RefGamma_etx, MET_RefGamma_ety, MET_RefGamma_sumet);
 	
-	METU->setJetParameters(akt4lc_jet_pt, akt4lc_jet_eta, akt4lc_jet_phi,akt4lc_jet_E, jet_antikt4LCtopo_MET_RefFinal_comp_wet, jet_antikt4LCtopo_MET_RefFinal_comp_wpx, jet_antikt4LCtopo_MET_RefFinal_comp_wpy, jet_antikt4LCtopo_MET_RefFinal_comp_statusWord);
-	// METU->setJetParameters(AntiKt4LCTopoJets_pt, AntiKt4LCTopoJets_eta, AntiKt4LCTopoJets_phi,AntiKt4LCTopoJets_E, jet_antikt4LCtopo_MET_RefFinal_comp_wet, jet_antikt4LCtopo_MET_RefFinal_comp_wpx, jet_antikt4LCtopo_MET_RefFinal_comp_wpy, jet_antikt4LCtopo_MET_RefFinal_comp_statusWord);
-	// METU->setMETTerm(METUtil::RefJet, MET_RefJet_etx, MET_RefJet_ety, MET_RefJet_sumet);
+	//// Jets and soft terms
+	if(glob_isWsig)
+	{
+		METU->setMETTerm(METUtil::SoftTerms, MET_CellOut_Eflow_etx, MET_CellOut_Eflow_ety, MET_CellOut_Eflow_sumet);
+		METU->setJetParameters(akt4lc_jet_pt, akt4lc_jet_eta, akt4lc_jet_phi,akt4lc_jet_E, jet_antikt4LCtopo_MET_RefFinal_comp_wet, jet_antikt4LCtopo_MET_RefFinal_comp_wpx, jet_antikt4LCtopo_MET_RefFinal_comp_wpy, jet_antikt4LCtopo_MET_RefFinal_comp_statusWord);
+	}
+	else
+	{
+		METU->setMETTerm(METUtil::RefJet, MET_RefJet_etx, MET_RefJet_ety, MET_RefJet_sumet);
+		METU->setMETTerm(METUtil::SoftTerms, MET_CellOut_Eflow_etx+MET_SoftJets_etx, MET_CellOut_Eflow_ety+MET_SoftJets_ety, MET_CellOut_Eflow_sumet+MET_SoftJets_sumet);
+	}
+	
 
-
+	//// "Hard" muons
 	if(mettype==METSTACO)
 	{
 		// METU->setMuonParameters(mu_staco_pt, mu_staco_eta, mu_staco_phi, mu_staco_MET_RefFinal_comp_wet, mu_staco_MET_RefFinal_comp_wpx, mu_staco_MET_RefFinal_comp_wpy, mu_staco_MET_RefFinal_comp_statusWord);
@@ -1680,14 +1687,15 @@ METUtil::METObject getMETU(int mettype)
 	else if(mettype==METMUONS)
 	{
 		// METU->setMuonParameters(mu_muons_pt, mu_muons_eta, mu_muons_phi, mu_muons_MET_RefFinal_comp_wet, mu_MET_RefFinal_comp_wpx, mu_MET_RefFinal_comp_wpy, mu_MET_RefFinal_comp_statusWord);
-                // The default pt for muons is from the combined ID/MS track.
-                // // The default pt for muons is from the combined ID/MS track.
-                // // Spectro-only muons need to have the MS momentum set separately.
-                // // This version of the method uses commonly available D3PD branches.
-                // METU->setExtraMuonParameters(mu_muons_ms_qoverp, mu_muons_ms_theta, mu_muons_ms_phi, mu_muons_charge);
-                METU->setMETTerm(METUtil::MuonTotal, MET_Muons_etx, MET_Muons_ety, MET_Muons_sumet);
+		// The default pt for muons is from the combined ID/MS track.
+		// // The default pt for muons is from the combined ID/MS track.
+		// // Spectro-only muons need to have the MS momentum set separately.
+		// // This version of the method uses commonly available D3PD branches.
+		// METU->setExtraMuonParameters(mu_muons_ms_qoverp, mu_muons_ms_theta, mu_muons_ms_phi, mu_muons_charge);
+		METU->setMETTerm(METUtil::MuonTotal, MET_Muons_etx, MET_Muons_ety, MET_Muons_sumet);
 	}
 	else _FATAL("Unsupported MET type: "+_s(mettype));
+	
 	
 	//// Now get the MET (RefFinal)
 	METUtil::METObject refFinal = METU->getMissingET(METUtil::RefFinal);
@@ -3139,7 +3147,9 @@ void fillFlatoutTree(vector<vertex>& vertices, int allPassing)
 	/////////////////////
 	
 	flatout_ints["vtx_n"] = vertices.size();
-	
+	unsigned int nvertices = vertices.size();
+	if(nvertices<1)	return;
+
 	for(unsigned int i=0 ; i<vertices.size() ; ++i)
 	{
 		vertex v = vertices[i];
@@ -3205,78 +3215,222 @@ void fillFlatoutTree(vector<vertex>& vertices, int allPassing)
 		
 		_DEBUG("");
 
-		flatout_vfloats["jet_pt1"]      ->push_back((v.jetN()>0) ? v.jetPM(0).Pt() : 0.);
-		flatout_vfloats["jet_pt2"]      ->push_back((v.jetN()>1) ? v.jetPM(1).Pt() : 0.);
-		flatout_vfloats["jet_pt3"]      ->push_back((v.jetN()>2) ? v.jetPM(2).Pt() : 0.);
-		flatout_vfloats["jet_pt4"]      ->push_back((v.jetN()>3) ? v.jetPM(3).Pt() : 0.);
-		flatout_vfloats["jet_eta1"]     ->push_back((v.jetN()>0) ? v.jetPM(0).Eta() : -999.);
-		flatout_vfloats["jet_eta2"]     ->push_back((v.jetN()>1) ? v.jetPM(1).Eta() : -999.);
-		flatout_vfloats["jet_eta3"]     ->push_back((v.jetN()>2) ? v.jetPM(2).Eta() : -999.);
-		flatout_vfloats["jet_eta4"]     ->push_back((v.jetN()>3) ? v.jetPM(3).Eta() : -999.);
-		flatout_vfloats["jet_phi1"]     ->push_back((v.jetN()>0) ? v.jetPM(0).Phi() : -999.);
-		flatout_vfloats["jet_phi2"]     ->push_back((v.jetN()>1) ? v.jetPM(1).Phi() : -999.);
-		flatout_vfloats["jet_phi3"]     ->push_back((v.jetN()>2) ? v.jetPM(2).Phi() : -999.);
-		flatout_vfloats["jet_phi4"]     ->push_back((v.jetN()>3) ? v.jetPM(3).Phi() : -999.);
-		flatout_vfloats["jet_m1"]       ->push_back((v.jetN()>0) ? v.jetPM(0).M() : 0.);
-		flatout_vfloats["jet_m2"]       ->push_back((v.jetN()>1) ? v.jetPM(1).M() : 0.);
-		flatout_vfloats["jet_m3"]       ->push_back((v.jetN()>2) ? v.jetPM(2).M() : 0.);
-		flatout_vfloats["jet_m4"]       ->push_back((v.jetN()>3) ? v.jetPM(3).M() : 0.);
-		flatout_vfloats["jet_E1"]       ->push_back((v.jetN()>0) ? v.jetPM(0).E() : 0.);
-		flatout_vfloats["jet_E2"]       ->push_back((v.jetN()>1) ? v.jetPM(1).E() : 0.);
-		flatout_vfloats["jet_E3"]       ->push_back((v.jetN()>2) ? v.jetPM(2).E() : 0.);
-		flatout_vfloats["jet_E4"]       ->push_back((v.jetN()>3) ? v.jetPM(3).E() : 0.);
-		flatout_vfloats["jet_MV1w1"]    ->push_back( v.jetMV1(0));
-		flatout_vfloats["jet_MV1w2"]    ->push_back( v.jetMV1(1));
-		flatout_vfloats["jet_MV1w3"]    ->push_back( v.jetMV1(2));
-		flatout_vfloats["jet_MV1w4"]    ->push_back( v.jetMV1(3));
-		flatout_vfloats["jet_vtxf1"]    ->push_back( v.jetVtxFrac(0));
-		flatout_vfloats["jet_vtxf2"]    ->push_back( v.jetVtxFrac(1));
-		flatout_vfloats["jet_vtxf3"]    ->push_back( v.jetVtxFrac(2));
-		flatout_vfloats["jet_vtxf4"]    ->push_back( v.jetVtxFrac(3));
-		flatout_vfloats["jet_sumpt12"]  ->push_back( v.jetSumPt(NOMINAL));
-		flatout_vfloats["jet_dphi3muJ1"]->push_back( v.jetDphi3body(NOMINAL));
-		flatout_vfloats["jet_dR3muJ1"]  ->push_back( v.jetDR3body(NOMINAL));
-		flatout_vfloats["jet_dphiJ1J2"] ->push_back( v.jetDphi12(NOMINAL));
-		flatout_vfloats["jet_dRJ1J2"]   ->push_back( v.jetDR12(NOMINAL));
+		flatout_vfloats["jet_pt1_uncalib"]      ->push_back((v.jetN()>0) ? v.jetPEall(NOJES,0).Pt()  : -999);
+		flatout_vfloats["jet_pt2_uncalib"]      ->push_back((v.jetN()>1) ? v.jetPEall(NOJES,1).Pt()  : -999);
+		flatout_vfloats["jet_pt3_uncalib"]      ->push_back((v.jetN()>2) ? v.jetPEall(NOJES,2).Pt()  : -999);
+		flatout_vfloats["jet_pt4_uncalib"]      ->push_back((v.jetN()>3) ? v.jetPEall(NOJES,3).Pt()  : -999);
+		flatout_vfloats["jet_eta1_uncalib"]     ->push_back((v.jetN()>0) ? v.jetPEall(NOJES,0).Eta() : -999.);
+		flatout_vfloats["jet_eta2_uncalib"]     ->push_back((v.jetN()>1) ? v.jetPEall(NOJES,1).Eta() : -999.);
+		flatout_vfloats["jet_eta3_uncalib"]     ->push_back((v.jetN()>2) ? v.jetPEall(NOJES,2).Eta() : -999.);
+		flatout_vfloats["jet_eta4_uncalib"]     ->push_back((v.jetN()>3) ? v.jetPEall(NOJES,3).Eta() : -999.);
+		flatout_vfloats["jet_phi1_uncalib"]     ->push_back((v.jetN()>0) ? v.jetPEall(NOJES,0).Phi() : -999.);
+		flatout_vfloats["jet_phi2_uncalib"]     ->push_back((v.jetN()>1) ? v.jetPEall(NOJES,1).Phi() : -999.);
+		flatout_vfloats["jet_phi3_uncalib"]     ->push_back((v.jetN()>2) ? v.jetPEall(NOJES,2).Phi() : -999.);
+		flatout_vfloats["jet_phi4_uncalib"]     ->push_back((v.jetN()>3) ? v.jetPEall(NOJES,3).Phi() : -999.);
+		flatout_vfloats["jet_m1_uncalib"]       ->push_back((v.jetN()>0) ? v.jetPEall(NOJES,0).M()   : -999.);
+		flatout_vfloats["jet_m2_uncalib"]       ->push_back((v.jetN()>1) ? v.jetPEall(NOJES,1).M()   : -999.);
+		flatout_vfloats["jet_m3_uncalib"]       ->push_back((v.jetN()>2) ? v.jetPEall(NOJES,2).M()   : -999.);
+		flatout_vfloats["jet_m4_uncalib"]       ->push_back((v.jetN()>3) ? v.jetPEall(NOJES,3).M()   : -999.);
+		flatout_vfloats["jet_E1_uncalib"]       ->push_back((v.jetN()>0) ? v.jetPEall(NOJES,0).E()   : -999.);
+		flatout_vfloats["jet_E2_uncalib"]       ->push_back((v.jetN()>1) ? v.jetPEall(NOJES,1).E()   : -999.);
+		flatout_vfloats["jet_E3_uncalib"]       ->push_back((v.jetN()>2) ? v.jetPEall(NOJES,2).E()   : -999.);
+		flatout_vfloats["jet_E4_uncalib"]       ->push_back((v.jetN()>3) ? v.jetPEall(NOJES,3).E()   : -999.);
+		flatout_vfloats["jet_MV1w1_uncalib"]    ->push_back((v.jetN()>0) ? v.jetMV1all(NOJES,0)      : -999.);
+		flatout_vfloats["jet_MV1w2_uncalib"]    ->push_back((v.jetN()>1) ? v.jetMV1all(NOJES,1)      : -999.);
+		flatout_vfloats["jet_MV1w3_uncalib"]    ->push_back((v.jetN()>2) ? v.jetMV1all(NOJES,2)      : -999.);
+		flatout_vfloats["jet_MV1w4_uncalib"]    ->push_back((v.jetN()>3) ? v.jetMV1all(NOJES,3)      : -999.);
+		flatout_vfloats["jet_vtxf1_uncalib"]    ->push_back((v.jetN()>0) ? v.jetVtxFall(NOJES,0)     : -999.);
+		flatout_vfloats["jet_vtxf2_uncalib"]    ->push_back((v.jetN()>1) ? v.jetVtxFall(NOJES,1)     : -999.);
+		flatout_vfloats["jet_vtxf3_uncalib"]    ->push_back((v.jetN()>2) ? v.jetVtxFall(NOJES,2)     : -999.);
+		flatout_vfloats["jet_vtxf4_uncalib"]    ->push_back((v.jetN()>3) ? v.jetVtxFall(NOJES,3)     : -999.);
+		flatout_vfloats["jet_dphi3muJ1_uncalib"]->push_back((v.jetN()>0) ? v.jetDphi3bodyAll(NOJES)  : -999.);
+		flatout_vfloats["jet_dR3muJ1_uncalib"]  ->push_back((v.jetN()>0) ? v.jetDR3bodyAll(NOJES)    : -999.);
+		flatout_vfloats["jet_dphiJ1J2_uncalib"] ->push_back((v.jetN()>1) ? v.jetDphi12All(NOJES)     : -999.);
+		flatout_vfloats["jet_dRJ1J2_uncalib"]   ->push_back((v.jetN()>1) ? v.jetDR12All(NOJES)       : -999.);
+		flatout_vfloats["jet_sumpt12_uncalib"]  ->push_back((v.jetN()>1) ? v.jetSumPtAll(NOJES)      : -999.);
 		
 		_DEBUG("");
 
-		flatout_vfloats["jet_uncalib_pt1"]      ->push_back((v.jetN()>0) ? v.ucjetPM(0).Pt() : 0.);
-                flatout_vfloats["jet_uncalib_pt2"]      ->push_back((v.jetN()>1) ? v.ucjetPM(1).Pt() : 0.);
-                flatout_vfloats["jet_uncalib_pt3"]      ->push_back((v.jetN()>2) ? v.ucjetPM(2).Pt() : 0.);
-                flatout_vfloats["jet_uncalib_pt4"]      ->push_back((v.jetN()>3) ? v.ucjetPM(3).Pt() : 0.);
-                flatout_vfloats["jet_uncalib_eta1"]     ->push_back((v.jetN()>0) ? v.ucjetPM(0).Eta() : -999.);
-                flatout_vfloats["jet_uncalib_eta2"]     ->push_back((v.jetN()>1) ? v.ucjetPM(1).Eta() : -999.);
-                flatout_vfloats["jet_uncalib_eta3"]     ->push_back((v.jetN()>2) ? v.ucjetPM(2).Eta() : -999.);
-                flatout_vfloats["jet_uncalib_eta4"]     ->push_back((v.jetN()>3) ? v.ucjetPM(3).Eta() : -999.);
-                flatout_vfloats["jet_uncalib_phi1"]     ->push_back((v.jetN()>0) ? v.ucjetPM(0).Phi() : -999.);
-                flatout_vfloats["jet_uncalib_phi2"]     ->push_back((v.jetN()>1) ? v.ucjetPM(1).Phi() : -999.);
-                flatout_vfloats["jet_uncalib_phi3"]     ->push_back((v.jetN()>2) ? v.ucjetPM(2).Phi() : -999.);
-                flatout_vfloats["jet_uncalib_phi4"]     ->push_back((v.jetN()>3) ? v.ucjetPM(3).Phi() : -999.);
-                flatout_vfloats["jet_uncalib_m1"]       ->push_back((v.jetN()>0) ? v.ucjetPM(0).M() : 0.);
-                flatout_vfloats["jet_uncalib_m2"]       ->push_back((v.jetN()>1) ? v.ucjetPM(1).M() : 0.);
-                flatout_vfloats["jet_uncalib_m3"]       ->push_back((v.jetN()>2) ? v.ucjetPM(2).M() : 0.);
-                flatout_vfloats["jet_uncalib_m4"]       ->push_back((v.jetN()>3) ? v.ucjetPM(3).M() : 0.);
-                flatout_vfloats["jet_uncalib_E1"]       ->push_back((v.jetN()>0) ? v.ucjetPM(0).E() : 0.);
-                flatout_vfloats["jet_uncalib_E2"]       ->push_back((v.jetN()>1) ? v.ucjetPM(1).E() : 0.);
-                flatout_vfloats["jet_uncalib_E3"]       ->push_back((v.jetN()>2) ? v.ucjetPM(2).E() : 0.);
-                flatout_vfloats["jet_uncalib_E4"]       ->push_back((v.jetN()>3) ? v.ucjetPM(3).E() : 0.);
-                flatout_vfloats["jet_uncalib_MV1w1"]    ->push_back( v.ucjetMV1(0));
-                flatout_vfloats["jet_uncalib_MV1w2"]    ->push_back( v.ucjetMV1(1));
-                flatout_vfloats["jet_uncalib_MV1w3"]    ->push_back( v.ucjetMV1(2));
-                flatout_vfloats["jet_uncalib_MV1w4"]    ->push_back( v.ucjetMV1(3));
-                flatout_vfloats["jet_uncalib_vtxf1"]    ->push_back( v.ucjetVtxFrac(0));
-                flatout_vfloats["jet_uncalib_vtxf2"]    ->push_back( v.ucjetVtxFrac(1));
-                flatout_vfloats["jet_uncalib_vtxf3"]    ->push_back( v.ucjetVtxFrac(2));
-                flatout_vfloats["jet_uncalib_vtxf4"]    ->push_back( v.ucjetVtxFrac(3));
-                flatout_vfloats["jet_uncalib_sumpt12"]  ->push_back( v.ucjetSumPt());
-                flatout_vfloats["jet_uncalib_dphi3muJ1"]->push_back( v.ucjetDphi3body());
-                flatout_vfloats["jet_uncalib_dR3muJ1"]  ->push_back( v.ucjetDR3body());
-                flatout_vfloats["jet_uncalib_dphiJ1J2"] ->push_back( v.ucjetDphi12());
-                flatout_vfloats["jet_uncalib_dRJ1J2"]   ->push_back( v.ucjetDR12());
+		flatout_vfloats["jet_pt1"]      ->push_back((v.jetN()>0) ? v.jetPEall(NOMINAL,0).Pt()  : -999);
+		flatout_vfloats["jet_pt2"]      ->push_back((v.jetN()>1) ? v.jetPEall(NOMINAL,1).Pt()  : -999);
+		flatout_vfloats["jet_pt3"]      ->push_back((v.jetN()>2) ? v.jetPEall(NOMINAL,2).Pt()  : -999);
+		flatout_vfloats["jet_pt4"]      ->push_back((v.jetN()>3) ? v.jetPEall(NOMINAL,3).Pt()  : -999);
+		flatout_vfloats["jet_eta1"]     ->push_back((v.jetN()>0) ? v.jetPEall(NOMINAL,0).Eta() : -999.);
+		flatout_vfloats["jet_eta2"]     ->push_back((v.jetN()>1) ? v.jetPEall(NOMINAL,1).Eta() : -999.);
+		flatout_vfloats["jet_eta3"]     ->push_back((v.jetN()>2) ? v.jetPEall(NOMINAL,2).Eta() : -999.);
+		flatout_vfloats["jet_eta4"]     ->push_back((v.jetN()>3) ? v.jetPEall(NOMINAL,3).Eta() : -999.);
+		flatout_vfloats["jet_phi1"]     ->push_back((v.jetN()>0) ? v.jetPEall(NOMINAL,0).Phi() : -999.);
+		flatout_vfloats["jet_phi2"]     ->push_back((v.jetN()>1) ? v.jetPEall(NOMINAL,1).Phi() : -999.);
+		flatout_vfloats["jet_phi3"]     ->push_back((v.jetN()>2) ? v.jetPEall(NOMINAL,2).Phi() : -999.);
+		flatout_vfloats["jet_phi4"]     ->push_back((v.jetN()>3) ? v.jetPEall(NOMINAL,3).Phi() : -999.);
+		flatout_vfloats["jet_m1"]       ->push_back((v.jetN()>0) ? v.jetPEall(NOMINAL,0).M()   : -999.);
+		flatout_vfloats["jet_m2"]       ->push_back((v.jetN()>1) ? v.jetPEall(NOMINAL,1).M()   : -999.);
+		flatout_vfloats["jet_m3"]       ->push_back((v.jetN()>2) ? v.jetPEall(NOMINAL,2).M()   : -999.);
+		flatout_vfloats["jet_m4"]       ->push_back((v.jetN()>3) ? v.jetPEall(NOMINAL,3).M()   : -999.);
+		flatout_vfloats["jet_E1"]       ->push_back((v.jetN()>0) ? v.jetPEall(NOMINAL,0).E()   : -999.);
+		flatout_vfloats["jet_E2"]       ->push_back((v.jetN()>1) ? v.jetPEall(NOMINAL,1).E()   : -999.);
+		flatout_vfloats["jet_E3"]       ->push_back((v.jetN()>2) ? v.jetPEall(NOMINAL,2).E()   : -999.);
+		flatout_vfloats["jet_E4"]       ->push_back((v.jetN()>3) ? v.jetPEall(NOMINAL,3).E()   : -999.);
+		flatout_vfloats["jet_MV1w1"]    ->push_back((v.jetN()>0) ? v.jetMV1all(NOMINAL,0)      : -999.);
+		flatout_vfloats["jet_MV1w2"]    ->push_back((v.jetN()>1) ? v.jetMV1all(NOMINAL,1)      : -999.);
+		flatout_vfloats["jet_MV1w3"]    ->push_back((v.jetN()>2) ? v.jetMV1all(NOMINAL,2)      : -999.);
+		flatout_vfloats["jet_MV1w4"]    ->push_back((v.jetN()>3) ? v.jetMV1all(NOMINAL,3)      : -999.);
+		flatout_vfloats["jet_vtxf1"]    ->push_back((v.jetN()>0) ? v.jetVtxFall(NOMINAL,0)     : -999.);
+		flatout_vfloats["jet_vtxf2"]    ->push_back((v.jetN()>1) ? v.jetVtxFall(NOMINAL,1)     : -999.);
+		flatout_vfloats["jet_vtxf3"]    ->push_back((v.jetN()>2) ? v.jetVtxFall(NOMINAL,2)     : -999.);
+		flatout_vfloats["jet_vtxf4"]    ->push_back((v.jetN()>3) ? v.jetVtxFall(NOMINAL,3)     : -999.);
+		flatout_vfloats["jet_dphi3muJ1"]->push_back((v.jetN()>0) ? v.jetDphi3bodyAll(NOMINAL)  : -999.);
+		flatout_vfloats["jet_dR3muJ1"]  ->push_back((v.jetN()>0) ? v.jetDR3bodyAll(NOMINAL)    : -999.);
+		flatout_vfloats["jet_dphiJ1J2"] ->push_back((v.jetN()>1) ? v.jetDphi12All(NOMINAL)     : -999.);
+		flatout_vfloats["jet_dRJ1J2"]   ->push_back((v.jetN()>1) ? v.jetDR12All(NOMINAL)       : -999.);
+		flatout_vfloats["jet_sumpt12"]  ->push_back((v.jetN()>1) ? v.jetSumPtAll(NOMINAL)      : -999.);
 		
 		_DEBUG("");
-	
+		
+		flatout_vfloats["jet_pt1_jes_up"]      ->push_back((v.jetN()>0) ? v.jetPEall(JESUP,0).Pt()  : -999);
+		flatout_vfloats["jet_pt2_jes_up"]      ->push_back((v.jetN()>1) ? v.jetPEall(JESUP,1).Pt()  : -999);
+		flatout_vfloats["jet_pt3_jes_up"]      ->push_back((v.jetN()>2) ? v.jetPEall(JESUP,2).Pt()  : -999);
+		flatout_vfloats["jet_pt4_jes_up"]      ->push_back((v.jetN()>3) ? v.jetPEall(JESUP,3).Pt()  : -999);
+		flatout_vfloats["jet_eta1_jes_up"]     ->push_back((v.jetN()>0) ? v.jetPEall(JESUP,0).Eta() : -999.);
+		flatout_vfloats["jet_eta2_jes_up"]     ->push_back((v.jetN()>1) ? v.jetPEall(JESUP,1).Eta() : -999.);
+		flatout_vfloats["jet_eta3_jes_up"]     ->push_back((v.jetN()>2) ? v.jetPEall(JESUP,2).Eta() : -999.);
+		flatout_vfloats["jet_eta4_jes_up"]     ->push_back((v.jetN()>3) ? v.jetPEall(JESUP,3).Eta() : -999.);
+		flatout_vfloats["jet_phi1_jes_up"]     ->push_back((v.jetN()>0) ? v.jetPEall(JESUP,0).Phi() : -999.);
+		flatout_vfloats["jet_phi2_jes_up"]     ->push_back((v.jetN()>1) ? v.jetPEall(JESUP,1).Phi() : -999.);
+		flatout_vfloats["jet_phi3_jes_up"]     ->push_back((v.jetN()>2) ? v.jetPEall(JESUP,2).Phi() : -999.);
+		flatout_vfloats["jet_phi4_jes_up"]     ->push_back((v.jetN()>3) ? v.jetPEall(JESUP,3).Phi() : -999.);
+		flatout_vfloats["jet_m1_jes_up"]       ->push_back((v.jetN()>0) ? v.jetPEall(JESUP,0).M()   : -999.);
+		flatout_vfloats["jet_m2_jes_up"]       ->push_back((v.jetN()>1) ? v.jetPEall(JESUP,1).M()   : -999.);
+		flatout_vfloats["jet_m3_jes_up"]       ->push_back((v.jetN()>2) ? v.jetPEall(JESUP,2).M()   : -999.);
+		flatout_vfloats["jet_m4_jes_up"]       ->push_back((v.jetN()>3) ? v.jetPEall(JESUP,3).M()   : -999.);
+		flatout_vfloats["jet_E1_jes_up"]       ->push_back((v.jetN()>0) ? v.jetPEall(JESUP,0).E()   : -999.);
+		flatout_vfloats["jet_E2_jes_up"]       ->push_back((v.jetN()>1) ? v.jetPEall(JESUP,1).E()   : -999.);
+		flatout_vfloats["jet_E3_jes_up"]       ->push_back((v.jetN()>2) ? v.jetPEall(JESUP,2).E()   : -999.);
+		flatout_vfloats["jet_E4_jes_up"]       ->push_back((v.jetN()>3) ? v.jetPEall(JESUP,3).E()   : -999.);
+		flatout_vfloats["jet_MV1w1_jes_up"]    ->push_back((v.jetN()>0) ? v.jetMV1all(JESUP,0)      : -999.);
+		flatout_vfloats["jet_MV1w2_jes_up"]    ->push_back((v.jetN()>1) ? v.jetMV1all(JESUP,1)      : -999.);
+		flatout_vfloats["jet_MV1w3_jes_up"]    ->push_back((v.jetN()>2) ? v.jetMV1all(JESUP,2)      : -999.);
+		flatout_vfloats["jet_MV1w4_jes_up"]    ->push_back((v.jetN()>3) ? v.jetMV1all(JESUP,3)      : -999.);
+		flatout_vfloats["jet_vtxf1_jes_up"]    ->push_back((v.jetN()>0) ? v.jetVtxFall(JESUP,0)     : -999.);
+		flatout_vfloats["jet_vtxf2_jes_up"]    ->push_back((v.jetN()>1) ? v.jetVtxFall(JESUP,1)     : -999.);
+		flatout_vfloats["jet_vtxf3_jes_up"]    ->push_back((v.jetN()>2) ? v.jetVtxFall(JESUP,2)     : -999.);
+		flatout_vfloats["jet_vtxf4_jes_up"]    ->push_back((v.jetN()>3) ? v.jetVtxFall(JESUP,3)     : -999.);
+		flatout_vfloats["jet_dphi3muJ1_jes_up"]->push_back((v.jetN()>0) ? v.jetDphi3bodyAll(JESUP)  : -999.);
+		flatout_vfloats["jet_dR3muJ1_jes_up"]  ->push_back((v.jetN()>0) ? v.jetDR3bodyAll(JESUP)    : -999.);
+		flatout_vfloats["jet_dphiJ1J2_jes_up"] ->push_back((v.jetN()>1) ? v.jetDphi12All(JESUP)     : -999.);
+		flatout_vfloats["jet_dRJ1J2_jes_up"]   ->push_back((v.jetN()>1) ? v.jetDR12All(JESUP)       : -999.);
+		flatout_vfloats["jet_sumpt12_jes_up"]  ->push_back((v.jetN()>1) ? v.jetSumPtAll(JESUP)      : -999.);
+		
+		_DEBUG("");
+		
+		flatout_vfloats["jet_pt1_jes_dwn"]      ->push_back((v.jetN()>0) ? v.jetPEall(JESDWN,0).Pt()  : -999);
+		flatout_vfloats["jet_pt2_jes_dwn"]      ->push_back((v.jetN()>1) ? v.jetPEall(JESDWN,1).Pt()  : -999);
+		flatout_vfloats["jet_pt3_jes_dwn"]      ->push_back((v.jetN()>2) ? v.jetPEall(JESDWN,2).Pt()  : -999);
+		flatout_vfloats["jet_pt4_jes_dwn"]      ->push_back((v.jetN()>3) ? v.jetPEall(JESDWN,3).Pt()  : -999);
+		flatout_vfloats["jet_eta1_jes_dwn"]     ->push_back((v.jetN()>0) ? v.jetPEall(JESDWN,0).Eta() : -999.);
+		flatout_vfloats["jet_eta2_jes_dwn"]     ->push_back((v.jetN()>1) ? v.jetPEall(JESDWN,1).Eta() : -999.);
+		flatout_vfloats["jet_eta3_jes_dwn"]     ->push_back((v.jetN()>2) ? v.jetPEall(JESDWN,2).Eta() : -999.);
+		flatout_vfloats["jet_eta4_jes_dwn"]     ->push_back((v.jetN()>3) ? v.jetPEall(JESDWN,3).Eta() : -999.);
+		flatout_vfloats["jet_phi1_jes_dwn"]     ->push_back((v.jetN()>0) ? v.jetPEall(JESDWN,0).Phi() : -999.);
+		flatout_vfloats["jet_phi2_jes_dwn"]     ->push_back((v.jetN()>1) ? v.jetPEall(JESDWN,1).Phi() : -999.);
+		flatout_vfloats["jet_phi3_jes_dwn"]     ->push_back((v.jetN()>2) ? v.jetPEall(JESDWN,2).Phi() : -999.);
+		flatout_vfloats["jet_phi4_jes_dwn"]     ->push_back((v.jetN()>3) ? v.jetPEall(JESDWN,3).Phi() : -999.);
+		flatout_vfloats["jet_m1_jes_dwn"]       ->push_back((v.jetN()>0) ? v.jetPEall(JESDWN,0).M()   : -999.);
+		flatout_vfloats["jet_m2_jes_dwn"]       ->push_back((v.jetN()>1) ? v.jetPEall(JESDWN,1).M()   : -999.);
+		flatout_vfloats["jet_m3_jes_dwn"]       ->push_back((v.jetN()>2) ? v.jetPEall(JESDWN,2).M()   : -999.);
+		flatout_vfloats["jet_m4_jes_dwn"]       ->push_back((v.jetN()>3) ? v.jetPEall(JESDWN,3).M()   : -999.);
+		flatout_vfloats["jet_E1_jes_dwn"]       ->push_back((v.jetN()>0) ? v.jetPEall(JESDWN,0).E()   : -999.);
+		flatout_vfloats["jet_E2_jes_dwn"]       ->push_back((v.jetN()>1) ? v.jetPEall(JESDWN,1).E()   : -999.);
+		flatout_vfloats["jet_E3_jes_dwn"]       ->push_back((v.jetN()>2) ? v.jetPEall(JESDWN,2).E()   : -999.);
+		flatout_vfloats["jet_E4_jes_dwn"]       ->push_back((v.jetN()>3) ? v.jetPEall(JESDWN,3).E()   : -999.);
+		flatout_vfloats["jet_MV1w1_jes_dwn"]    ->push_back((v.jetN()>0) ? v.jetMV1all(JESDWN,0)      : -999.);
+		flatout_vfloats["jet_MV1w2_jes_dwn"]    ->push_back((v.jetN()>1) ? v.jetMV1all(JESDWN,1)      : -999.);
+		flatout_vfloats["jet_MV1w3_jes_dwn"]    ->push_back((v.jetN()>2) ? v.jetMV1all(JESDWN,2)      : -999.);
+		flatout_vfloats["jet_MV1w4_jes_dwn"]    ->push_back((v.jetN()>3) ? v.jetMV1all(JESDWN,3)      : -999.);
+		flatout_vfloats["jet_vtxf1_jes_dwn"]    ->push_back((v.jetN()>0) ? v.jetVtxFall(JESDWN,0)     : -999.);
+		flatout_vfloats["jet_vtxf2_jes_dwn"]    ->push_back((v.jetN()>1) ? v.jetVtxFall(JESDWN,1)     : -999.);
+		flatout_vfloats["jet_vtxf3_jes_dwn"]    ->push_back((v.jetN()>2) ? v.jetVtxFall(JESDWN,2)     : -999.);
+		flatout_vfloats["jet_vtxf4_jes_dwn"]    ->push_back((v.jetN()>3) ? v.jetVtxFall(JESDWN,3)     : -999.);
+		flatout_vfloats["jet_dphi3muJ1_jes_dwn"]->push_back((v.jetN()>0) ? v.jetDphi3bodyAll(JESDWN)  : -999.);
+		flatout_vfloats["jet_dR3muJ1_jes_dwn"]  ->push_back((v.jetN()>0) ? v.jetDR3bodyAll(JESDWN)    : -999.);
+		flatout_vfloats["jet_dphiJ1J2_jes_dwn"] ->push_back((v.jetN()>1) ? v.jetDphi12All(JESDWN)     : -999.);
+		flatout_vfloats["jet_dRJ1J2_jes_dwn"]   ->push_back((v.jetN()>1) ? v.jetDR12All(JESDWN)       : -999.);
+		flatout_vfloats["jet_sumpt12_jes_dwn"]  ->push_back((v.jetN()>1) ? v.jetSumPtAll(JESDWN)      : -999.);
+		
+		_DEBUG("");
+		
+		flatout_vfloats["jet_pt1_jer_up"]      ->push_back((v.jetN()>0) ? v.jetPEall(JERUP,0).Pt()  : -999);
+		flatout_vfloats["jet_pt2_jer_up"]      ->push_back((v.jetN()>1) ? v.jetPEall(JERUP,1).Pt()  : -999);
+		flatout_vfloats["jet_pt3_jer_up"]      ->push_back((v.jetN()>2) ? v.jetPEall(JERUP,2).Pt()  : -999);
+		flatout_vfloats["jet_pt4_jer_up"]      ->push_back((v.jetN()>3) ? v.jetPEall(JERUP,3).Pt()  : -999);
+		flatout_vfloats["jet_eta1_jer_up"]     ->push_back((v.jetN()>0) ? v.jetPEall(JERUP,0).Eta() : -999.);
+		flatout_vfloats["jet_eta2_jer_up"]     ->push_back((v.jetN()>1) ? v.jetPEall(JERUP,1).Eta() : -999.);
+		flatout_vfloats["jet_eta3_jer_up"]     ->push_back((v.jetN()>2) ? v.jetPEall(JERUP,2).Eta() : -999.);
+		flatout_vfloats["jet_eta4_jer_up"]     ->push_back((v.jetN()>3) ? v.jetPEall(JERUP,3).Eta() : -999.);
+		flatout_vfloats["jet_phi1_jer_up"]     ->push_back((v.jetN()>0) ? v.jetPEall(JERUP,0).Phi() : -999.);
+		flatout_vfloats["jet_phi2_jer_up"]     ->push_back((v.jetN()>1) ? v.jetPEall(JERUP,1).Phi() : -999.);
+		flatout_vfloats["jet_phi3_jer_up"]     ->push_back((v.jetN()>2) ? v.jetPEall(JERUP,2).Phi() : -999.);
+		flatout_vfloats["jet_phi4_jer_up"]     ->push_back((v.jetN()>3) ? v.jetPEall(JERUP,3).Phi() : -999.);
+		flatout_vfloats["jet_m1_jer_up"]       ->push_back((v.jetN()>0) ? v.jetPEall(JERUP,0).M()   : -999.);
+		flatout_vfloats["jet_m2_jer_up"]       ->push_back((v.jetN()>1) ? v.jetPEall(JERUP,1).M()   : -999.);
+		flatout_vfloats["jet_m3_jer_up"]       ->push_back((v.jetN()>2) ? v.jetPEall(JERUP,2).M()   : -999.);
+		flatout_vfloats["jet_m4_jer_up"]       ->push_back((v.jetN()>3) ? v.jetPEall(JERUP,3).M()   : -999.);
+		flatout_vfloats["jet_E1_jer_up"]       ->push_back((v.jetN()>0) ? v.jetPEall(JERUP,0).E()   : -999.);
+		flatout_vfloats["jet_E2_jer_up"]       ->push_back((v.jetN()>1) ? v.jetPEall(JERUP,1).E()   : -999.);
+		flatout_vfloats["jet_E3_jer_up"]       ->push_back((v.jetN()>2) ? v.jetPEall(JERUP,2).E()   : -999.);
+		flatout_vfloats["jet_E4_jer_up"]       ->push_back((v.jetN()>3) ? v.jetPEall(JERUP,3).E()   : -999.);
+		flatout_vfloats["jet_MV1w1_jer_up"]    ->push_back((v.jetN()>0) ? v.jetMV1all(JERUP,0)      : -999.);
+		flatout_vfloats["jet_MV1w2_jer_up"]    ->push_back((v.jetN()>1) ? v.jetMV1all(JERUP,1)      : -999.);
+		flatout_vfloats["jet_MV1w3_jer_up"]    ->push_back((v.jetN()>2) ? v.jetMV1all(JERUP,2)      : -999.);
+		flatout_vfloats["jet_MV1w4_jer_up"]    ->push_back((v.jetN()>3) ? v.jetMV1all(JERUP,3)      : -999.);
+		flatout_vfloats["jet_vtxf1_jer_up"]    ->push_back((v.jetN()>0) ? v.jetVtxFall(JERUP,0)     : -999.);
+		flatout_vfloats["jet_vtxf2_jer_up"]    ->push_back((v.jetN()>1) ? v.jetVtxFall(JERUP,1)     : -999.);
+		flatout_vfloats["jet_vtxf3_jer_up"]    ->push_back((v.jetN()>2) ? v.jetVtxFall(JERUP,2)     : -999.);
+		flatout_vfloats["jet_vtxf4_jer_up"]    ->push_back((v.jetN()>3) ? v.jetVtxFall(JERUP,3)     : -999.);
+		flatout_vfloats["jet_dphi3muJ1_jer_up"]->push_back((v.jetN()>0) ? v.jetDphi3bodyAll(JERUP)  : -999.);
+		flatout_vfloats["jet_dR3muJ1_jer_up"]  ->push_back((v.jetN()>0) ? v.jetDR3bodyAll(JERUP)    : -999.);
+		flatout_vfloats["jet_dphiJ1J2_jer_up"] ->push_back((v.jetN()>1) ? v.jetDphi12All(JERUP)     : -999.);
+		flatout_vfloats["jet_dRJ1J2_jer_up"]   ->push_back((v.jetN()>1) ? v.jetDR12All(JERUP)       : -999.);
+		flatout_vfloats["jet_sumpt12_jer_up"]  ->push_back((v.jetN()>1) ? v.jetSumPtAll(JERUP)      : -999.);
+		
+		_DEBUG("");
+		
+		flatout_vfloats["jet_pt1_jer_dwn"]      ->push_back((v.jetN()>0) ? v.jetPEall(JERDWN,0).Pt()  : -999);
+		flatout_vfloats["jet_pt2_jer_dwn"]      ->push_back((v.jetN()>1) ? v.jetPEall(JERDWN,1).Pt()  : -999);
+		flatout_vfloats["jet_pt3_jer_dwn"]      ->push_back((v.jetN()>2) ? v.jetPEall(JERDWN,2).Pt()  : -999);
+		flatout_vfloats["jet_pt4_jer_dwn"]      ->push_back((v.jetN()>3) ? v.jetPEall(JERDWN,3).Pt()  : -999);
+		flatout_vfloats["jet_eta1_jer_dwn"]     ->push_back((v.jetN()>0) ? v.jetPEall(JERDWN,0).Eta() : -999.);
+		flatout_vfloats["jet_eta2_jer_dwn"]     ->push_back((v.jetN()>1) ? v.jetPEall(JERDWN,1).Eta() : -999.);
+		flatout_vfloats["jet_eta3_jer_dwn"]     ->push_back((v.jetN()>2) ? v.jetPEall(JERDWN,2).Eta() : -999.);
+		flatout_vfloats["jet_eta4_jer_dwn"]     ->push_back((v.jetN()>3) ? v.jetPEall(JERDWN,3).Eta() : -999.);
+		flatout_vfloats["jet_phi1_jer_dwn"]     ->push_back((v.jetN()>0) ? v.jetPEall(JERDWN,0).Phi() : -999.);
+		flatout_vfloats["jet_phi2_jer_dwn"]     ->push_back((v.jetN()>1) ? v.jetPEall(JERDWN,1).Phi() : -999.);
+		flatout_vfloats["jet_phi3_jer_dwn"]     ->push_back((v.jetN()>2) ? v.jetPEall(JERDWN,2).Phi() : -999.);
+		flatout_vfloats["jet_phi4_jer_dwn"]     ->push_back((v.jetN()>3) ? v.jetPEall(JERDWN,3).Phi() : -999.);
+		flatout_vfloats["jet_m1_jer_dwn"]       ->push_back((v.jetN()>0) ? v.jetPEall(JERDWN,0).M()   : -999.);
+		flatout_vfloats["jet_m2_jer_dwn"]       ->push_back((v.jetN()>1) ? v.jetPEall(JERDWN,1).M()   : -999.);
+		flatout_vfloats["jet_m3_jer_dwn"]       ->push_back((v.jetN()>2) ? v.jetPEall(JERDWN,2).M()   : -999.);
+		flatout_vfloats["jet_m4_jer_dwn"]       ->push_back((v.jetN()>3) ? v.jetPEall(JERDWN,3).M()   : -999.);
+		flatout_vfloats["jet_E1_jer_dwn"]       ->push_back((v.jetN()>0) ? v.jetPEall(JERDWN,0).E()   : -999.);
+		flatout_vfloats["jet_E2_jer_dwn"]       ->push_back((v.jetN()>1) ? v.jetPEall(JERDWN,1).E()   : -999.);
+		flatout_vfloats["jet_E3_jer_dwn"]       ->push_back((v.jetN()>2) ? v.jetPEall(JERDWN,2).E()   : -999.);
+		flatout_vfloats["jet_E4_jer_dwn"]       ->push_back((v.jetN()>3) ? v.jetPEall(JERDWN,3).E()   : -999.);
+		flatout_vfloats["jet_MV1w1_jer_dwn"]    ->push_back((v.jetN()>0) ? v.jetMV1all(JERDWN,0)      : -999.);
+		flatout_vfloats["jet_MV1w2_jer_dwn"]    ->push_back((v.jetN()>1) ? v.jetMV1all(JERDWN,1)      : -999.);
+		flatout_vfloats["jet_MV1w3_jer_dwn"]    ->push_back((v.jetN()>2) ? v.jetMV1all(JERDWN,2)      : -999.);
+		flatout_vfloats["jet_MV1w4_jer_dwn"]    ->push_back((v.jetN()>3) ? v.jetMV1all(JERDWN,3)      : -999.);
+		flatout_vfloats["jet_vtxf1_jer_dwn"]    ->push_back((v.jetN()>0) ? v.jetVtxFall(JERDWN,0)     : -999.);
+		flatout_vfloats["jet_vtxf2_jer_dwn"]    ->push_back((v.jetN()>1) ? v.jetVtxFall(JERDWN,1)     : -999.);
+		flatout_vfloats["jet_vtxf3_jer_dwn"]    ->push_back((v.jetN()>2) ? v.jetVtxFall(JERDWN,2)     : -999.);
+		flatout_vfloats["jet_vtxf4_jer_dwn"]    ->push_back((v.jetN()>3) ? v.jetVtxFall(JERDWN,3)     : -999.);
+		flatout_vfloats["jet_dphi3muJ1_jer_dwn"]->push_back((v.jetN()>0) ? v.jetDphi3bodyAll(JERDWN)  : -999.);
+		flatout_vfloats["jet_dR3muJ1_jer_dwn"]  ->push_back((v.jetN()>0) ? v.jetDR3bodyAll(JERDWN)    : -999.);
+		flatout_vfloats["jet_dphiJ1J2_jer_dwn"] ->push_back((v.jetN()>1) ? v.jetDphi12All(JERDWN)     : -999.);
+		flatout_vfloats["jet_dRJ1J2_jer_dwn"]   ->push_back((v.jetN()>1) ? v.jetDR12All(JERDWN)       : -999.);
+		flatout_vfloats["jet_sumpt12_jer_dwn"]  ->push_back((v.jetN()>1) ? v.jetSumPtAll(JERDWN)      : -999.);
+		
+		_DEBUG("");
+
 		flatout_vfloats["jet_JES_shift1"]       ->push_back((v.jetN()>0) ? v.jetShiftJES(0) : 0.);
 		flatout_vfloats["jet_JES_shift2"]       ->push_back((v.jetN()>1) ? v.jetShiftJES(1) : 0.);
 		flatout_vfloats["jet_JES_shift3"]       ->push_back((v.jetN()>2) ? v.jetShiftJES(2) : 0.);
@@ -3286,28 +3440,6 @@ void fillFlatoutTree(vector<vertex>& vertices, int allPassing)
 		flatout_vfloats["jet_JER_shift2"]       ->push_back((v.jetN()>1) ? v.jetShiftJER(1) : 0.);
 		flatout_vfloats["jet_JER_shift3"]       ->push_back((v.jetN()>2) ? v.jetShiftJER(2) : 0.);
 		flatout_vfloats["jet_JER_shift4"]       ->push_back((v.jetN()>3) ? v.jetShiftJER(3) : 0.);
-
-		flatout_vfloats["jet_sumpt12_jes_up"]  ->push_back( v.jetSumPt(JESUP));
-		flatout_vfloats["jet_dphi3muJ1_jes_up"]->push_back( v.jetDphi3body(JESUP));
-		flatout_vfloats["jet_dR3muJ1_jes_up"]  ->push_back( v.jetDR3body(JESUP));
-		flatout_vfloats["jet_dphiJ1J2_jes_up"] ->push_back( v.jetDphi12(JESUP));
-		flatout_vfloats["jet_dRJ1J2_jes_up"]   ->push_back( v.jetDR12(JESUP));
-		flatout_vfloats["jet_sumpt12_jes_dwn"]  ->push_back( v.jetSumPt(JESDWN));
-		flatout_vfloats["jet_dphi3muJ1_jes_dwn"]->push_back( v.jetDphi3body(JESDWN));
-		flatout_vfloats["jet_dR3muJ1_jes_dwn"]  ->push_back( v.jetDR3body(JESDWN));
-		flatout_vfloats["jet_dphiJ1J2_jes_dwn"] ->push_back( v.jetDphi12(JESDWN));
-		flatout_vfloats["jet_dRJ1J2_jes_dwn"]   ->push_back( v.jetDR12(JESDWN));
-		
-		flatout_vfloats["jet_sumpt12_jer_up"]  ->push_back( v.jetSumPt(JERUP));
-		flatout_vfloats["jet_dphi3muJ1_jer_up"]->push_back( v.jetDphi3body(JERUP));
-		flatout_vfloats["jet_dR3muJ1_jer_up"]  ->push_back( v.jetDR3body(JERUP));
-		flatout_vfloats["jet_dphiJ1J2_jer_up"] ->push_back( v.jetDphi12(JERUP));
-		flatout_vfloats["jet_dRJ1J2_jer_up"]   ->push_back( v.jetDR12(JERUP));
-		flatout_vfloats["jet_sumpt12_jer_dwn"]  ->push_back( v.jetSumPt(JERDWN));
-		flatout_vfloats["jet_dphi3muJ1_jer_dwn"]->push_back( v.jetDphi3body(JERDWN));
-		flatout_vfloats["jet_dR3muJ1_jer_dwn"]  ->push_back( v.jetDR3body(JERDWN));
-		flatout_vfloats["jet_dphiJ1J2_jer_dwn"] ->push_back( v.jetDphi12(JERDWN));
-		flatout_vfloats["jet_dRJ1J2_jer_dwn"]   ->push_back( v.jetDR12(JERDWN));
 		
 		_DEBUG("");
 		
@@ -3364,76 +3496,76 @@ void fillFlatoutTree(vector<vertex>& vertices, int allPassing)
 		
 		_DEBUG("");
 		
-		flatout_vfloats["met_reffinal_mT"]     ->push_back(v.metMt(METSTACO,NOJES));
-		flatout_vfloats["met_reffinal_dPhi3mu"]->push_back(v.metDphi3body(METSTACO,NOJES));
+		flatout_vfloats["met_reffinal_mT_uncalib"]     ->push_back(v.metMt(METSTACO,NOJES));
+		flatout_vfloats["met_reffinal_dPhi3mu_uncalib"]->push_back(v.metDphi3body(METSTACO,NOJES));
 	
-		flatout_vfloats["met_reffinal_JESnominal_mT"]     ->push_back(v.metMt(METSTACO,NOMINAL));
-		flatout_vfloats["met_reffinal_JESnominal_dPhi3mu"]->push_back(v.metDphi3body(METSTACO,NOMINAL));
+		flatout_vfloats["met_reffinal_mT"]     ->push_back(v.metMt(METSTACO,NOMINAL));
+		flatout_vfloats["met_reffinal_dPhi3mu"]->push_back(v.metDphi3body(METSTACO,NOMINAL));
 		
-		flatout_vfloats["met_reffinal_JESup_mT"]     ->push_back(v.metMt(METSTACO,JESUP));
-		flatout_vfloats["met_reffinal_JESup_dPhi3mu"]->push_back(v.metDphi3body(METSTACO,JESUP));
-		flatout_vfloats["met_reffinal_JESdwn_mT"]     ->push_back(v.metMt(METSTACO,JESDWN));
-		flatout_vfloats["met_reffinal_JESdwn_dPhi3mu"]->push_back(v.metDphi3body(METSTACO,JESDWN));
+		flatout_vfloats["met_reffinal_mT_jes_up"]      ->push_back(v.metMt(METSTACO,JESUP));
+		flatout_vfloats["met_reffinal_dPhi3mu_jes_up"] ->push_back(v.metDphi3body(METSTACO,JESUP));
+		flatout_vfloats["met_reffinal_mT_jes_dwn"]     ->push_back(v.metMt(METSTACO,JESDWN));
+		flatout_vfloats["met_reffinal_dPhi3mu_jes_dwn"]->push_back(v.metDphi3body(METSTACO,JESDWN));
 		
-		flatout_vfloats["met_reffinal_JERup_mT"]     ->push_back(v.metMt(METSTACO,JERUP));
-		flatout_vfloats["met_reffinal_JERup_dPhi3mu"]->push_back(v.metDphi3body(METSTACO,JERUP));
-		flatout_vfloats["met_reffinal_JERdwn_mT"]     ->push_back(v.metMt(METSTACO,JERDWN));
-		flatout_vfloats["met_reffinal_JERdwn_dPhi3mu"]->push_back(v.metDphi3body(METSTACO,JERDWN));
+		flatout_vfloats["met_reffinal_mT_jer_up"]      ->push_back(v.metMt(METSTACO,JERUP));
+		flatout_vfloats["met_reffinal_dPhi3mu_jer_up"] ->push_back(v.metDphi3body(METSTACO,JERUP));
+		flatout_vfloats["met_reffinal_mT_jer_dwn"]     ->push_back(v.metMt(METSTACO,JERDWN));
+		flatout_vfloats["met_reffinal_dPhi3mu_jer_dwn"]->push_back(v.metDphi3body(METSTACO,JERDWN));
 
 		_DEBUG("");
 
-                flatout_vfloats["met_muons_mT"]     ->push_back(v.metMt(METMUONS,NOJES));
-                flatout_vfloats["met_muons_dPhi3mu"]->push_back(v.metDphi3body(METMUONS,NOJES));
-
-                flatout_vfloats["met_muons_JESnominal_mT"]     ->push_back(v.metMt(METMUONS,NOMINAL));
-                flatout_vfloats["met_muons_JESnominal_dPhi3mu"]->push_back(v.metDphi3body(METMUONS,NOMINAL));
-
-                flatout_vfloats["met_muons_JESup_mT"]     ->push_back(v.metMt(METMUONS,JESUP));
-                flatout_vfloats["met_muons_JESup_dPhi3mu"]->push_back(v.metDphi3body(METMUONS,JESUP));
-                flatout_vfloats["met_muons_JESdwn_mT"]     ->push_back(v.metMt(METMUONS,JESDWN));
-                flatout_vfloats["met_muons_JESdwn_dPhi3mu"]->push_back(v.metDphi3body(METMUONS,JESDWN));
-
-                flatout_vfloats["met_muons_JERup_mT"]     ->push_back(v.metMt(METMUONS,JERUP));
-                flatout_vfloats["met_muons_JERup_dPhi3mu"]->push_back(v.metDphi3body(METMUONS,JERUP));
-                flatout_vfloats["met_muons_JERdwn_mT"]     ->push_back(v.metMt(METMUONS,JERDWN));
-                flatout_vfloats["met_muons_JERdwn_dPhi3mu"]->push_back(v.metDphi3body(METMUONS,JERDWN));
+		flatout_vfloats["met_muons_mT_uncalib"]     ->push_back(v.metMt(METMUONS,NOJES));
+		flatout_vfloats["met_muons_dPhi3mu_uncalib"]->push_back(v.metDphi3body(METMUONS,NOJES));
+		
+		flatout_vfloats["met_muons_mT"]     ->push_back(v.metMt(METMUONS,NOMINAL));
+		flatout_vfloats["met_muons_dPhi3mu"]->push_back(v.metDphi3body(METMUONS,NOMINAL));
+		
+		flatout_vfloats["met_muons_mT_jes_up"]      ->push_back(v.metMt(METMUONS,JESUP));
+		flatout_vfloats["met_muons_dPhi3mu_jes_up"] ->push_back(v.metDphi3body(METMUONS,JESUP));
+		flatout_vfloats["met_muons_mT_jes_dwn"]     ->push_back(v.metMt(METMUONS,JESDWN));
+		flatout_vfloats["met_muons_dPhi3mu_jes_dwn"]->push_back(v.metDphi3body(METMUONS,JESDWN));
+		
+		flatout_vfloats["met_muons_mT_jer_up"]      ->push_back(v.metMt(METMUONS,JERUP));
+		flatout_vfloats["met_muons_dPhi3mu_jer_up"] ->push_back(v.metDphi3body(METMUONS,JERUP));
+		flatout_vfloats["met_muons_mT_jer_dwn"]     ->push_back(v.metMt(METMUONS,JERDWN));
+		flatout_vfloats["met_muons_dPhi3mu_jer_dwn"]->push_back(v.metDphi3body(METMUONS,JERDWN));
 	}
 	
 	_DEBUG("");
 	
-	flatout_floats["met_reffinal_et"]  = MET_RefFinal_et;
-	flatout_floats["met_reffinal_phi"] = MET_RefFinal_phi;
+	flatout_floats["met_reffinal_et_uncalib"]  = (glob_isWsig) ? uncalibMET.et()  : MET_RefFinal_et; // temp fix foe missing branches in data
+	flatout_floats["met_reffinal_phi_uncalib"] = (glob_isWsig) ? uncalibMET.phi() : MET_RefFinal_phi; // temp fix foe missing branches in data
 	
-	flatout_floats["met_reffinal_JESnominal_et"]  = calibMET_nominal.et();
-	flatout_floats["met_reffinal_JESnominal_phi"] = calibMET_nominal.phi();
+	flatout_floats["met_reffinal_et"]  = calibMET_nominal.et();
+	flatout_floats["met_reffinal_phi"] = calibMET_nominal.phi();
 	                            
-	flatout_floats["met_reffinal_JESup_et"]  = calibMET_jes_up.et();
-	flatout_floats["met_reffinal_JESup_phi"] = calibMET_jes_up.phi();
-	flatout_floats["met_reffinal_JESdwn_et"]  = calibMET_jes_dwn.et();
-	flatout_floats["met_reffinal_JESdwn_phi"] = calibMET_jes_dwn.phi();
+	flatout_floats["met_reffinal_et_jes_up"]   = calibMET_jes_up.et();
+	flatout_floats["met_reffinal_phi_jes_up"]  = calibMET_jes_up.phi();
+	flatout_floats["met_reffinal_et_jes_dwn"]  = calibMET_jes_dwn.et();
+	flatout_floats["met_reffinal_phi_jes_dwn"] = calibMET_jes_dwn.phi();
 	                            
-	flatout_floats["met_reffinal_JERup_et"]  = calibMET_jer_up.et();
-	flatout_floats["met_reffinal_JERup_phi"] = calibMET_jer_up.phi();
-	flatout_floats["met_reffinal_JERdwn_et"]  = calibMET_jer_dwn.et();
-	flatout_floats["met_reffinal_JERdwn_phi"] = calibMET_jer_dwn.phi();
+	flatout_floats["met_reffinal_et_jer_up"]   = calibMET_jer_up.et();
+	flatout_floats["met_reffinal_phi_jer_up"]  = calibMET_jer_up.phi();
+	flatout_floats["met_reffinal_et_jer_dwn"]  = calibMET_jer_dwn.et();
+	flatout_floats["met_reffinal_phi_jer_dwn"] = calibMET_jer_dwn.phi();
 	
 	_DEBUG("");
 
-        flatout_floats["met_muons_et"]  = MET_Muons_et;
-        flatout_floats["met_muons_phi"] = MET_Muons_phi;
-
-        flatout_floats["met_muons_JESnominal_et"]  = calibMUMET_nominal.et();
-        flatout_floats["met_muons_JESnominal_phi"] = calibMUMET_nominal.phi();
-
-        flatout_floats["met_muons_JESup_et"]  = calibMUMET_jes_up.et();
-        flatout_floats["met_muons_JESup_phi"] = calibMUMET_jes_up.phi();
-        flatout_floats["met_muons_JESdwn_et"]  = calibMUMET_jes_dwn.et();
-        flatout_floats["met_muons_JESdwn_phi"] = calibMUMET_jes_dwn.phi();
-
-        flatout_floats["met_muons_JERup_et"]  = calibMUMET_jer_up.et();
-        flatout_floats["met_muons_JERup_phi"] = calibMUMET_jer_up.phi();
-        flatout_floats["met_muons_JERdwn_et"]  = calibMUMET_jer_dwn.et();
-        flatout_floats["met_muons_JERdwn_phi"] = calibMUMET_jer_dwn.phi();
+	flatout_floats["met_muons_et_uncalib"]  = uncalibMUMET.et();
+	flatout_floats["met_muons_phi_uncalib"] = uncalibMUMET.phi();
+	
+	flatout_floats["met_muons_et"]  = calibMUMET_nominal.et();
+	flatout_floats["met_muons_phi"] = calibMUMET_nominal.phi();
+	
+	flatout_floats["met_muons_et_jes_up"]   = calibMUMET_jes_up.et();
+	flatout_floats["met_muons_phi_jes_up"]  = calibMUMET_jes_up.phi();
+	flatout_floats["met_muons_et_jes_dwn"]  = calibMUMET_jes_dwn.et();
+	flatout_floats["met_muons_phi_jes_dwn"] = calibMUMET_jes_dwn.phi();
+	
+	flatout_floats["met_muons_et_jer_up"]   = calibMUMET_jer_up.et();
+	flatout_floats["met_muons_phi_jer_up"]  = calibMUMET_jer_up.phi();
+	flatout_floats["met_muons_et_jer_dwn"]  = calibMUMET_jer_dwn.et();
+	flatout_floats["met_muons_phi_jer_dwn"] = calibMUMET_jer_dwn.phi();
 
 	_DEBUG("");
 	
@@ -3476,17 +3608,21 @@ void fillFlatoutTree(vector<vertex>& vertices, int allPassing)
 
 
 // https://twiki.cern.ch/twiki/bin/viewauth/AtlasProtected/BtagAnalysis172Winter2013
+bool isLooseBtag(float flavor_weight_MV1)
+{
+	return (flavor_weight_MV1>=0.1340); // 85% nominal efficiency
+}
 bool isStandardBtag(float flavor_weight_MV1)
 {
-	return (flavor_weight_MV1>=0.3900); // 80% nominal efficiency
+	return (flavor_weight_MV1>=0.3511); // (flavor_weight_MV1>=0.3900); // 80% nominal efficiency
 }
 bool isMediumBtag(float flavor_weight_MV1)
 {
-	return (flavor_weight_MV1>=0.8119); // 70% nominal efficiency
+	return (flavor_weight_MV1>=0.7892); // (flavor_weight_MV1>=0.8119); // 70% nominal efficiency
 }
 bool isTightBtag(float flavor_weight_MV1)
 {
-	return (flavor_weight_MV1>=0.9867); // 60% nominal efficiency
+	return (flavor_weight_MV1>=0.9827); // (flavor_weight_MV1>=0.9867); // 60% nominal efficiency
 }
 bool isMV1btag(bool isTight=true)
 {
@@ -3683,8 +3819,8 @@ void initCounters()
 	if(skim) addCounter("nPassing_skim2_m3mu",       10);
 	if(skim) addCounter("nPassing_skim2_pT3mu",      11);
 	// if(skim) addCounter("nPassing_skim2_mcp",     12);
-	if(skim) addCounter("nPassing_skim2_met",        13);
-	if(skim) addCounter("nPassing_skim2_mt",         14);
+	// if(skim) addCounter("nPassing_skim2_met",        13);
+	// if(skim) addCounter("nPassing_skim2_mt",         14);
 	
 	//// single muon
 	addCounter("nPassing_mu_mcp",        20);
@@ -6806,6 +6942,8 @@ void fillHistsMVAvars(unsigned int vtx, TString name, TString suffix, TMapTSP2TH
 	if(pv1.size()>1) _ERROR("nPV>1");
 	int pvindex = pv1[0];
 	double m3mu = p3body.M();
+	float met_adhoc    = (glob_isWsig) ? uncalibMET.et()  : MET_RefFinal_et; // temp fix for missing branches in data
+	float metphi_adhoc = (glob_isWsig) ? uncalibMET.phi() : MET_RefFinal_phi; // temp fix for missing branches in data
 	
 	if(foundOS1) histos[name+"_MVA_vars_mOS1"+suffix]->Fill(pOS1.M(),weight);
 	if(foundOS2) histos[name+"_MVA_vars_mOS2"+suffix]->Fill(pOS2.M(),weight);
@@ -6816,9 +6954,9 @@ void fillHistsMVAvars(unsigned int vtx, TString name, TString suffix, TMapTSP2TH
 	histos[name+"_MVA_vars_Lxy"+suffix]->Fill(vtx_lxy->at(vtx)[pvindex],weight);
 	histos[name+"_MVA_vars_a0xy"+suffix]->Fill(vtx_a0XY->at(vtx)[pvindex],weight);
 	histos[name+"_MVA_vars_cosTxy"+suffix]->Fill(fabs(vtx_cosThetaXY->at(vtx)[pvindex]),weight);
-	histos[name+"_MVA_vars_MET"+suffix]->Fill(MET_RefFinal_et,weight);
-	histos[name+"_MVA_vars_dPhi3bodyMET"+suffix]->Fill(fabs(dPhi(MET_RefFinal_phi,p3body.Phi())),weight);
-	histos[name+"_MVA_vars_mT3bodyMET"+suffix]->Fill(mT(MET_RefFinal_et,MET_RefFinal_phi,p3body.Pt(),p3body.Phi()),weight);
+	histos[name+"_MVA_vars_MET"+suffix]->Fill(met_adhoc,weight);
+	histos[name+"_MVA_vars_dPhi3bodyMET"+suffix]->Fill(fabs(dPhi(metphi_adhoc,p3body.Phi())),weight);
+	histos[name+"_MVA_vars_mT3bodyMET"+suffix]->Fill(mT(met_adhoc,metphi_adhoc,p3body.Pt(),p3body.Phi()),weight);
 	histos[name+"_MVA_vars_dPhi3bodyJ1"+suffix]->Fill(JetdPhi3bodyJ1,weight);	
 	histos[name+"_MVA_vars_dPhiJ1J2"+suffix]->Fill(JetdPhiJ1J2,weight);
 	histos[name+"_MVA_vars_pTJ1"+suffix]->Fill(JetPt1,weight);
@@ -7734,308 +7872,305 @@ void vertex::set(unsigned int vtx)
 	_DEBUG("");
 
 
-if(!skim)
-{	
-	TString master = mastername;
-	
-	//// Fill the 4th tracks, allow only 3 per triplet and fill first the muons
-	// cout << "\n------------- Event: " << EventNumber << " -------------" << endl;
-	/////////////////////////
-	vector<int> vtmp;
-	isFourthTrack.insert(make_pair(vtx,vtmp));
-	for(unsigned int t=1 ; t<=nMaxTracks ; ++t)
-	{
-		if(t<=3) isFourthTrack[vtx].push_back(1);
-		else     isFourthTrack[vtx].push_back(0);
-	}
-	/////////////////////////
-	double margins = 30.*GeV2MeV;
-	TString srctp = "CombinedFitMuonParticles";
-	int nMuons = (int)muons_pt->size();
-	int nTPas  = (int)tpmu_vd[srctp+"_pt"]->size();
-	vector<int> vfourthmuons;
-	vector<int> vfourthtps;
-	if(nMuons>3 || nTPas>3)
-	{
-		for(int m=0 ; m<nMuons ; ++m)
-		{
-			if(isMuon1 && m==isrc1) continue;
-			if(isMuon2 && m==isrc2) continue;
-			if(isMuon3 && m==isrc3) continue;
-			
-			int itrk = (mastername!="muid") ? muons_inDetTrackIndex->at(m) : muid_inDetTrackIndex->at(m);
-			if(itrk<0 || itrk>=(int)trks_pt->size()) continue;
-			
-			TLorentzVector vZ, v4th;
-			v4th.SetPtEtaPhiM(muons_pt->at(m),muons_eta->at(m),muons_phi->at(m),muonMassMeV);
-			vZ = psum+v4th;
-			// double mQuad = vZ.M();
-			if(fabs(vZ.M()-91.*GeV2MeV)>margins) continue;
-			
-			vfourthmuons.push_back(m);
-			// cout << "\tEvent: " << EventNumber << "(" << isrc1 << "," << isrc2 << "," << isrc3 << "+" << m << ") -> with 4th muon mQuad=" << mQuad << endl;
-		}
+	if(!skim)
+	{	
+		TString master = mastername;
 		
-		for(int m=0 ; m<nTPas ; ++m)
+		//// Fill the 4th tracks, allow only 3 per triplet and fill first the muons
+		// cout << "\n------------- Event: " << EventNumber << " -------------" << endl;
+		/////////////////////////
+		vector<int> vtmp;
+		isFourthTrack.insert(make_pair(vtx,vtmp));
+		for(unsigned int t=1 ; t<=nMaxTracks ; ++t)
 		{
-			if(isTPa1 && m==isrc1) continue;
-			if(isTPa2 && m==isrc2) continue;
-			if(isTPa3 && m==isrc3) continue;
-			
-			bool isoverlap = false;
-			for(unsigned int n=0 ; n<vfourthmuons.size() ; ++n)
+			if(t<=3) isFourthTrack[vtx].push_back(1);
+			else     isFourthTrack[vtx].push_back(0);
+		}
+		/////////////////////////
+		double margins = 30.*GeV2MeV;
+		TString srctp = "CombinedFitMuonParticles";
+		int nMuons = (int)muons_pt->size();
+		int nTPas  = (int)tpmu_vd[srctp+"_pt"]->size();
+		vector<int> vfourthmuons;
+		vector<int> vfourthtps;
+		if(nMuons>3 || nTPas>3)
+		{
+			for(int m=0 ; m<nMuons ; ++m)
 			{
-				unsigned int m4 = vfourthmuons[n];
-				double dR  = deltaR(muons_eta->at(m4),muons_phi->at(m4),tpmu_vd[srctp+"_eta"]->at(m),tpmu_vd[srctp+"_phi"]->at(m));
-				double dpT = fabs(muons_pt->at(m4)-tpmu_vd[srctp+"_pt"]->at(m))/muons_pt->at(m4);
-				double dQ  = muons_charge->at(m4)-qtrk(tpmu_vd[srctp+"_qOverP"]->at(m));
+				if(isMuon1 && m==isrc1) continue;
+				if(isMuon2 && m==isrc2) continue;
+				if(isMuon3 && m==isrc3) continue;
 				
-				if(dR<0.01 && dpT<0.2 && dQ==0) { isoverlap=true; break; }
+				int itrk = (mastername!="muid") ? muons_inDetTrackIndex->at(m) : muid_inDetTrackIndex->at(m);
+				if(itrk<0 || itrk>=(int)trks_pt->size()) continue;
+				
+				TLorentzVector vZ, v4th;
+				v4th.SetPtEtaPhiM(muons_pt->at(m),muons_eta->at(m),muons_phi->at(m),muonMassMeV);
+				vZ = psum+v4th;
+				// double mQuad = vZ.M();
+				if(fabs(vZ.M()-91.*GeV2MeV)>margins) continue;
+				
+				vfourthmuons.push_back(m);
+				// cout << "\tEvent: " << EventNumber << "(" << isrc1 << "," << isrc2 << "," << isrc3 << "+" << m << ") -> with 4th muon mQuad=" << mQuad << endl;
 			}
-			if(isoverlap) continue;
 			
-			TLorentzVector vZ, v4th;
-			v4th.SetPtEtaPhiM(tpmu_vd[srctp+"_pt"]->at(m),tpmu_vd[srctp+"_eta"]->at(m),tpmu_vd[srctp+"_phi"]->at(m),muonMassMeV);
-			vZ = psum+v4th;
-			// double mQuad = vZ.M();
-			if(fabs(vZ.M()-91.*GeV2MeV)>margins) continue;
-			
-			vfourthtps.push_back(m);
-			// cout << "\tEvent: " << EventNumber << "(" << isrc1 << "," << isrc2 << "," << isrc3 << "+" << m << ") -> with 4th TPa mQuad=" << mQuad << endl;
+			for(int m=0 ; m<nTPas ; ++m)
+			{
+				if(isTPa1 && m==isrc1) continue;
+				if(isTPa2 && m==isrc2) continue;
+				if(isTPa3 && m==isrc3) continue;
+				
+				bool isoverlap = false;
+				for(unsigned int n=0 ; n<vfourthmuons.size() ; ++n)
+				{
+					unsigned int m4 = vfourthmuons[n];
+					double dR  = deltaR(muons_eta->at(m4),muons_phi->at(m4),tpmu_vd[srctp+"_eta"]->at(m),tpmu_vd[srctp+"_phi"]->at(m));
+					double dpT = fabs(muons_pt->at(m4)-tpmu_vd[srctp+"_pt"]->at(m))/muons_pt->at(m4);
+					double dQ  = muons_charge->at(m4)-qtrk(tpmu_vd[srctp+"_qOverP"]->at(m));
+					
+					if(dR<0.01 && dpT<0.2 && dQ==0) { isoverlap=true; break; }
+				}
+				if(isoverlap) continue;
+				
+				TLorentzVector vZ, v4th;
+				v4th.SetPtEtaPhiM(tpmu_vd[srctp+"_pt"]->at(m),tpmu_vd[srctp+"_eta"]->at(m),tpmu_vd[srctp+"_phi"]->at(m),muonMassMeV);
+				vZ = psum+v4th;
+				// double mQuad = vZ.M();
+				if(fabs(vZ.M()-91.*GeV2MeV)>margins) continue;
+				
+				vfourthtps.push_back(m);
+				// cout << "\tEvent: " << EventNumber << "(" << isrc1 << "," << isrc2 << "," << isrc3 << "+" << m << ") -> with 4th TPa mQuad=" << mQuad << endl;
+			}
 		}
-	}
-	int n4thMuons = (int)vfourthmuons.size();
-	int n4thTPs   = (int)vfourthtps.size();
-	int nMax4thTracks = nMaxTracks-3;
-	int nFilled = 0;
-	// if(n4thMuons+n4thTPs>0) cout << "\tn4thMuons=" << n4thMuons << ", n4thTPs=" << n4thTPs << endl;
-	for(int i=0 ; (i<n4thMuons && (2+i+1)<(3+nMax4thTracks)) ; ++i) 
-	{
-		unsigned int ithis = 2+(i+1);
-		
-		unsigned int m4 = vfourthmuons[i];
-		
-		int itrk = (master!="muid") ? muons_inDetTrackIndex->at(m4) : muid_inDetTrackIndex->at(m4);
-		// if(itrk<0 || itrk>=(int)trks_pt->size()) continue;
-		
-		isFourthTrack[vtx][ithis] = 1;
-		
-		TLorentzVector p4;
-		p4.SetPtEtaPhiM(muons_pt->at(m4),muons_eta->at(m4),muons_phi->at(m4),muonMassMeV);
-		m_trkP[ithis] = p4;
-
-		m_pQuad[ithis-3]           = p4+psum;
-		m_isrc[ithis]              = m4;
-		m_src[ithis]               = (string)master;
-		m_order[ithis]             = -1;
-		m_trktype[ithis]           = MUON;
-		m_ismuon[ithis]            = 1;
-		m_iscalo[ithis]            = 0;
-		m_istp[ithis]              = 0;  
-		m_istpa[ithis]             = 0;  
-		m_istpb[ithis]             = 0;  
-		m_iscb[ithis]              = (master!="muid") ? muons_isCombined->at(m4)   : muid_isCombined->at(m4);
-		m_istight[ithis]           = (master!="muid") ? muons_isTight->at(m4)      : muid_isTight->at(m4);
-		m_ismedium[ithis]          = (master!="muid") ? muons_isMedium->at(m4)     : muid_isMedium->at(m4);
-		m_isloose[ithis]           = (master!="muid") ? muons_isLoose->at(m4)      : muid_isLoose->at(m4);
-		m_trksctang[ithis]         = (master!="muid") ? muons_sctangsig->at(m4)    : muid_sctangsig->at(m4);
-		m_trksctngb[ithis]         = (master!="muid") ? muons_sctngbsig->at(m4)    : muid_sctngbsig->at(m4);
-		m_trkpbal[ithis]           = (master!="muid") ? muons_pbalsig->at(m4)      : muid_pbalsig->at(m4);
-		m_trkMuMatchChi2Ndf[ithis] = (master!="muid") ? muons_matchchi2ndf->at(m4) : muid_matchchi2ndf->at(m4);
-		m_trkChi2[ithis]           = (master!="muid") ? muons_chi2->at(m4)         : muid_chi2->at(m4); // tpmu_vd[src+"_chi2"]->at(m4);  
-		m_trkNdf[ithis]            = (master!="muid") ? muons_ndf->at(m4)          : muid_ndf->at(m4); // tpmu_vi[src+"_ndf"]->at(m4);  
-		m_trkPval[ithis]           = TMath::Prob(m_trkChi2[ithis],m_trkNdf[ithis]);
-		m_trkChi2Ndf[ithis]        = m_trkChi2[ithis]/m_trkNdf[ithis];
-
-		TVector3 pme;
-		double q=-999.;
-		if(master!="muid") { pme.SetXYZ(muons_px_me->at(m4),muons_py_me->at(m4),muons_pz_me->at(m4)); q = muons_charge->at(m4); }
-		else               { pme.SetXYZ(muid_px_me->at(m4), muid_py_me->at(m4), muid_pz_me->at(m4));  q = muid_charge->at(m4);  }
-		double qopmemu = q/pme.Mag();
-		m_srcQoverP[ithis] = qopmemu;
-
-		m_itrk[ithis]            = itrk;
-		m_trkQoverP[ithis]       = trks_qoverp->at(itrk);
-		m_trkPixeldEdx[ithis]    = trks_pixeldEdx->at(itrk);
-		m_trkUsedHitsdEdx[ithis] = trks_nUsedHitsdEdx->at(itrk);
-		m_trkPIXhits[ithis]      = trks_nPix->at(itrk);
-		m_trkDeadPIX[ithis]      = trks_nDeadPixels->at(itrk);
-		m_trkPIXholes[ithis]     = trks_nPixHoles->at(itrk);
-		m_trkSCThits[ithis]      = trks_nSCT->at(itrk);
-		m_trkDeadSCT[ithis]      = trks_nDeadSCT->at(itrk);
-		m_trkSCTholes[ithis]     = trks_nSCTHoles->at(itrk);
-		m_trkTRThits[ithis]      = trks_nTRT->at(itrk);
-		m_trkTRToutliers[ithis]  = trks_nTRTOutliers->at(itrk);
-		m_trkHtTRThits[ithis]    = trks_nHighThresholdTRTHits->at(itrk);
-
-		m_trkMDThits[ithis]         = -1; // tpmu_vi[src+"_numberOfMdtHits"]->at(m4);
-		m_trkTGCPhiHits[ithis]      = -1; // tpmu_vi[src+"_numberOfTgcPhiHits"]->at(m4);
-		m_trkTGCEtaHits[ithis]      = -1; // tpmu_vi[src+"_numberOfTgcEtaHits"]->at(m4);
-		m_trkCSCPhiHits[ithis]      = -1; // tpmu_vi[src+"_numberOfCscPhiHits"]->at(m4);
-		m_trkCSCEtaHits[ithis]      = -1; // tpmu_vi[src+"_numberOfCscEtaHits"]->at(m4);
-		m_trkRPCPhiHits[ithis]      = -1; // tpmu_vi[src+"_numberOfRpcPhiHits"]->at(m4);
-		m_trkRPCEtaHits[ithis]      = -1; // tpmu_vi[src+"_numberOfRpcEtaHits"]->at(m4);
-		m_trkCSCEtaHoles[ithis]     = -1; // tpmu_vi[src+"_numberOfCscEtaHoles"]->at(m4);
-		m_trkCSCPhiHoles[ithis]     = -1; // tpmu_vi[src+"_numberOfCscPhiHoles"]->at(m4);
-		m_trkRPCEtaHoles[ithis]     = -1; // tpmu_vi[src+"_numberOfRpcEtaHoles"]->at(m4);
-		m_trkRPCPhiHoles[ithis]     = -1; // tpmu_vi[src+"_numberOfRpcPhiHoles"]->at(m4);
-		m_trkTGCEtaHoles[ithis]     = -1; // tpmu_vi[src+"_numberOfTgcEtaHoles"]->at(m4);
-		m_trkTGCPhiHoles[ithis]     = -1; // tpmu_vi[src+"_numberOfTgcPhiHoles"]->at(m4);
-		m_trkMDTholes[ithis]        = -1; // tpmu_vi[src+"_numberOfMdtHoles"]->at(m4);
-		m_trkOutliersOnTrack[ithis] = -1; // tpmu_vi[src+"_numberOfOutliersOnTrack"]->at(m4);
-		m_trkStdDevOfChi2OS[ithis]  = -1; // tpmu_vi[src+"_standardDeviationOfChi2OS"]->at(m4);
-		
-		m_trkPrecisionHits[ithis] = 0;
-		// unsigned int N = tpmu_vvi[src+"_nprecisionHits"]->at(mr).size();
-		// for(unsigned int j=0 ; j<N ; ++j) m_trkPrecisionHits[ithis] += tpmu_vvi[src+"_nprecisionHits"]->at(m4)[j];
-		
-		m_trkPhiLayers[ithis] = 0;
-		// N = tpmu_vvi[src+"_nphiLayers"]->at(m4).size();
-		// for(unsigned int j=0 ; j<N ; ++j) m_trkPhiLayers[ithis] += tpmu_vvi[src+"_nphiLayers"]->at(m4)[j];
-
-		m_trkEtaPhiLayers[ithis] = 0;
-		// N = tpmu_vvi[src+"_netaPhiLayers"]->at(m4).size();
-		// for(unsigned int j=0 ; j<N ; ++j) m_trkEtaPhiLayers[ithis] += tpmu_vvi[src+"_netaPhiLayers"]->at(m4)[j];
-		
-		m_trkPrecisionHoles[ithis] = 0;
-		// N = tpmu_vvi[src+"_nprecisionHoles"]->at(m4).size();
-		// for(unsigned int j=0 ; j<N ; ++j) m_trkPrecisionHoles[ithis] += tpmu_vvi[src+"_nprecisionHoles"]->at(m4)[j];
-	
-		m_trkEtaTriggerHoleLayers[ithis] = 0;
-		// N = tpmu_vvi[src+"_netaTriggerHoleLayers"]->at(m4).size();
-		// for(unsigned int j=0 ; j<N ; ++j) m_trkEtaTriggerHoleLayers[ithis] += tpmu_vvi[src+"_netaTriggerHoleLayers"]->at(m4)[j];
-
-		m_trkPhiHoleLayers[ithis] = 0;
-		// N = tpmu_vvi[src+"_nphiHoleLayers"]->at(m4).size();
-		// for(unsigned int j=0 ; j<N ; ++j) m_trkPhiHoleLayers[ithis] += tpmu_vvi[src+"_nphiHoleLayers"]->at(m4)[j];
-
-		m_trkPrecisionOutliers[ithis] = 0;
-		// N = tpmu_vvi[src+"_nprecisionOutliers"]->at(m4).size();
-		// for(unsigned int j=0 ; j<N ; ++j) m_trkPrecisionOutliers[ithis] += tpmu_vvi[src+"_nprecisionOutliers"]->at(m4)[j];
-		
-		//////////////
-		nFilled++; ///
-		//////////////
-		
-		// cout << "\t Adding muon: ithis=" << ithis << ", m4=" << m4 << ", itrk=" << itrk << ", mQuad=" << (p4+psum).M() << ", nFilled=" << nFilled << endl;
-	}
-	// cout << "\tAdded " << nFilled << " muons" << endl;
-	
-	int nTPaFilled = 0;
-	if(nFilled<nMax4thTracks)
-	{
-		// cout << "\tGoing to add " << nMax4thTracks-nFilled << " TPas" << endl;
-		
-		for(int i=0 ; (i<n4thTPs && (2+nFilled+i+1)<(3+nMax4thTracks)) ; ++i) 
+		int n4thMuons = (int)vfourthmuons.size();
+		int n4thTPs   = (int)vfourthtps.size();
+		int nMax4thTracks = nMaxTracks-3;
+		int nFilled = 0;
+		// if(n4thMuons+n4thTPs>0) cout << "\tn4thMuons=" << n4thMuons << ", n4thTPs=" << n4thTPs << endl;
+		for(int i=0 ; (i<n4thMuons && (2+i+1)<(3+nMax4thTracks)) ; ++i) 
 		{
-			unsigned int ithis = 2+nFilled+(i+1);
+			unsigned int ithis = 2+(i+1);
 			
-			unsigned int m4 = vfourthtps[i];
-			TLorentzVector p4;
-			p4.SetPtEtaPhiM(tpmu_vd[srctp+"_pt"]->at(m4),tpmu_vd[srctp+"_eta"]->at(m4),tpmu_vd[srctp+"_phi"]->at(m4),muonMassMeV);
-			m_trkP[ithis] = p4;
+			unsigned int m4 = vfourthmuons[i];
+			
+			int itrk = (master!="muid") ? muons_inDetTrackIndex->at(m4) : muid_inDetTrackIndex->at(m4);
+			// if(itrk<0 || itrk>=(int)trks_pt->size()) continue;
 			
 			isFourthTrack[vtx][ithis] = 1;
 			
+			TLorentzVector p4;
+			p4.SetPtEtaPhiM(muons_pt->at(m4),muons_eta->at(m4),muons_phi->at(m4),muonMassMeV);
+			m_trkP[ithis] = p4;
+	
 			m_pQuad[ithis-3]           = p4+psum;
 			m_isrc[ithis]              = m4;
-			m_src[ithis]               = "";
+			m_src[ithis]               = (string)master;
 			m_order[ithis]             = -1;
-			m_trktype[ithis]           = TPA;
-			m_ismuon[ithis]            = 0;
+			m_trktype[ithis]           = MUON;
+			m_ismuon[ithis]            = 1;
 			m_iscalo[ithis]            = 0;
-			m_istp[ithis]              = 1;  
-			m_istpa[ithis]             = 1;  
+			m_istp[ithis]              = 0;  
+			m_istpa[ithis]             = 0;  
 			m_istpb[ithis]             = 0;  
-			m_iscb[ithis]              = -1;
-			m_istight[ithis]           = -1;
-			m_ismedium[ithis]          = -1;
-			m_isloose[ithis]           = -1;
-			m_trksctang[ithis]         = -1;
-			m_trksctngb[ithis]         = -1;
-			m_trkpbal[ithis]           = -1;
-			m_trkMuMatchChi2Ndf[ithis] = -1;
-			m_trkChi2[ithis]           = tpmu_vd[srctp+"_chi2"]->at(m4);  
-			m_trkNdf[ithis]            = tpmu_vi[srctp+"_ndf"]->at(m4);  
+			m_iscb[ithis]              = (master!="muid") ? muons_isCombined->at(m4)   : muid_isCombined->at(m4);
+			m_istight[ithis]           = (master!="muid") ? muons_isTight->at(m4)      : muid_isTight->at(m4);
+			m_ismedium[ithis]          = (master!="muid") ? muons_isMedium->at(m4)     : muid_isMedium->at(m4);
+			m_isloose[ithis]           = (master!="muid") ? muons_isLoose->at(m4)      : muid_isLoose->at(m4);
+			m_trksctang[ithis]         = (master!="muid") ? muons_sctangsig->at(m4)    : muid_sctangsig->at(m4);
+			m_trksctngb[ithis]         = (master!="muid") ? muons_sctngbsig->at(m4)    : muid_sctngbsig->at(m4);
+			m_trkpbal[ithis]           = (master!="muid") ? muons_pbalsig->at(m4)      : muid_pbalsig->at(m4);
+			m_trkMuMatchChi2Ndf[ithis] = (master!="muid") ? muons_matchchi2ndf->at(m4) : muid_matchchi2ndf->at(m4);
+			m_trkChi2[ithis]           = (master!="muid") ? muons_chi2->at(m4)         : muid_chi2->at(m4); // tpmu_vd[src+"_chi2"]->at(m4);  
+			m_trkNdf[ithis]            = (master!="muid") ? muons_ndf->at(m4)          : muid_ndf->at(m4); // tpmu_vi[src+"_ndf"]->at(m4);  
 			m_trkPval[ithis]           = TMath::Prob(m_trkChi2[ithis],m_trkNdf[ithis]);
 			m_trkChi2Ndf[ithis]        = m_trkChi2[ithis]/m_trkNdf[ithis];
-			m_srcQoverP[ithis]         = tpmu_vd[srctp+"_qOverP"]->at(m4);
+	
+			TVector3 pme;
+			double q=-999.;
+			if(master!="muid") { pme.SetXYZ(muons_px_me->at(m4),muons_py_me->at(m4),muons_pz_me->at(m4)); q = muons_charge->at(m4); }
+			else               { pme.SetXYZ(muid_px_me->at(m4), muid_py_me->at(m4), muid_pz_me->at(m4));  q = muid_charge->at(m4);  }
+			double qopmemu = q/pme.Mag();
+			m_srcQoverP[ithis] = qopmemu;
+	
+			m_itrk[ithis]            = itrk;
+			m_trkQoverP[ithis]       = trks_qoverp->at(itrk);
+			m_trkPixeldEdx[ithis]    = trks_pixeldEdx->at(itrk);
+			m_trkUsedHitsdEdx[ithis] = trks_nUsedHitsdEdx->at(itrk);
+			m_trkPIXhits[ithis]      = trks_nPix->at(itrk);
+			m_trkDeadPIX[ithis]      = trks_nDeadPixels->at(itrk);
+			m_trkPIXholes[ithis]     = trks_nPixHoles->at(itrk);
+			m_trkSCThits[ithis]      = trks_nSCT->at(itrk);
+			m_trkDeadSCT[ithis]      = trks_nDeadSCT->at(itrk);
+			m_trkSCTholes[ithis]     = trks_nSCTHoles->at(itrk);
+			m_trkTRThits[ithis]      = trks_nTRT->at(itrk);
+			m_trkTRToutliers[ithis]  = trks_nTRTOutliers->at(itrk);
+			m_trkHtTRThits[ithis]    = trks_nHighThresholdTRTHits->at(itrk);
+	
+			m_trkMDThits[ithis]         = -1; // tpmu_vi[src+"_numberOfMdtHits"]->at(m4);
+			m_trkTGCPhiHits[ithis]      = -1; // tpmu_vi[src+"_numberOfTgcPhiHits"]->at(m4);
+			m_trkTGCEtaHits[ithis]      = -1; // tpmu_vi[src+"_numberOfTgcEtaHits"]->at(m4);
+			m_trkCSCPhiHits[ithis]      = -1; // tpmu_vi[src+"_numberOfCscPhiHits"]->at(m4);
+			m_trkCSCEtaHits[ithis]      = -1; // tpmu_vi[src+"_numberOfCscEtaHits"]->at(m4);
+			m_trkRPCPhiHits[ithis]      = -1; // tpmu_vi[src+"_numberOfRpcPhiHits"]->at(m4);
+			m_trkRPCEtaHits[ithis]      = -1; // tpmu_vi[src+"_numberOfRpcEtaHits"]->at(m4);
+			m_trkCSCEtaHoles[ithis]     = -1; // tpmu_vi[src+"_numberOfCscEtaHoles"]->at(m4);
+			m_trkCSCPhiHoles[ithis]     = -1; // tpmu_vi[src+"_numberOfCscPhiHoles"]->at(m4);
+			m_trkRPCEtaHoles[ithis]     = -1; // tpmu_vi[src+"_numberOfRpcEtaHoles"]->at(m4);
+			m_trkRPCPhiHoles[ithis]     = -1; // tpmu_vi[src+"_numberOfRpcPhiHoles"]->at(m4);
+			m_trkTGCEtaHoles[ithis]     = -1; // tpmu_vi[src+"_numberOfTgcEtaHoles"]->at(m4);
+			m_trkTGCPhiHoles[ithis]     = -1; // tpmu_vi[src+"_numberOfTgcPhiHoles"]->at(m4);
+			m_trkMDTholes[ithis]        = -1; // tpmu_vi[src+"_numberOfMdtHoles"]->at(m4);
+			m_trkOutliersOnTrack[ithis] = -1; // tpmu_vi[src+"_numberOfOutliersOnTrack"]->at(m4);
+			m_trkStdDevOfChi2OS[ithis]  = -1; // tpmu_vi[src+"_standardDeviationOfChi2OS"]->at(m4);
 			
-			m_itrk[ithis]            = -1; // itrk;
-			m_trkQoverP[ithis]       = tpmu_vd[srctp+"_qOverP"]->at(m4); // (itrk<0) ? -1 : trks_qoverp->at(itrk);
-			m_trkPixeldEdx[ithis]    = tpmu_vd[srctp+"_pixeldEdx"]->at(m4); // (itrk<0) ? -1 : trks_pixeldEdx->at(itrk);
-			m_trkUsedHitsdEdx[ithis] = tpmu_vi[srctp+"_nUsedHitsdEdx"]->at(m4); // (itrk<0) ? -1 : trks_nUsedHitsdEdx->at(itrk);
-			m_trkPIXhits[ithis]      = tpmu_vi[srctp+"_nPix"]->at(m4); // (itrk<0) ? -1 : trks_nPix->at(itrk);
-			m_trkDeadPIX[ithis]      = tpmu_vi[srctp+"_nDeadPixels"]->at(m4); // (itrk<0) ? -1 : trks_nDeadPixels->at(itrk);
-			m_trkPIXholes[ithis]     = tpmu_vi[srctp+"_nPixHoles"]->at(m4); // (itrk<0) ? -1 : trks_nPixHoles->at(itrk);
-			m_trkSCThits[ithis]      = tpmu_vi[srctp+"_nSCT"]->at(m4); // (itrk<0) ? -1 : trks_nSCT->at(itrk);
-			m_trkDeadSCT[ithis]      = tpmu_vi[srctp+"_nDeadSCT"]->at(m4); // (itrk<0) ? -1 : trks_nDeadSCT->at(itrk);
-			m_trkSCTholes[ithis]     = tpmu_vi[srctp+"_nSCTHoles"]->at(m4); // (itrk<0) ? -1 : trks_nSCTHoles->at(itrk);
-			m_trkTRThits[ithis]      = tpmu_vi[srctp+"_nTRT"]->at(m4); // (itrk<0) ? -1 : trks_nTRT->at(itrk);
-			m_trkTRToutliers[ithis]  = tpmu_vi[srctp+"_nTRTOutliers"]->at(m4); // (itrk<0) ? -1 : trks_nTRTOutliers->at(itrk);
-			m_trkHtTRThits[ithis]    = tpmu_vi[srctp+"_nHighThresholdTRTHits"]->at(m4); // (itrk<0) ? -1 : trks_nHighThresholdTRTHits->at(itrk);
-
-			m_trkMDThits[ithis]         = tpmu_vi[srctp+"_numberOfMdtHits"]->at(m4);
-			m_trkTGCPhiHits[ithis]      = tpmu_vi[srctp+"_numberOfTgcPhiHits"]->at(m4);
-			m_trkTGCEtaHits[ithis]      = tpmu_vi[srctp+"_numberOfTgcEtaHits"]->at(m4);
-			m_trkCSCPhiHits[ithis]      = tpmu_vi[srctp+"_numberOfCscPhiHits"]->at(m4);
-			m_trkCSCEtaHits[ithis]      = tpmu_vi[srctp+"_numberOfCscEtaHits"]->at(m4);
-			m_trkRPCPhiHits[ithis]      = tpmu_vi[srctp+"_numberOfRpcPhiHits"]->at(m4);
-			m_trkRPCEtaHits[ithis]      = tpmu_vi[srctp+"_numberOfRpcEtaHits"]->at(m4);
-			m_trkCSCEtaHoles[ithis]     = tpmu_vi[srctp+"_numberOfCscEtaHoles"]->at(m4);
-			m_trkCSCPhiHoles[ithis]     = tpmu_vi[srctp+"_numberOfCscPhiHoles"]->at(m4);
-			m_trkRPCEtaHoles[ithis]     = tpmu_vi[srctp+"_numberOfRpcEtaHoles"]->at(m4);
-			m_trkRPCPhiHoles[ithis]     = tpmu_vi[srctp+"_numberOfRpcPhiHoles"]->at(m4);
-			m_trkTGCEtaHoles[ithis]     = tpmu_vi[srctp+"_numberOfTgcEtaHoles"]->at(m4);
-			m_trkTGCPhiHoles[ithis]     = tpmu_vi[srctp+"_numberOfTgcPhiHoles"]->at(m4);
-			m_trkMDTholes[ithis]        = tpmu_vi[srctp+"_numberOfMdtHoles"]->at(m4);
-			m_trkOutliersOnTrack[ithis] = tpmu_vi[srctp+"_numberOfOutliersOnTrack"]->at(m4);
-			m_trkStdDevOfChi2OS[ithis]  = tpmu_vi[srctp+"_standardDeviationOfChi2OS"]->at(m4);
-
-			_DEBUG("");
-
 			m_trkPrecisionHits[ithis] = 0;
-			unsigned int N = tpmu_vvi[srctp+"_nprecisionHits"]->at(m4).size();
-			for(unsigned int j=0 ; j<N ; ++j) m_trkPrecisionHits[ithis] += tpmu_vvi[srctp+"_nprecisionHits"]->at(m4)[j];
-
+			// unsigned int N = tpmu_vvi[src+"_nprecisionHits"]->at(mr).size();
+			// for(unsigned int j=0 ; j<N ; ++j) m_trkPrecisionHits[ithis] += tpmu_vvi[src+"_nprecisionHits"]->at(m4)[j];
+			
 			m_trkPhiLayers[ithis] = 0;
-			N = tpmu_vvi[srctp+"_nphiLayers"]->at(m4).size();
-			for(unsigned int j=0 ; j<N ; ++j) m_trkPhiLayers[ithis] += tpmu_vvi[srctp+"_nphiLayers"]->at(m4)[j];
-
+			// N = tpmu_vvi[src+"_nphiLayers"]->at(m4).size();
+			// for(unsigned int j=0 ; j<N ; ++j) m_trkPhiLayers[ithis] += tpmu_vvi[src+"_nphiLayers"]->at(m4)[j];
+	
 			m_trkEtaPhiLayers[ithis] = 0;
-			N = tpmu_vvi[srctp+"_netaPhiLayers"]->at(m4).size();
-			for(unsigned int j=0 ; j<N ; ++j) m_trkEtaPhiLayers[ithis] += tpmu_vvi[srctp+"_netaPhiLayers"]->at(m4)[j];
-
+			// N = tpmu_vvi[src+"_netaPhiLayers"]->at(m4).size();
+			// for(unsigned int j=0 ; j<N ; ++j) m_trkEtaPhiLayers[ithis] += tpmu_vvi[src+"_netaPhiLayers"]->at(m4)[j];
+			
 			m_trkPrecisionHoles[ithis] = 0;
-			N = tpmu_vvi[srctp+"_nprecisionHoles"]->at(m4).size();
-			for(unsigned int j=0 ; j<N ; ++j) m_trkPrecisionHoles[ithis] += tpmu_vvi[srctp+"_nprecisionHoles"]->at(m4)[j];
-
-			m_trkEtaTriggerHoleLayers[ithis] = 0;
-			N = tpmu_vvi[srctp+"_netaTriggerHoleLayers"]->at(m4).size();
-			for(unsigned int j=0 ; j<N ; ++j) m_trkEtaTriggerHoleLayers[ithis] += tpmu_vvi[srctp+"_netaTriggerHoleLayers"]->at(m4)[j];
-
-			m_trkPhiHoleLayers[ithis] = 0;
-			N = tpmu_vvi[srctp+"_nphiHoleLayers"]->at(m4).size();
-			for(unsigned int j=0 ; j<N ; ++j) m_trkPhiHoleLayers[ithis] += tpmu_vvi[srctp+"_nphiHoleLayers"]->at(m4)[j];
-
-			m_trkPrecisionOutliers[ithis] = 0;
-			N = tpmu_vvi[srctp+"_nprecisionOutliers"]->at(m4).size();
-			for(unsigned int j=0 ; j<N ; ++j) m_trkPrecisionOutliers[ithis] += tpmu_vvi[srctp+"_nprecisionOutliers"]->at(m4)[j];
-			
-			_DEBUG("");
-			
-			/////////////////
-			nTPaFilled++; ///
-			/////////////////
-			
-			// cout << "\t Adding TPa: ithis=" << ithis << ", m4=" << m4 << ", mQuad=" << (p4+psum).M() << ", nTPaFilled=" << nTPaFilled << endl;
-		}
+			// N = tpmu_vvi[src+"_nprecisionHoles"]->at(m4).size();
+			// for(unsigned int j=0 ; j<N ; ++j) m_trkPrecisionHoles[ithis] += tpmu_vvi[src+"_nprecisionHoles"]->at(m4)[j];
 		
-		// cout << "\tAdded " << nTPaFilled << " TPas" << endl;
+			m_trkEtaTriggerHoleLayers[ithis] = 0;
+			// N = tpmu_vvi[src+"_netaTriggerHoleLayers"]->at(m4).size();
+			// for(unsigned int j=0 ; j<N ; ++j) m_trkEtaTriggerHoleLayers[ithis] += tpmu_vvi[src+"_netaTriggerHoleLayers"]->at(m4)[j];
+	
+			m_trkPhiHoleLayers[ithis] = 0;
+			// N = tpmu_vvi[src+"_nphiHoleLayers"]->at(m4).size();
+			// for(unsigned int j=0 ; j<N ; ++j) m_trkPhiHoleLayers[ithis] += tpmu_vvi[src+"_nphiHoleLayers"]->at(m4)[j];
+	
+			m_trkPrecisionOutliers[ithis] = 0;
+			// N = tpmu_vvi[src+"_nprecisionOutliers"]->at(m4).size();
+			// for(unsigned int j=0 ; j<N ; ++j) m_trkPrecisionOutliers[ithis] += tpmu_vvi[src+"_nprecisionOutliers"]->at(m4)[j];
+			
+			//////////////
+			nFilled++; ///
+			//////////////
+			
+			// cout << "\t Adding muon: ithis=" << ithis << ", m4=" << m4 << ", itrk=" << itrk << ", mQuad=" << (p4+psum).M() << ", nFilled=" << nFilled << endl;
+		}
+		// cout << "\tAdded " << nFilled << " muons" << endl;
+		
+		int nTPaFilled = 0;
+		if(nFilled<nMax4thTracks)
+		{
+			// cout << "\tGoing to add " << nMax4thTracks-nFilled << " TPas" << endl;
+			for(int i=0 ; (i<n4thTPs && (2+nFilled+i+1)<(3+nMax4thTracks)) ; ++i) 
+			{
+				unsigned int ithis = 2+nFilled+(i+1);
+				
+				unsigned int m4 = vfourthtps[i];
+				TLorentzVector p4;
+				p4.SetPtEtaPhiM(tpmu_vd[srctp+"_pt"]->at(m4),tpmu_vd[srctp+"_eta"]->at(m4),tpmu_vd[srctp+"_phi"]->at(m4),muonMassMeV);
+				m_trkP[ithis] = p4;
+				
+				isFourthTrack[vtx][ithis] = 1;
+				
+				m_pQuad[ithis-3]           = p4+psum;
+				m_isrc[ithis]              = m4;
+				m_src[ithis]               = "";
+				m_order[ithis]             = -1;
+				m_trktype[ithis]           = TPA;
+				m_ismuon[ithis]            = 0;
+				m_iscalo[ithis]            = 0;
+				m_istp[ithis]              = 1;  
+				m_istpa[ithis]             = 1;  
+				m_istpb[ithis]             = 0;  
+				m_iscb[ithis]              = -1;
+				m_istight[ithis]           = -1;
+				m_ismedium[ithis]          = -1;
+				m_isloose[ithis]           = -1;
+				m_trksctang[ithis]         = -1;
+				m_trksctngb[ithis]         = -1;
+				m_trkpbal[ithis]           = -1;
+				m_trkMuMatchChi2Ndf[ithis] = -1;
+				m_trkChi2[ithis]           = tpmu_vd[srctp+"_chi2"]->at(m4);  
+				m_trkNdf[ithis]            = tpmu_vi[srctp+"_ndf"]->at(m4);  
+				m_trkPval[ithis]           = TMath::Prob(m_trkChi2[ithis],m_trkNdf[ithis]);
+				m_trkChi2Ndf[ithis]        = m_trkChi2[ithis]/m_trkNdf[ithis];
+				m_srcQoverP[ithis]         = tpmu_vd[srctp+"_qOverP"]->at(m4);
+				
+				m_itrk[ithis]            = -1; // itrk;
+				m_trkQoverP[ithis]       = tpmu_vd[srctp+"_qOverP"]->at(m4); // (itrk<0) ? -1 : trks_qoverp->at(itrk);
+				m_trkPixeldEdx[ithis]    = tpmu_vd[srctp+"_pixeldEdx"]->at(m4); // (itrk<0) ? -1 : trks_pixeldEdx->at(itrk);
+				m_trkUsedHitsdEdx[ithis] = tpmu_vi[srctp+"_nUsedHitsdEdx"]->at(m4); // (itrk<0) ? -1 : trks_nUsedHitsdEdx->at(itrk);
+				m_trkPIXhits[ithis]      = tpmu_vi[srctp+"_nPix"]->at(m4); // (itrk<0) ? -1 : trks_nPix->at(itrk);
+				m_trkDeadPIX[ithis]      = tpmu_vi[srctp+"_nDeadPixels"]->at(m4); // (itrk<0) ? -1 : trks_nDeadPixels->at(itrk);
+				m_trkPIXholes[ithis]     = tpmu_vi[srctp+"_nPixHoles"]->at(m4); // (itrk<0) ? -1 : trks_nPixHoles->at(itrk);
+				m_trkSCThits[ithis]      = tpmu_vi[srctp+"_nSCT"]->at(m4); // (itrk<0) ? -1 : trks_nSCT->at(itrk);
+				m_trkDeadSCT[ithis]      = tpmu_vi[srctp+"_nDeadSCT"]->at(m4); // (itrk<0) ? -1 : trks_nDeadSCT->at(itrk);
+				m_trkSCTholes[ithis]     = tpmu_vi[srctp+"_nSCTHoles"]->at(m4); // (itrk<0) ? -1 : trks_nSCTHoles->at(itrk);
+				m_trkTRThits[ithis]      = tpmu_vi[srctp+"_nTRT"]->at(m4); // (itrk<0) ? -1 : trks_nTRT->at(itrk);
+				m_trkTRToutliers[ithis]  = tpmu_vi[srctp+"_nTRTOutliers"]->at(m4); // (itrk<0) ? -1 : trks_nTRTOutliers->at(itrk);
+				m_trkHtTRThits[ithis]    = tpmu_vi[srctp+"_nHighThresholdTRTHits"]->at(m4); // (itrk<0) ? -1 : trks_nHighThresholdTRTHits->at(itrk);
+	
+				m_trkMDThits[ithis]         = tpmu_vi[srctp+"_numberOfMdtHits"]->at(m4);
+				m_trkTGCPhiHits[ithis]      = tpmu_vi[srctp+"_numberOfTgcPhiHits"]->at(m4);
+				m_trkTGCEtaHits[ithis]      = tpmu_vi[srctp+"_numberOfTgcEtaHits"]->at(m4);
+				m_trkCSCPhiHits[ithis]      = tpmu_vi[srctp+"_numberOfCscPhiHits"]->at(m4);
+				m_trkCSCEtaHits[ithis]      = tpmu_vi[srctp+"_numberOfCscEtaHits"]->at(m4);
+				m_trkRPCPhiHits[ithis]      = tpmu_vi[srctp+"_numberOfRpcPhiHits"]->at(m4);
+				m_trkRPCEtaHits[ithis]      = tpmu_vi[srctp+"_numberOfRpcEtaHits"]->at(m4);
+				m_trkCSCEtaHoles[ithis]     = tpmu_vi[srctp+"_numberOfCscEtaHoles"]->at(m4);
+				m_trkCSCPhiHoles[ithis]     = tpmu_vi[srctp+"_numberOfCscPhiHoles"]->at(m4);
+				m_trkRPCEtaHoles[ithis]     = tpmu_vi[srctp+"_numberOfRpcEtaHoles"]->at(m4);
+				m_trkRPCPhiHoles[ithis]     = tpmu_vi[srctp+"_numberOfRpcPhiHoles"]->at(m4);
+				m_trkTGCEtaHoles[ithis]     = tpmu_vi[srctp+"_numberOfTgcEtaHoles"]->at(m4);
+				m_trkTGCPhiHoles[ithis]     = tpmu_vi[srctp+"_numberOfTgcPhiHoles"]->at(m4);
+				m_trkMDTholes[ithis]        = tpmu_vi[srctp+"_numberOfMdtHoles"]->at(m4);
+				m_trkOutliersOnTrack[ithis] = tpmu_vi[srctp+"_numberOfOutliersOnTrack"]->at(m4);
+				m_trkStdDevOfChi2OS[ithis]  = tpmu_vi[srctp+"_standardDeviationOfChi2OS"]->at(m4);
+	
+				_DEBUG("");
+	
+				m_trkPrecisionHits[ithis] = 0;
+				unsigned int N = tpmu_vvi[srctp+"_nprecisionHits"]->at(m4).size();
+				for(unsigned int j=0 ; j<N ; ++j) m_trkPrecisionHits[ithis] += tpmu_vvi[srctp+"_nprecisionHits"]->at(m4)[j];
+	
+				m_trkPhiLayers[ithis] = 0;
+				N = tpmu_vvi[srctp+"_nphiLayers"]->at(m4).size();
+				for(unsigned int j=0 ; j<N ; ++j) m_trkPhiLayers[ithis] += tpmu_vvi[srctp+"_nphiLayers"]->at(m4)[j];
+	
+				m_trkEtaPhiLayers[ithis] = 0;
+				N = tpmu_vvi[srctp+"_netaPhiLayers"]->at(m4).size();
+				for(unsigned int j=0 ; j<N ; ++j) m_trkEtaPhiLayers[ithis] += tpmu_vvi[srctp+"_netaPhiLayers"]->at(m4)[j];
+	
+				m_trkPrecisionHoles[ithis] = 0;
+				N = tpmu_vvi[srctp+"_nprecisionHoles"]->at(m4).size();
+				for(unsigned int j=0 ; j<N ; ++j) m_trkPrecisionHoles[ithis] += tpmu_vvi[srctp+"_nprecisionHoles"]->at(m4)[j];
+	
+				m_trkEtaTriggerHoleLayers[ithis] = 0;
+				N = tpmu_vvi[srctp+"_netaTriggerHoleLayers"]->at(m4).size();
+				for(unsigned int j=0 ; j<N ; ++j) m_trkEtaTriggerHoleLayers[ithis] += tpmu_vvi[srctp+"_netaTriggerHoleLayers"]->at(m4)[j];
+	
+				m_trkPhiHoleLayers[ithis] = 0;
+				N = tpmu_vvi[srctp+"_nphiHoleLayers"]->at(m4).size();
+				for(unsigned int j=0 ; j<N ; ++j) m_trkPhiHoleLayers[ithis] += tpmu_vvi[srctp+"_nphiHoleLayers"]->at(m4)[j];
+	
+				m_trkPrecisionOutliers[ithis] = 0;
+				N = tpmu_vvi[srctp+"_nprecisionOutliers"]->at(m4).size();
+				for(unsigned int j=0 ; j<N ; ++j) m_trkPrecisionOutliers[ithis] += tpmu_vvi[srctp+"_nprecisionOutliers"]->at(m4)[j];
+				
+				_DEBUG("");
+				
+				/////////////////
+				nTPaFilled++; ///
+				/////////////////
+				// cout << "\t Adding TPa: ithis=" << ithis << ", m4=" << m4 << ", mQuad=" << (p4+psum).M() << ", nTPaFilled=" << nTPaFilled << endl;
+			}
+			// cout << "\tAdded " << nTPaFilled << " TPas" << endl;
+		}
+		// cout << "\tAdded " << nFilled+nTPaFilled << " Muons+TPas" << endl;
+		// cout << "--------------------------------------------" << endl;
 	}
-	// cout << "\tAdded " << nFilled+nTPaFilled << " Muons+TPas" << endl;
-	// cout << "--------------------------------------------" << endl;
-}
 	_DEBUG("");
 	
 	
@@ -8086,193 +8221,234 @@ if(!skim)
 	
 	_DEBUG("");
 	
-	m_met          = MET_RefFinal_et;
-	m_metPhi       = MET_RefFinal_phi;
-	m_metDphi3body = fabs(dPhi(MET_RefFinal_phi,psum.Phi()));
-	m_metMt        = mT(MET_RefFinal_et,MET_RefFinal_phi,psum.Pt(),psum.Phi());
+	m_met[METSTACO][NOJES]          = (glob_isWsig) ? uncalibMET.et() :  MET_RefFinal_et; // temp fix for missing MET branches for data
+	m_metPhi[METSTACO][NOJES]       = (glob_isWsig) ? uncalibMET.phi() : MET_RefFinal_phi; // temp fix for missing MET branches for data
+	m_metDphi3body[METSTACO][NOJES] = fabs(dPhi(m_metPhi[METSTACO][NOJES],psum.Phi()));
+	m_metMt[METSTACO][NOJES]        = mT(m_met[METSTACO][NOJES],m_metPhi[METSTACO][NOJES],psum.Pt(),psum.Phi());
 	
-	m_mumet          = MET_Muons_et;
-        m_mumetPhi       = MET_Muons_phi;
-        m_mumetDphi3body = fabs(dPhi(MET_Muons_phi,psum.Phi()));
-        m_mumetMt        = mT(MET_Muons_et,MET_Muons_phi,psum.Pt(),psum.Phi());
+	m_met[METMUONS][NOJES]          = uncalibMUMET.et();
+	m_metPhi[METMUONS][NOJES]       = uncalibMUMET.phi();
+	m_metDphi3body[METMUONS][NOJES] = fabs(dPhi(m_metPhi[METMUONS][NOJES],psum.Phi()));
+	m_metMt[METMUONS][NOJES]        = mT(m_met[METMUONS][NOJES],m_metPhi[METMUONS][NOJES],psum.Pt(),psum.Phi());
 
 	if(!skim)
 	{
-		m_met_jes_nominal          = calibMET_nominal.et();
-		m_metPhi_jes_nominal       = calibMET_nominal.phi();
-		m_metDphi3body_jes_nominal = fabs(dPhi(calibMET_nominal.phi(),psum.Phi()));
-		m_metMt_jes_nominal        = mT(calibMET_nominal.et(),calibMET_nominal.phi(),psum.Pt(),psum.Phi());
+		m_met[METSTACO][NOMINAL]          = calibMET_nominal.et();
+		m_metPhi[METSTACO][NOMINAL]       = calibMET_nominal.phi();
+		m_metDphi3body[METSTACO][NOMINAL] = fabs(dPhi(calibMET_nominal.phi(),psum.Phi()));
+		m_metMt[METSTACO][NOMINAL]        = mT(calibMET_nominal.et(),calibMET_nominal.phi(),psum.Pt(),psum.Phi());
 		
-		m_met_jes_up          = calibMET_jes_up.et();
-		m_metPhi_jes_up       = calibMET_jes_up.phi();
-		m_metDphi3body_jes_up = fabs(dPhi(calibMET_jes_up.phi(),psum.Phi()));
-		m_metMt_jes_up        = mT(calibMET_jes_up.et(),calibMET_jes_up.phi(),psum.Pt(),psum.Phi());
+		m_met[METSTACO][JESUP]          = calibMET_jes_up.et();
+		m_metPhi[METSTACO][JESUP]       = calibMET_jes_up.phi();
+		m_metDphi3body[METSTACO][JESUP] = fabs(dPhi(calibMET_jes_up.phi(),psum.Phi()));
+		m_metMt[METSTACO][JESUP]        = mT(calibMET_jes_up.et(),calibMET_jes_up.phi(),psum.Pt(),psum.Phi());
 		
-		m_met_jes_dwn          = calibMET_jes_dwn.et();
-		m_metPhi_jes_dwn       = calibMET_jes_dwn.phi();
-		m_metDphi3body_jes_dwn = fabs(dPhi(calibMET_jes_dwn.phi(),psum.Phi()));
-		m_metMt_jes_dwn        = mT(calibMET_jes_dwn.et(),calibMET_jes_dwn.phi(),psum.Pt(),psum.Phi());
+		m_met[METSTACO][JESDWN]          = calibMET_jes_dwn.et();
+		m_metPhi[METSTACO][JESDWN]       = calibMET_jes_dwn.phi();
+		m_metDphi3body[METSTACO][JESDWN] = fabs(dPhi(calibMET_jes_dwn.phi(),psum.Phi()));
+		m_metMt[METSTACO][JESDWN]        = mT(calibMET_jes_dwn.et(),calibMET_jes_dwn.phi(),psum.Pt(),psum.Phi());
 		
-		m_met_jer_up          = calibMET_jer_up.et();
-		m_metPhi_jer_up       = calibMET_jer_up.phi();
-		m_metDphi3body_jer_up = fabs(dPhi(calibMET_jer_up.phi(),psum.Phi()));
-		m_metMt_jer_up        = mT(calibMET_jer_up.et(),calibMET_jer_up.phi(),psum.Pt(),psum.Phi());
+		m_met[METSTACO][JERUP]          = calibMET_jer_up.et();
+		m_metPhi[METSTACO][JERUP]       = calibMET_jer_up.phi();
+		m_metDphi3body[METSTACO][JERUP] = fabs(dPhi(calibMET_jer_up.phi(),psum.Phi()));
+		m_metMt[METSTACO][JERUP]        = mT(calibMET_jer_up.et(),calibMET_jer_up.phi(),psum.Pt(),psum.Phi());
 		
-		m_met_jer_dwn          = calibMET_jer_dwn.et();
-		m_metPhi_jer_dwn       = calibMET_jer_dwn.phi();
-		m_metDphi3body_jer_dwn = fabs(dPhi(calibMET_jer_dwn.phi(),psum.Phi()));
-		m_metMt_jer_dwn        = mT(calibMET_jer_dwn.et(),calibMET_jer_dwn.phi(),psum.Pt(),psum.Phi());
+		m_met[METSTACO][JERDWN]          = calibMET_jer_dwn.et();
+		m_metPhi[METSTACO][JERDWN]       = calibMET_jer_dwn.phi();
+		m_metDphi3body[METSTACO][JERDWN] = fabs(dPhi(calibMET_jer_dwn.phi(),psum.Phi()));
+		m_metMt[METSTACO][JERDWN]        = mT(calibMET_jer_dwn.et(),calibMET_jer_dwn.phi(),psum.Pt(),psum.Phi());
 
 
 		
 
-		m_mumet_jes_nominal          = calibMUMET_nominal.et();
-                m_mumetPhi_jes_nominal       = calibMUMET_nominal.phi();
-                m_mumetDphi3body_jes_nominal = fabs(dPhi(calibMUMET_nominal.phi(),psum.Phi()));
-                m_mumetMt_jes_nominal        = mT(calibMUMET_nominal.et(),calibMUMET_nominal.phi(),psum.Pt(),psum.Phi());
-
-                m_mumet_jes_up          = calibMUMET_jes_up.et();
-                m_mumetPhi_jes_up       = calibMUMET_jes_up.phi();
-                m_mumetDphi3body_jes_up = fabs(dPhi(calibMUMET_jes_up.phi(),psum.Phi()));
-                m_mumetMt_jes_up        = mT(calibMUMET_jes_up.et(),calibMUMET_jes_up.phi(),psum.Pt(),psum.Phi());
-
-                m_mumet_jes_dwn          = calibMUMET_jes_dwn.et();
-                m_mumetPhi_jes_dwn       = calibMUMET_jes_dwn.phi();
-                m_mumetDphi3body_jes_dwn = fabs(dPhi(calibMUMET_jes_dwn.phi(),psum.Phi()));
-                m_mumetMt_jes_dwn        = mT(calibMUMET_jes_dwn.et(),calibMUMET_jes_dwn.phi(),psum.Pt(),psum.Phi());
-
-                m_mumet_jer_up          = calibMUMET_jer_up.et();
-                m_mumetPhi_jer_up       = calibMUMET_jer_up.phi();
-                m_mumetDphi3body_jer_up = fabs(dPhi(calibMUMET_jer_up.phi(),psum.Phi()));
-                m_mumetMt_jer_up        = mT(calibMUMET_jer_up.et(),calibMUMET_jer_up.phi(),psum.Pt(),psum.Phi());
-
-                m_mumet_jer_dwn          = calibMUMET_jer_dwn.et();
-                m_mumetPhi_jer_dwn       = calibMUMET_jer_dwn.phi();
-                m_mumetDphi3body_jer_dwn = fabs(dPhi(calibMUMET_jer_dwn.phi(),psum.Phi()));
-                m_mumetMt_jer_dwn        = mT(calibMUMET_jer_dwn.et(),calibMUMET_jer_dwn.phi(),psum.Pt(),psum.Phi());
+		m_met[METMUONS][NOMINAL]          = calibMUMET_nominal.et();
+		m_metPhi[METMUONS][NOMINAL]       = calibMUMET_nominal.phi();
+		m_metDphi3body[METMUONS][NOMINAL] = fabs(dPhi(calibMUMET_nominal.phi(),psum.Phi()));
+		m_metMt[METMUONS][NOMINAL]        = mT(calibMUMET_nominal.et(),calibMUMET_nominal.phi(),psum.Pt(),psum.Phi());
+		
+		m_met[METMUONS][JESUP]          = calibMUMET_jes_up.et();
+		m_metPhi[METMUONS][JESUP]       = calibMUMET_jes_up.phi();
+		m_metDphi3body[METMUONS][JESUP] = fabs(dPhi(calibMUMET_jes_up.phi(),psum.Phi()));
+		m_metMt[METMUONS][JESUP]        = mT(calibMUMET_jes_up.et(),calibMUMET_jes_up.phi(),psum.Pt(),psum.Phi());
+		
+		m_met[METMUONS][JESDWN]          = calibMUMET_jes_dwn.et();
+		m_metPhi[METMUONS][JESDWN]       = calibMUMET_jes_dwn.phi();
+		m_metDphi3body[METMUONS][JESDWN] = fabs(dPhi(calibMUMET_jes_dwn.phi(),psum.Phi()));
+		m_metMt[METMUONS][JESDWN]        = mT(calibMUMET_jes_dwn.et(),calibMUMET_jes_dwn.phi(),psum.Pt(),psum.Phi());
+		
+		m_met[METMUONS][JERUP]          = calibMUMET_jer_up.et();
+		m_metPhi[METMUONS][JERUP]       = calibMUMET_jer_up.phi();
+		m_metDphi3body[METMUONS][JERUP] = fabs(dPhi(calibMUMET_jer_up.phi(),psum.Phi()));
+		m_metMt[METMUONS][JERUP]        = mT(calibMUMET_jer_up.et(),calibMUMET_jer_up.phi(),psum.Pt(),psum.Phi());
+		
+		m_met[METMUONS][JERDWN]          = calibMUMET_jer_dwn.et();
+		m_metPhi[METMUONS][JERDWN]       = calibMUMET_jer_dwn.phi();
+		m_metDphi3body[METMUONS][JERDWN] = fabs(dPhi(calibMUMET_jer_dwn.phi(),psum.Phi()));
+		m_metMt[METMUONS][JERDWN]        = mT(calibMUMET_jer_dwn.et(),calibMUMET_jer_dwn.phi(),psum.Pt(),psum.Phi());
 	}
 	
 	_DEBUG("");
 
 	// sort the jets
+	multimap<double,int> pt2i_uncalib;
 	multimap<double,int> pt2i;
-	multimap<double,int> uncalib_pt2i;
+	multimap<double,int> pt2i_jes_up;
+	multimap<double,int> pt2i_jes_dwn;
+	multimap<double,int> pt2i_jer_up;
+	multimap<double,int> pt2i_jer_dwn;
+	vector<int> ijet_uncalib;
 	vector<int> ijet;
-	vector<int> uncalib_ijet;
+	vector<int> ijet_jes_up;
+	vector<int> ijet_jes_dwn;
+	vector<int> ijet_jer_up;
+	vector<int> ijet_jer_dwn;
 	for(int i=0 ; i<AntiKt4LCTopoJets_n ; i++)
 	{
 		if(!isGoodJet(i,JetQuality))  continue;
 		
-		uncalib_pt2i.insert(make_pair(AntiKt4LCTopoJets_pt->at(i),i));
+		pt2i_uncalib.insert(make_pair(AntiKt4LCTopoJets_pt->at(i),i));
 
-		if(!skim && glob_isWsig) pt2i.insert(make_pair(AntiKt4LCTopoJets_calibrated_pt->at(i),i));
-		else                     pt2i.insert(make_pair(AntiKt4LCTopoJets_pt->at(i),i));
+		if(!skim && glob_doJetCalib)
+		{
+			pt2i.insert(make_pair(AntiKt4LCTopoJets_calibrated_pt->at(i),i));
+			
+			TLorentzVector Jet;
+			Jet = calibJets[i]; Jet*=(1+calibJetsUnc[i]);   pt2i_jes_up.insert(make_pair(Jet.Pt(),i));
+			Jet = calibJets[i]; Jet*=(1-calibJetsUnc[i]);   pt2i_jes_dwn.insert(make_pair(Jet.Pt(),i));
+			Jet = calibJets[i]; Jet*=(1+smearedJetsUnc[i]); pt2i_jer_up.insert(make_pair(Jet.Pt(),i));
+			Jet = calibJets[i]; Jet*=(1-smearedJetsUnc[i]); pt2i_jer_dwn.insert(make_pair(Jet.Pt(),i));
+		}
 	}
-	for(multimap<double,int>::reverse_iterator rit=pt2i.rbegin() ; rit!=pt2i.rend() ; ++rit) ijet.push_back(rit->second);
-	for(multimap<double,int>::reverse_iterator rit=uncalib_pt2i.rbegin() ; rit!=uncalib_pt2i.rend() ; ++rit) uncalib_ijet.push_back(rit->second);
-	unsigned int njet = ijet.size();
+	for(multimap<double,int>::reverse_iterator rit=pt2i_uncalib.rbegin() ; rit!=pt2i_uncalib.rend() ; ++rit) ijet_uncalib.push_back(rit->second);
+	for(multimap<double,int>::reverse_iterator rit=pt2i.rbegin()         ; rit!=pt2i.rend()         ; ++rit) ijet.push_back(rit->second);
+	for(multimap<double,int>::reverse_iterator rit=pt2i_jes_up.rbegin()  ; rit!=pt2i_jes_up.rend()  ; ++rit) ijet_jes_up.push_back(rit->second);
+	for(multimap<double,int>::reverse_iterator rit=pt2i_jes_dwn.rbegin() ; rit!=pt2i_jes_dwn.rend() ; ++rit) ijet_jes_dwn.push_back(rit->second);
+	for(multimap<double,int>::reverse_iterator rit=pt2i_jer_up.rbegin()  ; rit!=pt2i_jer_up.rend()  ; ++rit) ijet_jer_up.push_back(rit->second);
+	for(multimap<double,int>::reverse_iterator rit=pt2i_jer_dwn.rbegin() ; rit!=pt2i_jer_dwn.rend() ; ++rit) ijet_jer_dwn.push_back(rit->second);
+	unsigned int njet = ijet.size(); // same for all options
 
 	_DEBUG("");
 
-	double uncalib_sumptj12     = -999.;
-        double uncalib_dPhiJet1Jet2 = -999.; double uncalib_dRJet1Jet2 = -999.;
-        double uncalib_dPhi3muJet1  = -999.; double uncalib_dR3muJet1  = -999.;
-	double sumptj12     = -999.;
-	double dPhiJet1Jet2 = -999.; double dRJet1Jet2 = -999.;
-	double dPhi3muJet1  = -999.; double dR3muJet1  = -999.;
-	double sumptj12_jes_up     = -999.;
-	double dPhiJet1Jet2_jes_up = -999.; double dRJet1Jet2_jes_up = -999.;
-	double dPhi3muJet1_jes_up  = -999.; double dR3muJet1_jes_up  = -999.;
-	double sumptj12_jes_dwn     = -999.;
-	double dPhiJet1Jet2_jes_dwn = -999.; double dRJet1Jet2_jes_dwn = -999.;
-	double dPhi3muJet1_jes_dwn  = -999.; double dR3muJet1_jes_dwn  = -999.;
-	double sumptj12_jer_up     = -999.;
-	double dPhiJet1Jet2_jer_up = -999.; double dRJet1Jet2_jer_up = -999.;
-	double dPhi3muJet1_jer_up  = -999.; double dR3muJet1_jer_up  = -999.;
-	double sumptj12_jer_dwn     = -999.;
-	double dPhiJet1Jet2_jer_dwn = -999.; double dRJet1Jet2_jer_dwn = -999.;
-	double dPhi3muJet1_jer_dwn  = -999.; double dR3muJet1_jer_dwn  = -999.;
-	TLorentzVector J1_jes_up, J2_jes_up;
-	TLorentzVector J1_jes_dwn, J2_jes_dwn;
-	TLorentzVector J1_jer_up, J2_jer_up;
-	TLorentzVector J1_jer_dwn, J2_jer_dwn;
 	if(njet>0)
-	{
-		int j1 = ijet[0];
-		int ucj1 = uncalib_ijet[0];
-
-		double uncalib_ptj1  = AntiKt4LCTopoJets_pt->at(ucj1);
-                double uncalib_phij1 = AntiKt4LCTopoJets_phi->at(ucj1);
-                double uncalib_etaj1 = AntiKt4LCTopoJets_eta->at(ucj1);
-
-		double ptj1  = (!skim && glob_isWsig) ? AntiKt4LCTopoJets_calibrated_pt->at(j1)  : AntiKt4LCTopoJets_pt->at(j1);
-		double phij1 = (!skim && glob_isWsig) ? AntiKt4LCTopoJets_calibrated_phi->at(j1) : AntiKt4LCTopoJets_phi->at(j1);
-		double etaj1 = (!skim && glob_isWsig) ? AntiKt4LCTopoJets_calibrated_eta->at(j1) : AntiKt4LCTopoJets_eta->at(j1);
-
-		dPhi3muJet1 = fabs(dPhi(psum.Phi(),phij1));
-		dR3muJet1   = deltaR(psum.Eta(),psum.Phi(),etaj1,phij1);
+	{	
+		int j1_uncalib = ijet_uncalib[0];
+		int j1         = ijet[0];
+		int j1_jes_up  = ijet_jes_up[0];
+		int j1_jes_dwn = ijet_jes_dwn[0];
+		int j1_jer_up  = ijet_jer_up[0];
+		int j1_jer_dwn = ijet_jer_dwn[0];
 		
-		uncalib_dPhi3muJet1 = fabs(dPhi(psum.Phi(),uncalib_phij1));
-                uncalib_dR3muJet1   = deltaR(psum.Eta(),psum.Phi(),uncalib_etaj1,uncalib_phij1);
+		TLorentzVector Jet1_jes_up, Jet1_jes_dwn, Jet1_jer_up, Jet1_jer_dwn;
+		Jet1_jes_up  = calibJets[j1_jes_up];  Jet1_jes_up*=(1+calibJetsUnc[j1_jes_up]);
+		Jet1_jes_dwn = calibJets[j1_jes_dwn]; Jet1_jes_dwn*=(1-calibJetsUnc[j1_jes_dwn]);
+		Jet1_jer_up  = calibJets[j1_jer_up];  Jet1_jer_up*=(1+smearedJetsUnc[j1_jer_up]);
+		Jet1_jer_dwn = calibJets[j1_jer_dwn]; Jet1_jer_dwn*=(1-smearedJetsUnc[j1_jer_dwn]);
 
-		if(!skim && glob_isWsig)
-		{
-			J1_jes_up  = calibJets[j1]*(1+calibJetsUnc[j1]);
-			J1_jes_dwn = calibJets[j1]*(1-calibJetsUnc[j1]);
-			J1_jer_up  = calibJets[j1]*(1+smearedJetsUnc[j1]);
-			J1_jer_dwn = calibJets[j1]*(1-smearedJetsUnc[j1]);
-			dPhi3muJet1_jes_up = fabs(dPhi(psum.Phi(),J1_jes_up.Phi()));
-			dR3muJet1_jes_up   = deltaR(psum.Eta(),psum.Phi(),J1_jes_up.Eta(),J1_jes_up.Phi());
-			dPhi3muJet1_jes_dwn = fabs(dPhi(psum.Phi(),J1_jes_dwn.Phi()));
-			dR3muJet1_jes_dwn   = deltaR(psum.Eta(),psum.Phi(),J1_jes_dwn.Eta(),J1_jes_dwn.Phi());			
-			dPhi3muJet1_jer_up = fabs(dPhi(psum.Phi(),J1_jer_up.Phi()));
-			dR3muJet1_jer_up   = deltaR(psum.Eta(),psum.Phi(),J1_jer_up.Eta(),J1_jer_up.Phi());
-			dPhi3muJet1_jer_dwn = fabs(dPhi(psum.Phi(),J1_jer_dwn.Phi()));
-			dR3muJet1_jer_dwn   = deltaR(psum.Eta(),psum.Phi(),J1_jer_dwn.Eta(),J1_jer_dwn.Phi());
-		}
+		double ptj1_uncalib  = AntiKt4LCTopoJets_pt->at(j1_uncalib);
+		double phij1_uncalib = AntiKt4LCTopoJets_phi->at(j1_uncalib);
+		double etaj1_uncalib = AntiKt4LCTopoJets_eta->at(j1_uncalib);
+
+		double ptj1  = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_calibrated_pt->at(j1)  : -1;
+		double phij1 = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_calibrated_phi->at(j1) : -1;
+		double etaj1 = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_calibrated_eta->at(j1) : -1;
+		
+		double ptj1_jes_up  = (!skim && glob_doJetCalib) ? Jet1_jes_up.Pt()  : -1;
+		double phij1_jes_up = (!skim && glob_doJetCalib) ? Jet1_jes_up.Phi() : -1;
+		double etaj1_jes_up = (!skim && glob_doJetCalib) ? Jet1_jes_up.Eta() : -1;
+		
+		double ptj1_jes_dwn  = (!skim && glob_doJetCalib) ? Jet1_jes_dwn.Pt()  : -1;
+		double phij1_jes_dwn = (!skim && glob_doJetCalib) ? Jet1_jes_dwn.Phi() : -1;
+		double etaj1_jes_dwn = (!skim && glob_doJetCalib) ? Jet1_jes_dwn.Eta() : -1;
+		
+		double ptj1_jer_up  = (!skim && glob_doJetCalib) ? Jet1_jer_up.Pt()  : -1;
+		double phij1_jer_up = (!skim && glob_doJetCalib) ? Jet1_jer_up.Phi() : -1;
+		double etaj1_jer_up = (!skim && glob_doJetCalib) ? Jet1_jer_up.Eta() : -1;
+		
+		double ptj1_jer_dwn  = (!skim && glob_doJetCalib) ? Jet1_jer_dwn.Pt()  : -1;
+		double phij1_jer_dwn = (!skim && glob_doJetCalib) ? Jet1_jer_dwn.Phi() : -1;
+		double etaj1_jer_dwn = (!skim && glob_doJetCalib) ? Jet1_jer_dwn.Eta() : -1;
+
+		m_jetDphi3body[NOJES] = fabs(dPhi(psum.Phi(),phij1_uncalib));
+		m_jetDR3body[NOJES]   = deltaR(psum.Eta(),psum.Phi(),etaj1_uncalib,phij1_uncalib);
+
+		m_jetDphi3body[NOMINAL] = (!skim && glob_doJetCalib) ? fabs(dPhi(psum.Phi(),phij1))              : -1;
+		m_jetDR3body[NOMINAL]   = (!skim && glob_doJetCalib) ? deltaR(psum.Eta(),psum.Phi(),etaj1,phij1) : -1;
+		
+		m_jetDphi3body[JESUP]  = (!skim && glob_doJetCalib) ? fabs(dPhi(psum.Phi(),phij1_jes_up))                     : -1;
+		m_jetDR3body[JESUP]    = (!skim && glob_doJetCalib) ? deltaR(psum.Eta(),psum.Phi(),etaj1_jes_up,phij1_jes_up) : -1;
+		
+		m_jetDphi3body[JESDWN] = (!skim && glob_doJetCalib) ? fabs(dPhi(psum.Phi(),phij1_jes_dwn))                      : -1;
+		m_jetDR3body[JESDWN]   = (!skim && glob_doJetCalib) ? deltaR(psum.Eta(),psum.Phi(),etaj1_jes_dwn,phij1_jes_dwn) : -1;
+		
+		m_jetDphi3body[JERUP]  = (!skim && glob_doJetCalib) ? fabs(dPhi(psum.Phi(),phij1_jer_up))                     : -1;
+		m_jetDR3body[JERUP]    = (!skim && glob_doJetCalib) ? deltaR(psum.Eta(),psum.Phi(),etaj1_jer_up,phij1_jer_up) : -1;
+		
+		m_jetDphi3body[JERDWN] = (!skim && glob_doJetCalib) ? fabs(dPhi(psum.Phi(),phij1_jer_dwn))                      : -1;
+		m_jetDR3body[JERDWN]   = (!skim && glob_doJetCalib) ? deltaR(psum.Eta(),psum.Phi(),etaj1_jer_dwn,phij1_jer_dwn) : -1;
 		
 		_DEBUG("");
 
 		if(njet>1)
-		{
-			int j2 = ijet[1];
-			int ucj2 = uncalib_ijet[1];
-
-			double uncalib_ptj2  = AntiKt4LCTopoJets_pt->at(ucj2);
-			double uncalib_phij2 = AntiKt4LCTopoJets_phi->at(ucj2);
-			double uncalib_etaj2 = AntiKt4LCTopoJets_eta->at(ucj2);
-
-			double ptj2  = (!skim && glob_isWsig) ? AntiKt4LCTopoJets_calibrated_pt->at(j2)  : AntiKt4LCTopoJets_pt->at(j2);
-			double phij2 = (!skim && glob_isWsig) ? AntiKt4LCTopoJets_calibrated_phi->at(j2) : AntiKt4LCTopoJets_phi->at(j2);
-			double etaj2 = (!skim && glob_isWsig) ? AntiKt4LCTopoJets_calibrated_eta->at(j2) : AntiKt4LCTopoJets_eta->at(j2);
-
-			sumptj12     = ptj1+ptj2;
-			dPhiJet1Jet2 = fabs(dPhi(phij1,phij2));
-			dRJet1Jet2   = deltaR(etaj1,phij1,etaj2,phij2);
-
-			uncalib_sumptj12     = uncalib_ptj1+uncalib_ptj2;
-                        uncalib_dPhiJet1Jet2 = fabs(dPhi(uncalib_phij1,uncalib_phij2));
-                        uncalib_dRJet1Jet2   = deltaR(uncalib_etaj1,uncalib_phij1,uncalib_etaj2,uncalib_phij2);
+		{	
+			int j2_uncalib = ijet_uncalib[1];
+			int j2         = ijet[1];
+			int j2_jes_up  = ijet_jes_up[1];
+			int j2_jes_dwn = ijet_jes_dwn[1];
+			int j2_jer_up  = ijet_jer_up[1];
+			int j2_jer_dwn = ijet_jer_dwn[1];
 			
-			if(!skim && glob_isWsig)
-			{
-				J2_jes_up  = calibJets[j2]*(1+calibJetsUnc[j2]);
-				J2_jes_dwn = calibJets[j2]*(1-calibJetsUnc[j2]);
-				J2_jer_up  = calibJets[j2]*(1+smearedJetsUnc[j2]);
-				J2_jer_dwn = calibJets[j2]*(1-smearedJetsUnc[j2]);
-				sumptj12_jes_up     = J1_jes_up.Pt()+J2_jes_up.Pt();
-				dPhiJet1Jet2_jes_up = fabs(dPhi(J1_jes_up.Phi(),J2_jes_up.Phi()));
-				dRJet1Jet2_jes_up   = deltaR(J1_jes_up.Eta(),J1_jes_up.Phi(),J2_jes_up.Eta(),J2_jes_up.Phi());
-				sumptj12_jes_dwn     = J1_jes_dwn.Pt()+J2_jes_dwn.Pt();
-				dPhiJet1Jet2_jes_dwn = fabs(dPhi(J1_jes_dwn.Phi(),J2_jes_dwn.Phi()));
-				dRJet1Jet2_jes_dwn   = deltaR(J1_jes_dwn.Eta(),J1_jes_dwn.Phi(),J2_jes_dwn.Eta(),J2_jes_dwn.Phi());
-				sumptj12_jer_up     = J1_jer_up.Pt()+J2_jer_up.Pt();
-				dPhiJet1Jet2_jer_up = fabs(dPhi(J1_jer_up.Phi(),J2_jer_up.Phi()));
-				dRJet1Jet2_jer_up   = deltaR(J1_jer_up.Eta(),J1_jer_up.Phi(),J2_jer_up.Eta(),J2_jer_up.Phi());
-				sumptj12_jer_dwn     = J1_jer_dwn.Pt()+J2_jer_dwn.Pt();
-				dPhiJet1Jet2_jer_dwn = fabs(dPhi(J1_jer_dwn.Phi(),J2_jer_dwn.Phi()));
-				dRJet1Jet2_jer_dwn   = deltaR(J1_jer_dwn.Eta(),J1_jer_dwn.Phi(),J2_jer_dwn.Eta(),J2_jer_dwn.Phi());
-			}
+			TLorentzVector Jet2_jes_up, Jet2_jes_dwn, Jet2_jer_up, Jet2_jer_dwn;
+			Jet2_jes_up  = calibJets[j2_jes_up];  Jet2_jes_up*=(1+calibJetsUnc[j2_jes_up]);
+			Jet2_jes_dwn = calibJets[j2_jes_dwn]; Jet2_jes_dwn*=(1-calibJetsUnc[j2_jes_dwn]);
+			Jet2_jer_up  = calibJets[j2_jer_up];  Jet2_jer_up*=(1+smearedJetsUnc[j2_jer_up]);
+			Jet2_jer_dwn = calibJets[j2_jer_dwn]; Jet2_jer_dwn*=(1-smearedJetsUnc[j2_jer_dwn]);
+
+			double ptj2_uncalib  = AntiKt4LCTopoJets_pt->at(j2_uncalib);
+			double phij2_uncalib = AntiKt4LCTopoJets_phi->at(j2_uncalib);
+			double etaj2_uncalib = AntiKt4LCTopoJets_eta->at(j2_uncalib);
+
+			double ptj2  = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_calibrated_pt->at(j2)  : -1;
+			double phij2 = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_calibrated_phi->at(j2) : -1;
+			double etaj2 = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_calibrated_eta->at(j2) : -1;
+
+			double ptj2_jes_up  = (!skim && glob_doJetCalib) ? Jet2_jes_up.Pt()  : -1;
+			double phij2_jes_up = (!skim && glob_doJetCalib) ? Jet2_jes_up.Phi() : -1;
+			double etaj2_jes_up = (!skim && glob_doJetCalib) ? Jet2_jes_up.Eta() : -1;
+
+			double ptj2_jes_dwn  = (!skim && glob_doJetCalib) ? Jet2_jes_dwn.Pt()  : -1;
+			double phij2_jes_dwn = (!skim && glob_doJetCalib) ? Jet2_jes_dwn.Phi() : -1;
+			double etaj2_jes_dwn = (!skim && glob_doJetCalib) ? Jet2_jes_dwn.Eta() : -1;
+
+			double ptj2_jer_up  = (!skim && glob_doJetCalib) ? Jet2_jer_up.Pt()  : -1;
+			double phij2_jer_up = (!skim && glob_doJetCalib) ? Jet2_jer_up.Phi() : -1;
+			double etaj2_jer_up = (!skim && glob_doJetCalib) ? Jet2_jer_up.Eta() : -1;
+
+			double ptj2_jer_dwn  = (!skim && glob_doJetCalib) ? Jet2_jer_dwn.Pt()  : -1;
+			double phij2_jer_dwn = (!skim && glob_doJetCalib) ? Jet2_jer_dwn.Phi() : -1;
+			double etaj2_jer_dwn = (!skim && glob_doJetCalib) ? Jet2_jer_dwn.Eta() : -1;
+
+			m_jetSumpt12[NOJES] = ptj1_uncalib+ptj2_uncalib;
+			m_jetDphi12[NOJES]  = fabs(dPhi(phij1_uncalib,phij2_uncalib));
+			m_jetDR12[NOJES]    = deltaR(etaj1_uncalib,phij1_uncalib,etaj2_uncalib,phij2_uncalib);
+
+			m_jetSumpt12[NOMINAL] = (!skim && glob_doJetCalib) ? ptj1+ptj2                       : -1;
+			m_jetDphi12[NOMINAL]  = (!skim && glob_doJetCalib) ? fabs(dPhi(phij1,phij2))         : -1;
+			m_jetDR12[NOMINAL]    = (!skim && glob_doJetCalib) ? deltaR(etaj1,phij1,etaj2,phij2) : -1;
+			
+			m_jetSumpt12[JESUP]  = (!skim && glob_doJetCalib) ? ptj1_jes_up+ptj2_jes_up                                     : -1;
+			m_jetDphi12[JESUP]   = (!skim && glob_doJetCalib) ? fabs(dPhi(phij1_jes_up,phij2_jes_up))                       : -1;
+			m_jetDR12[JESUP]     = (!skim && glob_doJetCalib) ? deltaR(etaj1_jes_up,phij1_jes_up,etaj2_jes_up,phij2_jes_up) : -1;
+			
+			m_jetSumpt12[JESDWN] = (!skim && glob_doJetCalib) ? ptj1_jes_dwn+ptj2_jes_dwn                                       : -1;
+			m_jetDphi12[JESDWN]  = (!skim && glob_doJetCalib) ? fabs(dPhi(phij1_jes_dwn,phij2_jes_dwn))                         : -1;
+			m_jetDR12[JESDWN]    = (!skim && glob_doJetCalib) ? deltaR(etaj1_jes_dwn,phij1_jes_dwn,etaj2_jes_dwn,phij2_jes_dwn) : -1;
+			
+			m_jetSumpt12[JERUP]  = (!skim && glob_doJetCalib) ? ptj1_jer_up+ptj2_jer_up                                     : -1;
+			m_jetDphi12[JERUP]   = (!skim && glob_doJetCalib) ? fabs(dPhi(phij1_jer_up,phij2_jer_up))                       : -1;
+			m_jetDR12[JERUP]     = (!skim && glob_doJetCalib) ? deltaR(etaj1_jer_up,phij1_jer_up,etaj2_jer_up,phij2_jer_up) : -1;
+			m_jetSumpt12[JERDWN] = (!skim && glob_doJetCalib) ? ptj1_jer_dwn+ptj2_jer_dwn                                       : -1;
+			m_jetDphi12[JERDWN]  = (!skim && glob_doJetCalib) ? fabs(dPhi(phij1_jer_dwn,phij2_jer_dwn))                         : -1;
+			m_jetDR12[JERDWN]    = (!skim && glob_doJetCalib) ? deltaR(etaj1_jer_dwn,phij1_jer_dwn,etaj2_jer_dwn,phij2_jer_dwn) : -1;
 		}
 	}
 	
@@ -8280,87 +8456,97 @@ if(!skim)
 
 	m_njets = (njet<5) ? njet : 4;
 	for(int i=0 ; i<m_njets ; ++i)
-	{
-		int j = ijet[i];
-		int ucj = uncalib_ijet[i];
-		
-		double ptj  = (!skim && glob_isWsig) ? AntiKt4LCTopoJets_calibrated_pt->at(j)  : AntiKt4LCTopoJets_pt->at(j);
-		double Ej   = (!skim && glob_isWsig) ? AntiKt4LCTopoJets_calibrated_E->at(j)   : AntiKt4LCTopoJets_E->at(j);
-		double mj   = (!skim && glob_isWsig) ? AntiKt4LCTopoJets_calibrated_m->at(j)   : AntiKt4LCTopoJets_m->at(j);
-		double etaj = (!skim && glob_isWsig) ? AntiKt4LCTopoJets_calibrated_eta->at(j) : AntiKt4LCTopoJets_eta->at(j);
-		double phij = (!skim && glob_isWsig) ? AntiKt4LCTopoJets_calibrated_phi->at(j) : AntiKt4LCTopoJets_phi->at(j);
-
-		double uncalib_ptj  = AntiKt4LCTopoJets_pt->at(ucj);
-                double uncalib_Ej   = AntiKt4LCTopoJets_E->at(ucj);
-                double uncalib_mj   = AntiKt4LCTopoJets_m->at(ucj);
-                double uncalib_etaj = AntiKt4LCTopoJets_eta->at(ucj);
-                double uncalib_phij = AntiKt4LCTopoJets_phi->at(ucj);
-		
-		m_jetPE[i].SetPtEtaPhiE(ptj,etaj,phij,Ej);
-		m_jetPM[i].SetPtEtaPhiM(ptj,etaj,phij,mj);
-		
-		m_uncalib_jetPE[i].SetPtEtaPhiE(uncalib_ptj,uncalib_etaj,uncalib_phij,uncalib_Ej);
-                m_uncalib_jetPM[i].SetPtEtaPhiM(uncalib_ptj,uncalib_etaj,uncalib_phij,uncalib_mj);
-
-		if(!skim && glob_isWsig)
-		{
-			m_jet_shiftJES[i] = calibJetsUnc[j];
-			m_jet_shiftJER[i] = smearedJetsUnc[j];
-		}
-		
-		m_jetMV1[i] = AntiKt4LCTopoJets_flavor_weight_MV1->at(j);
-		m_jetVtxFrac[i] = AntiKt4LCTopoJets_jvtxf->at(j);
-
-		m_uncalib_jetMV1[i] = AntiKt4LCTopoJets_flavor_weight_MV1->at(ucj);
-                m_uncalib_jetVtxFrac[i] = AntiKt4LCTopoJets_jvtxf->at(ucj);
-	}
-	if(m_njets>1)
 	{	
-		m_jetSumpt12 = sumptj12;
-		m_jetDphi12  = dPhiJet1Jet2;
-		m_jetDR12    = dRJet1Jet2;
+		int j_uncalib = ijet_uncalib[i];
+		int j         = ijet[i];
+		int j_jes_up  = ijet_jes_up[i];
+		int j_jes_dwn = ijet_jes_dwn[i];
+		int j_jer_up  = ijet_jer_up[i];
+		int j_jer_dwn = ijet_jer_dwn[i];
+		
+		TLorentzVector Jet_jes_up, Jet_jes_dwn, Jet_jer_up, Jet_jer_dwn;
+		Jet_jes_up  = calibJets[j_jes_up];  Jet_jes_up*=(1+calibJetsUnc[j_jes_up]);
+		Jet_jes_dwn = calibJets[j_jes_dwn]; Jet_jes_dwn*=(1-calibJetsUnc[j_jes_dwn]);
+		Jet_jer_up  = calibJets[j_jer_up];  Jet_jer_up*=(1+smearedJetsUnc[j_jer_up]);
+		Jet_jer_dwn = calibJets[j_jer_dwn]; Jet_jer_dwn*=(1-smearedJetsUnc[j_jer_dwn]);
 
-		m_uncalib_jetSumpt12 = uncalib_sumptj12;
-                m_uncalib_jetDphi12  = uncalib_dPhiJet1Jet2;
-                m_uncalib_jetDR12    = uncalib_dRJet1Jet2;
-
-		if(!skim && glob_isWsig)
-		{
-			m_jetSumpt12_jes_up = sumptj12_jes_up;
-			m_jetDphi12_jes_up  = dPhiJet1Jet2_jes_up;
-			m_jetDR12_jes_up    = dRJet1Jet2_jes_up;
-			m_jetSumpt12_jes_dwn = sumptj12_jes_dwn;
-			m_jetDphi12_jes_dwn  = dPhiJet1Jet2_jes_dwn;
-			m_jetDR12_jes_dwn    = dRJet1Jet2_jes_dwn;
-			
-			m_jetSumpt12_jer_up = sumptj12_jer_up;
-			m_jetDphi12_jer_up  = dPhiJet1Jet2_jer_up;
-			m_jetDR12_jer_up    = dRJet1Jet2_jer_up;
-			m_jetSumpt12_jer_dwn = sumptj12_jer_dwn;
-			m_jetDphi12_jer_dwn  = dPhiJet1Jet2_jer_dwn;
-			m_jetDR12_jer_dwn    = dRJet1Jet2_jer_dwn;
-		}
-	}
-	if(m_njets>0)
-	{
-		m_jetDphi3body = dPhi3muJet1;
-		m_jetDR3body   = dR3muJet1;
-
-		m_uncalib_jetDphi3body = uncalib_dPhi3muJet1;
-                m_uncalib_jetDR3body   = uncalib_dR3muJet1;
-
-		if(!skim && glob_isWsig)
-		{
-			m_jetDphi3body_jes_up = dPhi3muJet1_jes_up;
-			m_jetDR3body_jes_up   = dR3muJet1_jes_up;
-			m_jetDphi3body_jes_dwn = dPhi3muJet1_jes_dwn;
-			m_jetDR3body_jes_dwn   = dR3muJet1_jes_dwn;
-			
-			m_jetDphi3body_jer_up = dPhi3muJet1_jer_up;
-			m_jetDR3body_jer_up   = dR3muJet1_jer_up;
-			m_jetDphi3body_jer_dwn = dPhi3muJet1_jer_dwn;
-			m_jetDR3body_jer_dwn   = dR3muJet1_jer_dwn;
-		}
+		double ptj_uncalib  = AntiKt4LCTopoJets_pt->at(j_uncalib);
+		double Ej_uncalib   = AntiKt4LCTopoJets_E->at(j_uncalib);
+		double mj_uncalib   = AntiKt4LCTopoJets_m->at(j_uncalib);
+		double etaj_uncalib = AntiKt4LCTopoJets_eta->at(j_uncalib);
+		double phij_uncalib = AntiKt4LCTopoJets_phi->at(j_uncalib);
+		
+		double ptj  = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_calibrated_pt->at(j)  : -1;
+		double Ej   = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_calibrated_E->at(j)   : -1;
+		double mj   = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_calibrated_m->at(j)   : -1;
+		double etaj = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_calibrated_eta->at(j) : -1;
+		double phij = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_calibrated_phi->at(j) : -1;
+		
+		double ptj_jes_up  = (!skim && glob_doJetCalib) ? Jet_jes_up.Pt()  : -1;
+		double Ej_jes_up   = (!skim && glob_doJetCalib) ? Jet_jes_up.E()   : -1;
+		double mj_jes_up   = (!skim && glob_doJetCalib) ? Jet_jes_up.M()   : -1;
+		double etaj_jes_up = (!skim && glob_doJetCalib) ? Jet_jes_up.Eta() : -1;
+		double phij_jes_up = (!skim && glob_doJetCalib) ? Jet_jes_up.Phi() : -1;
+		
+		double ptj_jes_dwn  = (!skim && glob_doJetCalib) ? Jet_jes_dwn.Pt()  : -1;
+		double Ej_jes_dwn   = (!skim && glob_doJetCalib) ? Jet_jes_dwn.E()   : -1;
+		double mj_jes_dwn   = (!skim && glob_doJetCalib) ? Jet_jes_dwn.M()   : -1;
+		double etaj_jes_dwn = (!skim && glob_doJetCalib) ? Jet_jes_dwn.Eta() : -1;
+		double phij_jes_dwn = (!skim && glob_doJetCalib) ? Jet_jes_dwn.Phi() : -1;
+		
+		double ptj_jer_up  = (!skim && glob_doJetCalib) ? Jet_jer_up.Pt()  : -1;
+		double Ej_jer_up   = (!skim && glob_doJetCalib) ? Jet_jer_up.E()   : -1;
+		double mj_jer_up   = (!skim && glob_doJetCalib) ? Jet_jer_up.M()   : -1;
+		double etaj_jer_up = (!skim && glob_doJetCalib) ? Jet_jer_up.Eta() : -1;
+		double phij_jer_up = (!skim && glob_doJetCalib) ? Jet_jer_up.Phi() : -1;
+		
+		double ptj_jer_dwn  = (!skim && glob_doJetCalib) ? Jet_jer_dwn.Pt()   : -1;
+		double Ej_jer_dwn   = (!skim && glob_doJetCalib) ? Jet_jer_dwn.E()    : -1;
+		double mj_jer_dwn   = (!skim && glob_doJetCalib) ? Jet_jer_dwn.M()    : -1;
+		double etaj_jer_dwn = (!skim && glob_doJetCalib) ? Jet_jer_dwn.Eta()  : -1;
+		double phij_jer_dwn = (!skim && glob_doJetCalib) ? Jet_jer_dwn.Phi()  : -1;
+	
+		
+		m_jetPEall[NOJES][i].SetPtEtaPhiE(ptj_uncalib,etaj_uncalib,phij_uncalib,Ej_uncalib);
+		m_jetPMall[NOJES][i].SetPtEtaPhiM(ptj_uncalib,etaj_uncalib,phij_uncalib,mj_uncalib);
+		
+		m_jetPEall[NOMINAL][i].SetPtEtaPhiE(ptj,etaj,phij,Ej);
+		m_jetPMall[NOMINAL][i].SetPtEtaPhiM(ptj,etaj,phij,mj);
+		
+		m_jetPEall[JESUP][i].SetPtEtaPhiE(ptj_jes_up,etaj_jes_up,phij_jes_up,Ej_jes_up);
+		m_jetPMall[JESUP][i].SetPtEtaPhiM(ptj_jes_up,etaj_jes_up,phij_jes_up,mj_jes_up);
+	
+		m_jetPEall[JESDWN][i].SetPtEtaPhiE(ptj_jes_dwn,etaj_jes_dwn,phij_jes_dwn,Ej_jes_dwn);
+		m_jetPMall[JESDWN][i].SetPtEtaPhiM(ptj_jes_dwn,etaj_jes_dwn,phij_jes_dwn,mj_jes_dwn);
+		
+		m_jetPEall[JERUP][i].SetPtEtaPhiE(ptj_jer_up,etaj_jer_up,phij_jer_up,Ej_jer_up);
+		m_jetPMall[JERUP][i].SetPtEtaPhiM(ptj_jer_up,etaj_jer_up,phij_jer_up,mj_jer_up);
+        
+		m_jetPEall[JERDWN][i].SetPtEtaPhiE(ptj_jer_dwn,etaj_jer_dwn,phij_jer_dwn,Ej_jer_dwn);
+		m_jetPMall[JERDWN][i].SetPtEtaPhiM(ptj_jer_dwn,etaj_jer_dwn,phij_jer_dwn,mj_jer_dwn);
+		
+		
+		m_jetMV1all[NOJES][i]  = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_flavor_weight_MV1->at(j_uncalib) : -999;
+		m_jetVtxFall[NOJES][i] = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_jvtxf->at(j_uncalib)             : -999;
+		
+		m_jetMV1all[NOMINAL][i]  = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_flavor_weight_MV1->at(j)       : -999;
+		m_jetVtxFall[NOMINAL][i] = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_jvtxf->at(j)                   : -999;
+		
+		m_jetMV1all[JESUP][i]  = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_flavor_weight_MV1->at(j_jes_up)  : -999;
+		m_jetVtxFall[JESUP][i] = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_jvtxf->at(j_jes_up)              : -999;
+		
+		m_jetMV1all[JESDWN][i]  = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_flavor_weight_MV1->at(j_jes_dwn) : -999;
+		m_jetVtxFall[JESDWN][i] = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_jvtxf->at(j_jes_dwn)             : -999;
+		
+		m_jetMV1all[JERUP][i]  = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_flavor_weight_MV1->at(j_jer_up)   : -999;
+		m_jetVtxFall[JERUP][i] = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_jvtxf->at(j_jer_up)               : -999;
+		
+		m_jetMV1all[JERDWN][i]  = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_flavor_weight_MV1->at(j_jer_dwn) : -999;
+		m_jetVtxFall[JERDWN][i] = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_jvtxf->at(j_jer_dwn)             : -999;
+		
+		
+		m_jet_shiftJES[i] = (!skim && glob_isWsig) ? calibJetsUnc[j]   : 0.;
+		m_jet_shiftJER[i] = (!skim && glob_isWsig) ? smearedJetsUnc[j] : 0.;
 	}
 	
 	_DEBUG("");
@@ -9101,10 +9287,10 @@ bool acceptVtxMET(TString method, unsigned int vtx, vector<vertex>& vertices, TS
 	float vertex_cosTxy    = fabs(vtx_cosThetaXY->at(vtx)[pvindex]);
 	
 	// float met_reffinal_sumet   = MET_RefFinal_sumet;
-	// float met_reffinal_et      = MET_RefFinal_et;
-	// float met_reffinal_phi     = MET_RefFinal_phi;
-	float met_reffinal_mT      = mT(MET_RefFinal_et,MET_RefFinal_phi,pMuSum.Pt(),pMuSum.Phi());
-	float met_reffinal_dPhi3mu = fabs(dPhi(MET_RefFinal_phi,pMuSum.Phi()));
+	float met_reffinal_et      = (glob_isWsig) ? uncalibMET.et()  : MET_RefFinal_et; // temp fix for missing branches in data
+	float met_reffinal_phi     = (glob_isWsig) ? uncalibMET.phi() : MET_RefFinal_phi; // temp fix for missing branches in data
+	float met_reffinal_mT      = mT(met_reffinal_et,met_reffinal_phi,pMuSum.Pt(),pMuSum.Phi());
+	float met_reffinal_dPhi3mu = fabs(dPhi(met_reffinal_phi,pMuSum.Phi()));
 	
 	_DEBUG("");
 	
@@ -9112,7 +9298,7 @@ bool acceptVtxMET(TString method, unsigned int vtx, vector<vertex>& vertices, TS
 	//// fill some histos before cutting or applying the MVA ////
 	/////////////////////////////////////////////////////////////
 	histos[name+"_met_sumet"]->Fill(MET_RefFinal_sumet,weight);
-	histos[name+"_met_et"]->Fill(MET_RefFinal_et,weight);
+	histos[name+"_met_et"]->Fill(met_reffinal_et,weight);
 	histos[name+"_met_mt_et3mu"]->Fill(met_reffinal_mT,weight);
 	histos[name+"_met_dphi3mu"]->Fill(met_reffinal_dPhi3mu,weight);
 	histos[name+"_pvalue"]->Fill(vertex_pval,weight);
@@ -9253,7 +9439,8 @@ bool acceptVtxMET(TString method, unsigned int vtx, vector<vertex>& vertices, TS
 		// before any W cuts are applied
 		fillHistsMassPt3mu(vtx,name,"_before_W",histos,histos2,weight,mBlindMin,mBlindMax);
 		///////////////////////////////////////////////////////////////////////////////////
-		if(isCounter("nPassing_W_MET") && MET_RefFinal_et<15.*GeV2MeV) return false; //////
+		float met_adhoc = (glob_isWsig) ? uncalibMET.et() : MET_RefFinal_et; // temp fix for missing branches in data
+		if(isCounter("nPassing_W_MET") && met_adhoc<15.*GeV2MeV) return false; ////////////
 		incrementCounter("nPassing_W_MET",weight); ////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////////
 		fillHistsMassPt3mu(vtx,name,"_after_MET",histos,histos2,weight,mBlindMin,mBlindMax);
@@ -9815,7 +10002,8 @@ bool acceptHadClean(unsigned int vtx, TString name, TMapTSP2TH1& histos, TMapTSP
 	_DEBUG("");
 	
 	//////////////////////////////////////////////////////////////////////////////////////////
-	if(isCounter("nPassing_met_metLoose") && MET_RefFinal_et<10.*GeV2MeV) return false; //////
+	float met_adhoc = (glob_isWsig) ? uncalibMET.et() : MET_RefFinal_et; // temp fix for missing branches in data
+	if(isCounter("nPassing_met_metLoose") && met_adhoc<10.*GeV2MeV) return false; ////////////
 	incrementCounter("nPassing_met_metLoose",weight); ////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////////////
 
@@ -9936,17 +10124,15 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 	mBlindMaxGlob = mBlindMaxInitial;
 	
 	
-	if(name=="Wtaunu_3mu" || (isdata && !skim)) initializePileup(); // PU tool is needed for BCH cleaning !
+	// if(name=="Wtaunu_3mu" || (isdata && !skim)) initializePileup(); // PU tool is needed for BCH cleaning !
 	if(!skim)
 	{
+		initializePileup(); // PU tool is needed for BCH cleaning !
 		initBCH(isdata); // BCH cleaning should be used either for data or signal
-		if(name=="Wtaunu_3mu")
-		{
-			initJES(false);  // Jet Energy Scale
-			initJER();       // Jet Energy Resolution
-			initJUN();       // Jet Energy Scale uncertainty
-			initMET();       // MET Utility
-		}
+		initJES(isdata); // Jet Energy Scale
+		initJER();       // Jet Energy Resolution
+		initJUN();       // Jet Energy Scale uncertainty
+		initMET();       // MET Utility
 	}
 
 	
@@ -10023,7 +10209,7 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 		_DEBUG("");
 
 		// if(!skim && (isdata || name=="Wtaunu_3mu"))
-		if(!skim && name=="Wtaunu_3mu")
+		if(!skim)
 		{	
 			seedJER();
 			calibJets.clear();
@@ -10034,6 +10220,7 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 			calibJetsIndex.clear();
 			clearCalibratedJets();
 			
+			vector<TLorentzVector> jets_uncalibrated;
 			vector<TLorentzVector> jets_jes_nominal;
 			vector<TLorentzVector> jets_jes_up;
 			vector<TLorentzVector> jets_jes_dwn;
@@ -10046,6 +10233,10 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 			// cout << "\n\n--------- New Event, nJets=" << nJets << " ---------" << endl;
 			for(unsigned int jet=0 ; jet<nJets ; jet++)
 			{
+				TLorentzVector ucJet;
+				ucJet.SetPtEtaPhiE(AntiKt4LCTopoJets_pt->at(jet),AntiKt4LCTopoJets_eta->at(jet),AntiKt4LCTopoJets_phi->at(jet),AntiKt4LCTopoJets_E->at(jet));
+				jets_uncalibrated.push_back(ucJet);
+
 				TLorentzVector Jet = getJES(jet);
 				calibJets.push_back(Jet);
 				addCalibratedJet(Jet);
@@ -10080,11 +10271,12 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 			// cout << "Y: RefMuon=" << MET_RefMuon_ety << ", RefTau=" << MET_RefTau_ety << ", CellOut_Eflow=" << MET_CellOut_Eflow_ety << ", RefEle=" << MET_RefEle_ety << ", RefGamma=" << MET_RefGamma_ety << ", RefJet=" << MET_RefJet_ety << ", MuonBoy=" << MET_MuonBoy_ety << " --> Sum=" << METy << "  :  RefFinal=" << MET_RefFinal_ety << endl;
 			
 			// cout << "MET_RefFinal_et=" << MET_RefFinal_et << ", met_reffinal_et=" << met_RefFinal_et << endl;
-			setJetVectorPointers(jets_jes_nominal); calibMET_nominal = getMETU(METSTACO); calibMUMET_nominal = getMETU(METMUONS);
-			setJetVectorPointers(jets_jes_up);      calibMET_jes_up  = getMETU(METSTACO); calibMUMET_jes_up  = getMETU(METMUONS);
-			setJetVectorPointers(jets_jes_dwn);     calibMET_jes_dwn = getMETU(METSTACO); calibMUMET_jes_dwn = getMETU(METMUONS);
-			setJetVectorPointers(jets_jer_up);      calibMET_jer_up  = getMETU(METSTACO); calibMUMET_jer_up  = getMETU(METMUONS);
-			setJetVectorPointers(jets_jer_dwn);     calibMET_jer_dwn = getMETU(METSTACO); calibMUMET_jer_dwn = getMETU(METMUONS);
+			setJetVectorPointers(jets_uncalibrated); uncalibMET       = getMETU(METSTACO); uncalibMUMET       = getMETU(METMUONS);
+			setJetVectorPointers(jets_jes_nominal);  calibMET_nominal = getMETU(METSTACO); calibMUMET_nominal = getMETU(METMUONS);
+			setJetVectorPointers(jets_jes_up);       calibMET_jes_up  = getMETU(METSTACO); calibMUMET_jes_up  = getMETU(METMUONS);
+			setJetVectorPointers(jets_jes_dwn);      calibMET_jes_dwn = getMETU(METSTACO); calibMUMET_jes_dwn = getMETU(METMUONS);
+			setJetVectorPointers(jets_jer_up);       calibMET_jer_up  = getMETU(METSTACO); calibMUMET_jer_up  = getMETU(METMUONS);
+			setJetVectorPointers(jets_jer_dwn);      calibMET_jer_dwn = getMETU(METSTACO); calibMUMET_jer_dwn = getMETU(METMUONS);
 			
 			// setJetVectorPointers(calibJets,calibJetsUnc,NOSHIFT);    calibMET_nominal = getMETU();
 			// setJetVectorPointers(calibJets,calibJetsUnc,SHIFTUP);    calibMET_jes_up  = getMETU();
@@ -10375,23 +10567,23 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 			        //int itrk2 = src.trkIndex[1];
 			        //int itrk3 = src.trkIndex[2];
 
-				TLorentzVector pMuSum = getTlv3mu(vtx);
-				double mt = mT(MET_RefFinal_et,MET_RefFinal_phi,pMuSum.Pt(),pMuSum.Phi());
+				//TLorentzVector pMuSum = getTlv3mu(vtx);
+				//double mt = mT(MET_RefFinal_et,MET_RefFinal_phi,pMuSum.Pt(),pMuSum.Phi());
 				
-				if(isCounter("nPassing_skim2_m3mu") && mass>4.5*GeV2MeV) continue;
+				if(isCounter("nPassing_skim2_m3mu") && mass>5.*GeV2MeV) continue;
 				incrementCounter("nPassing_skim2_m3mu",wgt);
 
-				if(isCounter("nPassing_skim2_pT3mu") && vtx_pt->at(vtx)<7.*GeV2MeV) continue;
+				if(isCounter("nPassing_skim2_pT3mu") && vtx_pt->at(vtx)<10.*GeV2MeV) continue;
 				incrementCounter("nPassing_skim2_pT3mu",wgt);
 			
 				//if(isCounter("nPassing_skim2_mcp") && MCP(itrk1)+MCP(itrk2)+MCP(itrk3)!=3) continue;
 				//incrementCounter("nPassing_skim2_mcp",wgt);
 				
-				if(isCounter("nPassing_skim2_met") && MET_RefFinal_et<7.*GeV2MeV) continue;
-				if(skim) incrementCounter("nPassing_skim2_met",wgt);
+				//if(isCounter("nPassing_skim2_met") && MET_RefFinal_et<7.*GeV2MeV) continue;
+				//if(skim) incrementCounter("nPassing_skim2_met",wgt);
 				
-				if(isCounter("nPassing_skim2_mt") && mt<7.*GeV2MeV) continue;
-				if(skim) incrementCounter("nPassing_skim2_mt",wgt);
+				//if(isCounter("nPassing_skim2_mt") && mt<7.*GeV2MeV) continue;
+				//if(skim) incrementCounter("nPassing_skim2_mt",wgt);
 				
 				/////////////////////////////////////////////////////
 				// cuts of 2nd skim ends here !!!                ////
@@ -12342,8 +12534,10 @@ void NTUPmaker(TString runType, TString outDir, TString chnl, TString master, TS
 		
 		
 		// global flag to note if MC or Data
-		glob_isMC = (!isData(name));
+		glob_isMC   = (!isData(name));
 		glob_isWsig = (isWsignal(name));
+		glob_doJetCalib = true;
+		glob_doMETCalib = glob_isWsig;
 		
 		
 		///////////////////////////////////////
