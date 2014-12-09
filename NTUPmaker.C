@@ -1668,8 +1668,8 @@ METUtil::METObject getMETU(int mettype)
 	}
 	else
 	{
-		METU->setMETTerm(METUtil::RefJet, MET_RefJet_etx, MET_RefJet_ety, MET_RefJet_sumet);
 		METU->setMETTerm(METUtil::SoftTerms, MET_CellOut_Eflow_etx+MET_SoftJets_etx, MET_CellOut_Eflow_ety+MET_SoftJets_ety, MET_CellOut_Eflow_sumet+MET_SoftJets_sumet);
+		METU->setMETTerm(METUtil::RefJet, MET_RefJet_etx, MET_RefJet_ety, MET_RefJet_sumet);
 	}
 	
 
@@ -8304,7 +8304,8 @@ void vertex::set(unsigned int vtx)
 	vector<int> ijet_jer_dwn;
 	for(int i=0 ; i<AntiKt4LCTopoJets_n ; i++)
 	{
-		if(!isGoodJet(i,JetQuality))  continue;
+		if(!isGoodJet(i,JetQuality))            continue;
+		if(fabs(calibJets[i].DeltaR(psum))<0.4) continue;
 		
 		pt2i_uncalib.insert(make_pair(AntiKt4LCTopoJets_pt->at(i),i));
 
@@ -10124,7 +10125,7 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 	mBlindMaxGlob = mBlindMaxInitial;
 	
 	
-	// if(name=="Wtaunu_3mu" || (isdata && !skim)) initializePileup(); // PU tool is needed for BCH cleaning !
+	if(skim && makepufile && name=="Wtaunu_3mu") initializePileup(); // for creating the pileup file
 	if(!skim)
 	{
 		initializePileup(); // PU tool is needed for BCH cleaning !
