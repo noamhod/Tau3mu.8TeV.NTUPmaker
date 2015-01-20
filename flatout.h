@@ -143,12 +143,15 @@ namespace
 		addBranch("vtx_chi2ndf",   order, VFLT);
 		addBranch("vtx_pval",      order, VFLT);
 		addBranch("vtx_lxy",       order, VFLT);
-		addBranch("vtx_lxySig",    order, VFLT);
+		addBranch("vtx_lxyErr",    order, VFLT);
 		addBranch("vtx_a0",        order, VFLT);
+		addBranch("vtx_a0Err",     order, VFLT);
 		addBranch("vtx_a0xy",      order, VFLT);
+		addBranch("vtx_a0xyErr",   order, VFLT);
 		addBranch("vtx_cosT",      order, VFLT);
 		addBranch("vtx_cosTxy",    order, VFLT);
 		addBranch("vtx_tau",       order, VFLT);
+		addBranch("vtx_tauErr",    order, VFLT);
 		addBranch("vtx_ptfrac12",  order, VFLT);
 		addBranch("vtx_ptfrac23",  order, VFLT);
 		addBranch("vtx_ptfrac13",  order, VFLT);
@@ -157,6 +160,7 @@ namespace
 		addBranch("vtx_dpt13",     order, VFLT);
 		addBranch("vtx_dRmax",     order, VFLT);
 		addBranch("vtx_dRmin",     order, VFLT);
+		addBranch("vtx_pvNtrk",    order, VINT);
 		addBranch("vtx_isolation000", order, VFLT);
 		addBranch("vtx_isolation001", order, VFLT);
 		addBranch("vtx_isolation002", order, VFLT);
@@ -238,7 +242,37 @@ namespace
 		addBranch("met_muons_phi_jer_dwn",     order, FLT);
 		addBranch("met_muons_mT_jer_dwn",      order, VFLT);
 		addBranch("met_muons_dPhi3mu_jer_dwn", order, VFLT);
+		
+		
+		// MET_Track-based kinematics
+		addBranch("met_track_et_uncalib",      order, FLT);
+		addBranch("met_track_phi_uncalib",     order, FLT);
+		addBranch("met_track_mT_uncalib",      order, VFLT);
+		addBranch("met_track_dPhi3mu_uncalib", order, VFLT);
 
+		addBranch("met_track_et",      order, FLT);
+                addBranch("met_track_phi",     order, FLT);
+                addBranch("met_track_mT",      order, VFLT);
+                addBranch("met_track_dPhi3mu", order, VFLT);
+
+                addBranch("met_track_et_jes_up",        order, FLT);
+                addBranch("met_track_phi_jes_up",       order, FLT);
+                addBranch("met_track_mT_jes_up",        order, VFLT);
+                addBranch("met_track_dPhi3mu_jes_up",   order, VFLT);
+                addBranch("met_track_et_jes_dwn",      order, FLT);
+                addBranch("met_track_phi_jes_dwn",     order, FLT);
+                addBranch("met_track_mT_jes_dwn",      order, VFLT);
+                addBranch("met_track_dPhi3mu_jes_dwn", order, VFLT);
+
+                addBranch("met_track_et_jer_up",        order, FLT);
+                addBranch("met_track_phi_jer_up",       order, FLT);
+                addBranch("met_track_mT_jer_up",        order, VFLT);
+                addBranch("met_track_dPhi3mu_jer_up",   order, VFLT);
+                addBranch("met_track_et_jer_dwn",      order, FLT);
+                addBranch("met_track_phi_jer_dwn",     order, FLT);
+                addBranch("met_track_mT_jer_dwn",      order, VFLT);
+                addBranch("met_track_dPhi3mu_jer_dwn", order, VFLT);
+		
 
 
 		// Muons
@@ -469,6 +503,31 @@ namespace
 		addBranch("jet_vtxf2_jer_dwn", order, VFLT);
 		addBranch("jet_vtxf3_jer_dwn", order, VFLT);
 		addBranch("jet_vtxf4_jer_dwn", order, VFLT);
+		
+		addBranch("jet_ntrk1_uncalib", order, VINT);
+		addBranch("jet_ntrk2_uncalib", order, VINT);
+		addBranch("jet_ntrk3_uncalib", order, VINT);
+		addBranch("jet_ntrk4_uncalib", order, VINT);
+		addBranch("jet_ntrk1",       order, VINT);
+		addBranch("jet_ntrk2",       order, VINT);
+		addBranch("jet_ntrk3",       order, VINT);
+		addBranch("jet_ntrk4",       order, VINT);
+		addBranch("jet_ntrk1_jes_up", order, VINT);
+		addBranch("jet_ntrk2_jes_up", order, VINT);
+		addBranch("jet_ntrk3_jes_up", order, VINT);
+		addBranch("jet_ntrk4_jes_up", order, VINT);
+		addBranch("jet_ntrk1_jes_dwn", order, VINT);
+		addBranch("jet_ntrk2_jes_dwn", order, VINT);
+		addBranch("jet_ntrk3_jes_dwn", order, VINT);
+		addBranch("jet_ntrk4_jes_dwn", order, VINT);
+		addBranch("jet_ntrk1_jer_up", order, VINT);
+		addBranch("jet_ntrk2_jer_up", order, VINT);
+		addBranch("jet_ntrk3_jer_up", order, VINT);
+		addBranch("jet_ntrk4_jer_up", order, VINT);
+		addBranch("jet_ntrk1_jer_dwn", order, VINT);
+		addBranch("jet_ntrk2_jer_dwn", order, VINT);
+		addBranch("jet_ntrk3_jer_dwn", order, VINT);
+		addBranch("jet_ntrk4_jer_dwn", order, VINT);
 		
 		addBranch("jet_JES_shift1",     order, VFLT);
 		addBranch("jet_JES_shift2",     order, VFLT);

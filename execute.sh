@@ -16,7 +16,7 @@ if [ -z "$8" ] ; then
 	echo "              \$HOME/data/bout/ \ "
 	echo "              period[A,B,C,D,E,G,H,I,J,L/all/[+MC]]/bbTomu15/Wtaunu_3mu... \ "
 	echo "              muons / muid \ "
-	echo "              CUTS:vertex,MET / MVA:BDTG \ "
+	echo "              CUTS:ALL / MVA:BDTG \ "
 	echo "              N:j[N>=1, 0<j<=N] where N=number of jobs to split into and j is one of these subjobs"
 	exit 0
 fi

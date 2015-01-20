@@ -67,6 +67,8 @@
 	gROOT->ProcessLine(".include "+p+"/../METSystematics/METSystematics");
 	gROOT->ProcessLine(".include "+p+"/../MissingETUtility/");
 	gROOT->ProcessLine(".include "+p+"/../MissingETUtility/MissingETUtility");
+	gROOT->ProcessLine(".include "+p+"/../METTrackUtil/");
+	gROOT->ProcessLine(".include "+p+"/../METTrackUtil/METTrackUtil");
 	gROOT->ProcessLine(".include "+p+"/../PATCore/");
 	gROOT->ProcessLine(".include "+p+"/../PATCore/PATCore/");
 	gROOT->ProcessLine(".include "+p+"/../TileTripReader/");
@@ -89,6 +91,7 @@
 		gROOT->ProcessLine(".L ../METAnalysisCommon/StandAlone/libMETAnalysisCommon.so");
 		gROOT->ProcessLine(".L ../METSystematics/StandAlone/libMETSystematics.so");
 		gROOT->ProcessLine(".L ../MissingETUtility/StandAlone/libMETUtility.so");
+		gROOT->ProcessLine(".L ../METTrackUtil/StandAlone/libTrackMETMaker.so");
 		gROOT->ProcessLine(".L ../TileTripReader/StandAlone/libTTileTripReader.so");
 		gROOT->ProcessLine(".L ../BCHCleaningTool/StandAlone/libBCHCleaningTool.so");
 		gROOT->ProcessLine(".L "+type+".C++");
@@ -105,6 +108,7 @@
 		gROOT->ProcessLine(".L ../METAnalysisCommon/StandAlone/libMETAnalysisCommon.so");
 		gROOT->ProcessLine(".L ../METSystematics/StandAlone/libMETSystematics.so");
 		gROOT->ProcessLine(".L ../MissingETUtility/StandAlone/libMETUtility.so");
+		gROOT->ProcessLine(".L ../METTrackUtil/StandAlone/libTrackMETMaker.so");
 		gROOT->ProcessLine(".L ../TileTripReader/StandAlone/libTTileTripReader.so");
 		gROOT->ProcessLine(".L ../BCHCleaningTool/StandAlone/libBCHCleaningTool.so");
 		gROOT->ProcessLine(".L "+type+"_C.so");

@@ -68,6 +68,17 @@ if one or more packages complain about some missing headers,
 just have to add the absolute paths to the ones which cannot be found.
 
 
+
+to get the MET track tool:
+	https://svnweb.cern.ch/trac/atlasoff/browser/Reconstruction/MET/METTrackUtil/tags
+checkuot the tag and compile it:
+	svn co svn+ssh://svn.cern.ch/reps/atlasoff/Reconstruction/MET/METTrackUtil/tags/METTrackUtil-00-01-03 METTrackUtil
+METTrackUtil
+	cd METTrackUtil/cmt/
+	make -f Makefile.Standalone
+
+
+
 to get the trunk:
 	svn co svn+ssh://svn.cern.ch/reps/atlasphys/Physics/Exotic/Analysis/TauToMuX/ThreeMu/NTUPmaker/trunk NTUPmaker
 to tag a version in svn:

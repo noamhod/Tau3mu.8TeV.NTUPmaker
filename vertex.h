@@ -19,7 +19,7 @@ enum vtx_uncertainties
 
 enum met_types
 {
-	METSTACO,METMUONS
+	METSTACO,METMUONS,METTRACK
 };
 
 
@@ -57,8 +57,11 @@ public:
 	double         vtxLxy()            { return m_lxy;          };
 	double         vtxLxyErr()         { return m_lxyErr;       };
 	double         vtxTau()            { return m_tau;          };
+	double         vtxTauErr()         { return m_tauErr;       };
 	double         vtxA0()             { return m_a0;           };
+	double         vtxA0Err()          { return m_a0Err;        };
 	double         vtxA0xy()           { return m_a0xy;         };
+	double         vtxA0xyErr()        { return m_a0xyErr;      };
 	double         vtxCosT()           { return m_cosT;         };
 	double         vtxCosTxy()         { return m_cosTxy;       };
 	double         vtxDPt12()          { return m_dpt12;        };
@@ -71,6 +74,7 @@ public:
 	double         vtxIsolation(int i) { return m_isolation[i]; }; // margins=i*0.01
 	double         vtxDRmax()          { return m_drmax;        };
 	double         vtxDRmin()          { return m_drmin;        };
+	int            vtxPVntrk()         { return m_pvNtrk;       };
 	
 	//// tracks
  	string         trkSrc(int i)            { return m_src[iSorted(i)];               };
@@ -138,16 +142,17 @@ public:
 	
 	
 	//// jets
-	int            jetN()             { return m_njets; };
+	int            jetN(int mode)              { return m_njets[mode]; };
 	TLorentzVector jetPEall(int mode, int i)   { return m_jetPEall[mode][i];   };
 	TLorentzVector jetPMall(int mode, int i)   { return m_jetPMall[mode][i];   };
 	double         jetMV1all(int mode, int i)  { return m_jetMV1all[mode][i];  };
 	double         jetVtxFall(int mode, int i) { return m_jetVtxFall[mode][i]; };
-	double         jetSumPtAll(int mode)      { return m_jetSumpt12[mode];   };
-	double         jetDphi12All(int mode)     { return m_jetDphi12[mode];    };
-	double         jetDR12All(int mode)       { return m_jetDR12[mode];      };
-	double         jetDphi3bodyAll(int mode)  { return m_jetDphi3body[mode]; };
-	double         jetDR3bodyAll(int mode)    { return m_jetDR3body[mode];   };
+	int            jetNtrkall(int mode, int i) { return m_jetNtrkall[mode][i]; };
+	double         jetSumPtAll(int mode)       { return m_jetSumpt12[mode];    };
+	double         jetDphi12All(int mode)      { return m_jetDphi12[mode];     };
+	double         jetDR12All(int mode)        { return m_jetDR12[mode];       };
+	double         jetDphi3bodyAll(int mode)   { return m_jetDphi3body[mode];  };
+	double         jetDR3bodyAll(int mode)     { return m_jetDR3body[mode];    };
 	double         jetShiftJES(int i) { return m_jet_shiftJES[i]; };
 	double         jetShiftJER(int i) { return m_jet_shiftJER[i]; };
 	
@@ -169,10 +174,12 @@ private:
 	TString m_type;
 	TLorentzVector m_p4, m_pOS1, m_pOS2, m_pSS, m_pQuad[nMaxTracks-3];
 	TLorentzVector m_trkP[nMaxTracks];
-	int m_njets;
+	int m_njets[6];
+	int m_pvNtrk;
 	TLorentzVector m_jetPEall[6][4], m_jetPMall[6][4];
 	double m_jet_shiftJES[4], m_jet_shiftJER[4];
 	double m_jetMV1all[6][4], m_jetVtxFall[6][4];
+	int m_jetNtrkall[6][4];
 	double m_jetSumpt12[6], m_jetDphi12[6], m_jetDphi3body[6], m_jetDR12[6], m_jetDR3body[6];
 	bool m_ismuon[nMaxTracks], m_istp[nMaxTracks], m_istpa[nMaxTracks], m_istpb[nMaxTracks], m_iscalo[nMaxTracks];
 	bool m_ismedium[nMaxTracks], m_istight[nMaxTracks], m_isloose[nMaxTracks], m_iscb[nMaxTracks];
@@ -192,10 +199,10 @@ private:
 	int m_trkOutliersOnTrack[nMaxTracks], m_trkStdDevOfChi2OS[nMaxTracks];
 	int m_trkPrecisionHits[nMaxTracks], m_trkPhiLayers[nMaxTracks], m_trkEtaPhiLayers[nMaxTracks], m_trkPrecisionHoles[nMaxTracks], m_trkEtaTriggerHoleLayers[nMaxTracks], m_trkPhiHoleLayers[nMaxTracks], m_trkPrecisionOutliers[nMaxTracks];
 	
-	double m_met[2][6], m_metPhi[2][6], m_metDphi3body[2][6], m_metMt[2][6];
+	double m_met[3][6], m_metPhi[3][6], m_metDphi3body[3][6], m_metMt[3][6];
 	
-	double m_chi2, m_ndf, m_chi2ndf, m_pvalue, m_lxy, m_lxyErr, m_tau;
-	double m_a0, m_a0xy, m_cosT, m_cosTxy, m_charge, m_isolation[21], m_drmax, m_drmin;
+	double m_chi2, m_ndf, m_chi2ndf, m_pvalue, m_lxy, m_lxyErr, m_tau, m_tauErr;
+	double m_a0, m_a0Err, m_a0xy, m_a0xyErr, m_cosT, m_cosTxy, m_charge, m_isolation[21], m_drmax, m_drmin;
 };
 
 int vertex::iSorted(int i)

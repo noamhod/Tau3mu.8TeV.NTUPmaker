@@ -9,6 +9,7 @@
 #include "../ApplyJetResolutionSmearing/ApplyJetResolutionSmearing/ApplyJetSmearing.h"
 #include "../JetUncertainties/JetUncertainties/JESUncertaintyProvider.h"
 #include "../MissingETUtility/MissingETUtility/METUtility.h"
+#include "../METTrackUtil/METTrackUtil/TrackMETMaker.h"
 #include "../TileTripReader/TileTripReader/TTileTripReader.h"
 #include "../BCHCleaningTool/BCHCleaningTool/BCHCleaningToolRoot.h"
 
@@ -30,7 +31,6 @@ bool makepufile  = false;
 bool glob_isMC   = true;
 bool glob_isWsig = true;
 bool glob_doJetCalib = true;
-bool glob_doMETCalib = false;
 
 struct sources
 {
@@ -102,7 +102,7 @@ TMapTSd  weights;
 double totalLumi;
 TMapuivi isFourthTrack;
 
-TString JESconfig  = "Moriond"; // or "Full2012"
+TString JESconfig  = "Full2012"; // "Moriond" or "Full2012"
 TString JetQuality = "VeryLooseBad";
 vector<TLorentzVector> calibJets;
 vector<bool>           badBCHJets;
@@ -131,6 +131,12 @@ METUtil::METObject calibMUMET_jes_up;
 METUtil::METObject calibMUMET_jes_dwn;
 METUtil::METObject calibMUMET_jer_up;
 METUtil::METObject calibMUMET_jer_dwn;
+METUtil::METObject uncalibMETTRK;
+METUtil::METObject calibMETTRK_nominal;
+METUtil::METObject calibMETTRK_jes_up;
+METUtil::METObject calibMETTRK_jes_dwn;
+METUtil::METObject calibMETTRK_jer_up;
+METUtil::METObject calibMETTRK_jer_dwn;
 
 double isolation;
 vector<double> iso10;
@@ -182,7 +188,7 @@ Int_t nChunksMax;
 Int_t iFirstFile;
 Int_t iLastFile;
 Bool_t chainWasPrinted = false;
-bool doBlind = true;
+bool doBlind = false;
 double mBlindMinGlob;
 double mBlindMaxGlob;
 TDirectory* olddir = gDirectory;
@@ -191,7 +197,7 @@ int ddefault = -9999.;
 bool skim = false;
 TString mastername;
 TString foutname;
-TString selectionMethod; // "CUTS:vertex,MET"; // "MVA:BDTG";
+TString selectionMethod; // "CUTS:ALL"; // "MVA:BDTG";
 TString smethod;
 bool doMVA;
 TMapiTS tpmus;
@@ -303,6 +309,17 @@ vector<int>*    trks_nDeadSCT;
 vector<int>*    trks_expectBLayer;
 vector<double>* trks_pixeldEdx;
 vector<int>*    trks_nUsedHitsdEdx;
+vector<double>* trks_d0;
+vector<double>* trks_z0;
+vector<double>* trks_extrapZ0;
+vector<double>* trks_extrapD0;
+vector<double>* trks_phi0;
+vector<double>* trks_theta;
+vector<double>* trks_d0Err;
+vector<double>* trks_z0Err;
+vector<double>* trks_phi0Err;
+vector<double>* trks_thetaErr;
+
 
 TMapTSP2vd tpmu_vd;
 TMapTSP2vi tpmu_vi;
@@ -537,6 +554,13 @@ double met_RefFinal_etY;
 double met_RefFinal_sumet;
 double met_RefFinal_et;
 double met_RefFinal_phi;
+
+int met_Track_source;
+double met_Track_etX;
+double met_Track_etY;
+double met_Track_sumet;
+double met_Track_et;
+double met_Track_phi;
 
 vector<vector<int> >*    muons_cal_subCalo_subCaloId;
 vector<vector<double> >* muons_cal_subCalo_energyDeposited;
@@ -822,6 +846,7 @@ vector<float>* AntiKt4LCTopoJets_TrackMFPt;
 vector<float>* AntiKt4LCTopoJets_TruthMFindex;
 vector<float>* AntiKt4LCTopoJets_TruthMFPt;
 
+
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
@@ -924,6 +949,11 @@ vector<float>* mu_muons_charge;
 vector<float>* mu_muons_ms_phi;
 vector<float>* mu_muons_ms_theta;
 vector<float>* mu_muons_ms_qoverp;
+vector<int>* mu_muons_isCombinedMuon;
+vector<float>* mu_muons_id_qoverp_exPV;
+vector<float>* mu_muons_id_theta_exPV;
+vector<float>* mu_muons_id_phi_exPV;
+
 
 Int_t          mu_staco_n;
 vector<float>* mu_staco_E;
@@ -935,6 +965,10 @@ vector<float>* mu_staco_charge;
 vector<float>* mu_staco_ms_phi;
 vector<float>* mu_staco_ms_theta;
 vector<float>* mu_staco_ms_qoverp;
+vector<int>* mu_staco_isCombinedMuon;
+vector<float>* mu_staco_id_qoverp_exPV;
+vector<float>* mu_staco_id_theta_exPV;
+vector<float>* mu_staco_id_phi_exPV;
 
 Int_t          mu_muid_n;
 vector<float>* mu_muid_E;
@@ -946,6 +980,10 @@ vector<float>* mu_muid_charge;
 vector<float>* mu_muid_ms_phi;
 vector<float>* mu_muid_ms_theta;
 vector<float>* mu_muid_ms_qoverp;
+vector<int>* mu_muid_isCombinedMuon;
+vector<float>* mu_muid_id_qoverp_exPV;
+vector<float>* mu_muid_id_theta_exPV;
+vector<float>* mu_muid_id_phi_exPV;
 
 Int_t          el_n;
 vector<float>* el_E;
@@ -954,21 +992,35 @@ vector<float>* el_pt;
 vector<float>* el_m;
 vector<float>* el_eta;
 vector<float>* el_phi;
+vector<float>* el_cl_E;
+vector<int>* el_mediumPP;
+vector<int>* el_author;
+vector<float>* el_tracketa;
+vector<float>* el_trackphi;
+vector<float>* el_Unrefittedtrack_pt;
+vector<float>* el_Unrefittedtrack_eta;
+vector<float>* el_Unrefittedtrack_phi;
 
-Int_t          ph_n;
-vector<float>* ph_E;
-vector<float>* ph_Et;
-vector<float>* ph_pt;
-vector<float>* ph_m;
-vector<float>* ph_eta;
-vector<float>* ph_phi;
+ 
+// Int_t          ph_n;
+// vector<float>* ph_E;
+// vector<float>* ph_Et;
+// vector<float>* ph_pt;
+// vector<float>* ph_m;
+// vector<float>* ph_eta;
+// vector<float>* ph_phi;
+// 
+// Int_t          tau_n;
+// vector<float>* tau_Et;
+// vector<float>* tau_pt;
+// vector<float>* tau_m;
+// vector<float>* tau_eta;
+// vector<float>* tau_phi;
 
-Int_t          tau_n;
-vector<float>* tau_Et;
-vector<float>* tau_pt;
-vector<float>* tau_m;
-vector<float>* tau_eta;
-vector<float>* tau_phi;
+vector<float>* cl_lc_pt;
+vector<float>* cl_lc_eta;
+vector<float>* cl_lc_phi;
+
 
 int  el_MET_RefFinal_comp_n;
 vector<vector<float> > *el_MET_RefFinal_comp_wpx;
@@ -1095,6 +1147,14 @@ vector<float>* vxp_m;
 vector<int>*   vxp_nTracks;
 vector<float>* vxp_sumPt;
 
+//// set manually from the double vectors
+vector<float>* ftrk_pt = new vector<float>;
+vector<float>* ftrk_eta = new vector<float>;
+vector<float>* ftrk_phi0 = new vector<float>;
+vector<float>* ftrk_d0 = new vector<float>;
+vector<float>* ftrk_z0 = new vector<float>;
+vector<float>* ftrk_qoverp = new vector<float>;
+vector<float>* ftrk_qoverpErr = new vector<float>;
 
 
 //////////////////////////////////////////////////////////////////////
@@ -1138,6 +1198,7 @@ float getPileupWeight()
 }
 void finalizePileup()
 {
+	if(!makepufile) return;
 	pileupTool->WriteToFile("Wtaunu_3mu.prw.root");
 }
 
@@ -1660,18 +1721,19 @@ METUtil::METObject getMETU(int mettype)
 	// METU->setPhotonParameters(ph_pt, ph_eta, ph_phi, ph_MET_RefFinal_comp_wet, ph_MET_RefFinal_comp_wpx, ph_MET_RefFinal_comp_wpy, ph_MET_RefFinal_comp_statusWord);
 	METU->setMETTerm(METUtil::RefGamma, MET_RefGamma_etx, MET_RefGamma_ety, MET_RefGamma_sumet);
 	
-	//// Jets and soft terms
-	if(glob_isWsig)
-	{
-		METU->setMETTerm(METUtil::SoftTerms, MET_CellOut_Eflow_etx, MET_CellOut_Eflow_ety, MET_CellOut_Eflow_sumet);
-		METU->setJetParameters(akt4lc_jet_pt, akt4lc_jet_eta, akt4lc_jet_phi,akt4lc_jet_E, jet_antikt4LCtopo_MET_RefFinal_comp_wet, jet_antikt4LCtopo_MET_RefFinal_comp_wpx, jet_antikt4LCtopo_MET_RefFinal_comp_wpy, jet_antikt4LCtopo_MET_RefFinal_comp_statusWord);
-	}
-	else
-	{
-		METU->setMETTerm(METUtil::SoftTerms, MET_CellOut_Eflow_etx+MET_SoftJets_etx, MET_CellOut_Eflow_ety+MET_SoftJets_ety, MET_CellOut_Eflow_sumet+MET_SoftJets_sumet);
-		METU->setMETTerm(METUtil::RefJet, MET_RefJet_etx, MET_RefJet_ety, MET_RefJet_sumet);
-	}
-	
+	// //// Jets and soft terms
+	// if(glob_isWsig)
+	// {
+	// 	METU->setMETTerm(METUtil::SoftTerms, MET_CellOut_Eflow_etx, MET_CellOut_Eflow_ety, MET_CellOut_Eflow_sumet);
+	// 	METU->setJetParameters(akt4lc_jet_pt, akt4lc_jet_eta, akt4lc_jet_phi,akt4lc_jet_E, jet_antikt4LCtopo_MET_RefFinal_comp_wet, jet_antikt4LCtopo_MET_RefFinal_comp_wpx, jet_antikt4LCtopo_MET_RefFinal_comp_wpy, jet_antikt4LCtopo_MET_RefFinal_comp_statusWord);
+	// }
+	// else
+	// {
+	// 	METU->setMETTerm(METUtil::SoftTerms, MET_CellOut_Eflow_etx+MET_SoftJets_etx, MET_CellOut_Eflow_ety+MET_SoftJets_ety, MET_CellOut_Eflow_sumet+MET_SoftJets_sumet);
+	// 	METU->setMETTerm(METUtil::RefJet, MET_RefJet_etx, MET_RefJet_ety, MET_RefJet_sumet);
+	// }
+	METU->setMETTerm(METUtil::SoftTerms, MET_CellOut_Eflow_etx, MET_CellOut_Eflow_ety, MET_CellOut_Eflow_sumet);                                                                                                                                                  
+	METU->setJetParameters(akt4lc_jet_pt, akt4lc_jet_eta, akt4lc_jet_phi,akt4lc_jet_E, jet_antikt4LCtopo_MET_RefFinal_comp_wet, jet_antikt4LCtopo_MET_RefFinal_comp_wpx, jet_antikt4LCtopo_MET_RefFinal_comp_wpy, jet_antikt4LCtopo_MET_RefFinal_comp_statusWord);
 
 	//// "Hard" muons
 	if(mettype==METSTACO)
@@ -1695,6 +1757,11 @@ METUtil::METObject getMETU(int mettype)
 		METU->setMETTerm(METUtil::MuonTotal, MET_Muons_etx, MET_Muons_ety, MET_Muons_sumet);
 	}
 	else _FATAL("Unsupported MET type: "+_s(mettype));
+
+
+	METU->setAverageIntPerXing(phys_averageIntPerXing);
+	if(glob_isMC) METU->setMETTerm(METUtil::Truth, MET_Truth_NonInt_etx, MET_Truth_NonInt_ety, MET_Truth_NonInt_sumet);
+
 	
 	
 	//// Now get the MET (RefFinal)
@@ -1710,6 +1777,7 @@ METUtil::METObject getMETU(int mettype)
 	// 	cout << "MET_RefEle_et="   << MET_RefEle_et   << ", refEle_et="   << METU->getMissingET(METUtil::RefEle).et() << endl;
 	// 	cout << "MET_RefGamma_et=" << MET_RefGamma_et << ", refGamma_et=" << METU->getMissingET(METUtil::RefGamma).et() << endl;
 	// }
+	
  	return refFinal;
 }
 
@@ -1745,6 +1813,59 @@ METUtil::METObject getMETU(int mettype)
 // 	METUtility::METObject refFinal_JESUP   = METU->getMissingET(METUtil::RefFinal, METUtil::JESUp);
 // 	METUtility::METObject refFinal_JESDOWN = METU->getMissingET(METUtil::RefFinal, METUtil::JESDown);
 // }
+
+
+METTrack::TrackMETMaker *METTRK;
+void initMETTRK()
+{
+	if(METTRK) delete METTRK;
+	
+	METTRK = new METTrack::TrackMETMaker;
+	
+	METTRK->init("TrkMetNom.config", "/afs/cern.ch/user/h/hod/METTrackUtil/share/");
+}
+
+void setTracksFloat()
+{
+	ftrk_pt->clear();
+	ftrk_eta->clear();
+	ftrk_phi0->clear();
+	ftrk_d0->clear();
+	ftrk_z0->clear();
+	ftrk_qoverp->clear();
+	ftrk_qoverpErr->clear();
+	
+	for(unsigned int i=0 ; i<trks_pt->size() ; ++i)
+	{
+		ftrk_pt->push_back(trks_pt->at(i));
+		ftrk_eta->push_back(trks_eta->at(i));
+		ftrk_phi0->push_back(trks_phi0->at(i));
+		ftrk_d0->push_back(trks_d0->at(i));
+		ftrk_z0->push_back(trks_z0->at(i));
+		ftrk_qoverp->push_back(trks_qoverp->at(i));
+		ftrk_qoverpErr->push_back(trks_qoverpErr->at(i));
+	}
+}
+
+void setMETTRK()
+{
+	METTRK->reset();
+	METTRK->fillTracks(ftrk_pt,ftrk_eta,ftrk_phi0,ftrk_d0,ftrk_z0,trks_nPix,trks_nSCT/*trkpt4_pt,trkpt4_phi*/); // default to 0 pointer
+	METTRK->filterTracks(ftrk_qoverpErr,ftrk_qoverp,cl_lc_pt,cl_lc_eta,cl_lc_phi);
+	METTRK->setMuons(mu_muons_pt,mu_muons_eta,mu_muons_phi,mu_muons_isCombinedMuon,mu_muons_id_qoverp_exPV,mu_muons_id_theta_exPV,mu_muons_id_phi_exPV);
+	METTRK->setElectrons(el_cl_E,el_eta,el_mediumPP,el_author,el_tracketa,el_trackphi,el_Unrefittedtrack_pt,el_Unrefittedtrack_eta,el_Unrefittedtrack_phi/*el_trk_index*/); // optional -- if left 0 will match via dR and relative pt
+	METTRK->setJets(akt4lc_jet_pt,akt4lc_jet_eta,akt4lc_jet_phi,akt4lc_jet_E,AntiKt4LCTopoJets_jvtxf);
+					// 0, /*jet_AntiKt4LCTopo_trackAssoc_index,*/ // optional -- if left 0, will select using dR
+					// AntiKt4LCTopoJets_isBadLooseMinus, // optional -- if left 0, will not select on isBad 
+					// AntiKt4LCTopoJets_isUgly // optional -- if left 0, will not select on isUgly 
+					// );
+	METTRK->assignTracks();
+}
+METUtil::METObject getMETTRK()
+{
+	_DEBUG("");
+	return METTRK->getTrackMET();
+}
 
 
 void fillJetCalibrationHistos(unsigned int jet, TLorentzVector Jet, TLorentzVector smearedJet, TString name, TMapTSP2TH1& histos, TMapTSP2TH2& histos2, double wgt)
@@ -1804,11 +1925,9 @@ void fillJetCalibrationHistos(unsigned int jet, TLorentzVector Jet, TLorentzVect
 	// }
 }
 
-void fillMETCalibrationHistos(METUtil::METObject calibMET, TString name, TMapTSP2TH1& histos/*, TMapTSP2TH2& histos2*/, double wgt)
+void fillMETCalibrationHistos(METUtil::METObject calibMET, METUtil::METObject trkMET, TString name, TMapTSP2TH1& histos/*, TMapTSP2TH2& histos2*/, double wgt)
 {
 	double refFinal_et = calibMET.et();
-	// double refFinal_etx = calibMET.etx();
-	// double refFinal_ety = calibMET.ety();
 	double refFinal_phi = calibMET.phi();
 	//cout << " MET_RefFinal_et : " << MET_RefFinal_et << " -> " << refFinal_et << endl;
 	//cout << " MET_RefFinal_phi: " << MET_RefFinal_phi << " -> " << refFinal_phi << endl;
@@ -1818,6 +1937,18 @@ void fillMETCalibrationHistos(METUtil::METObject calibMET, TString name, TMapTSP
 
 	histos[name+"_met_calibration_et_reldiff"]->Fill(relDiff_et,wgt);
 	histos[name+"_met_calibration_phi_reldiff"]->Fill(relDiff_phi,wgt);
+
+
+	//// track met
+	double trackmet_et = trkMET.et();
+	double trackmet_phi = trkMET.phi();
+
+	relDiff_et  = (trackmet_et-MET_Track_et)/MET_Track_et;
+	relDiff_phi = (trackmet_phi-MET_Track_phi)/MET_Track_phi;
+
+	histos[name+"_mettrk_calibration_et_reldiff"]->Fill(relDiff_et,wgt);
+	histos[name+"_mettrk_calibration_phi_reldiff"]->Fill(relDiff_phi,wgt);	
+	
 }
 
 
@@ -2729,6 +2860,7 @@ void fillCategoriesdRmin(vector<unsigned int>& ivtx, TString channel, TMapTSP2TH
 		dRmin = (pSum.DeltaR(src.srcTlv[0])<dRmin) ? pSum.DeltaR(src.srcTlv[0]) : dRmin;
 		dRmin = (pSum.DeltaR(src.srcTlv[1])<dRmin) ? pSum.DeltaR(src.srcTlv[1]) : dRmin;
 		dRmin = (pSum.DeltaR(src.srcTlv[2])<dRmin) ? pSum.DeltaR(src.srcTlv[2]) : dRmin;
+		dRmin *= 2.;
 
 		_DEBUG("dRmin="+_s(dRmin));
 
@@ -3215,231 +3347,255 @@ void fillFlatoutTree(vector<vertex>& vertices, int allPassing)
 		
 		_DEBUG("");
 
-		flatout_vfloats["jet_pt1_uncalib"]      ->push_back((v.jetN()>0) ? v.jetPEall(NOJES,0).Pt()  : -999);
-		flatout_vfloats["jet_pt2_uncalib"]      ->push_back((v.jetN()>1) ? v.jetPEall(NOJES,1).Pt()  : -999);
-		flatout_vfloats["jet_pt3_uncalib"]      ->push_back((v.jetN()>2) ? v.jetPEall(NOJES,2).Pt()  : -999);
-		flatout_vfloats["jet_pt4_uncalib"]      ->push_back((v.jetN()>3) ? v.jetPEall(NOJES,3).Pt()  : -999);
-		flatout_vfloats["jet_eta1_uncalib"]     ->push_back((v.jetN()>0) ? v.jetPEall(NOJES,0).Eta() : -999.);
-		flatout_vfloats["jet_eta2_uncalib"]     ->push_back((v.jetN()>1) ? v.jetPEall(NOJES,1).Eta() : -999.);
-		flatout_vfloats["jet_eta3_uncalib"]     ->push_back((v.jetN()>2) ? v.jetPEall(NOJES,2).Eta() : -999.);
-		flatout_vfloats["jet_eta4_uncalib"]     ->push_back((v.jetN()>3) ? v.jetPEall(NOJES,3).Eta() : -999.);
-		flatout_vfloats["jet_phi1_uncalib"]     ->push_back((v.jetN()>0) ? v.jetPEall(NOJES,0).Phi() : -999.);
-		flatout_vfloats["jet_phi2_uncalib"]     ->push_back((v.jetN()>1) ? v.jetPEall(NOJES,1).Phi() : -999.);
-		flatout_vfloats["jet_phi3_uncalib"]     ->push_back((v.jetN()>2) ? v.jetPEall(NOJES,2).Phi() : -999.);
-		flatout_vfloats["jet_phi4_uncalib"]     ->push_back((v.jetN()>3) ? v.jetPEall(NOJES,3).Phi() : -999.);
-		flatout_vfloats["jet_m1_uncalib"]       ->push_back((v.jetN()>0) ? v.jetPEall(NOJES,0).M()   : -999.);
-		flatout_vfloats["jet_m2_uncalib"]       ->push_back((v.jetN()>1) ? v.jetPEall(NOJES,1).M()   : -999.);
-		flatout_vfloats["jet_m3_uncalib"]       ->push_back((v.jetN()>2) ? v.jetPEall(NOJES,2).M()   : -999.);
-		flatout_vfloats["jet_m4_uncalib"]       ->push_back((v.jetN()>3) ? v.jetPEall(NOJES,3).M()   : -999.);
-		flatout_vfloats["jet_E1_uncalib"]       ->push_back((v.jetN()>0) ? v.jetPEall(NOJES,0).E()   : -999.);
-		flatout_vfloats["jet_E2_uncalib"]       ->push_back((v.jetN()>1) ? v.jetPEall(NOJES,1).E()   : -999.);
-		flatout_vfloats["jet_E3_uncalib"]       ->push_back((v.jetN()>2) ? v.jetPEall(NOJES,2).E()   : -999.);
-		flatout_vfloats["jet_E4_uncalib"]       ->push_back((v.jetN()>3) ? v.jetPEall(NOJES,3).E()   : -999.);
-		flatout_vfloats["jet_MV1w1_uncalib"]    ->push_back((v.jetN()>0) ? v.jetMV1all(NOJES,0)      : -999.);
-		flatout_vfloats["jet_MV1w2_uncalib"]    ->push_back((v.jetN()>1) ? v.jetMV1all(NOJES,1)      : -999.);
-		flatout_vfloats["jet_MV1w3_uncalib"]    ->push_back((v.jetN()>2) ? v.jetMV1all(NOJES,2)      : -999.);
-		flatout_vfloats["jet_MV1w4_uncalib"]    ->push_back((v.jetN()>3) ? v.jetMV1all(NOJES,3)      : -999.);
-		flatout_vfloats["jet_vtxf1_uncalib"]    ->push_back((v.jetN()>0) ? v.jetVtxFall(NOJES,0)     : -999.);
-		flatout_vfloats["jet_vtxf2_uncalib"]    ->push_back((v.jetN()>1) ? v.jetVtxFall(NOJES,1)     : -999.);
-		flatout_vfloats["jet_vtxf3_uncalib"]    ->push_back((v.jetN()>2) ? v.jetVtxFall(NOJES,2)     : -999.);
-		flatout_vfloats["jet_vtxf4_uncalib"]    ->push_back((v.jetN()>3) ? v.jetVtxFall(NOJES,3)     : -999.);
-		flatout_vfloats["jet_dphi3muJ1_uncalib"]->push_back((v.jetN()>0) ? v.jetDphi3bodyAll(NOJES)  : -999.);
-		flatout_vfloats["jet_dR3muJ1_uncalib"]  ->push_back((v.jetN()>0) ? v.jetDR3bodyAll(NOJES)    : -999.);
-		flatout_vfloats["jet_dphiJ1J2_uncalib"] ->push_back((v.jetN()>1) ? v.jetDphi12All(NOJES)     : -999.);
-		flatout_vfloats["jet_dRJ1J2_uncalib"]   ->push_back((v.jetN()>1) ? v.jetDR12All(NOJES)       : -999.);
-		flatout_vfloats["jet_sumpt12_uncalib"]  ->push_back((v.jetN()>1) ? v.jetSumPtAll(NOJES)      : -999.);
+		flatout_vfloats["jet_pt1_uncalib"]      ->push_back((v.jetN(NOJES)>0) ? v.jetPEall(NOJES,0).Pt()  : -999);
+		flatout_vfloats["jet_pt2_uncalib"]      ->push_back((v.jetN(NOJES)>1) ? v.jetPEall(NOJES,1).Pt()  : -999);
+		flatout_vfloats["jet_pt3_uncalib"]      ->push_back((v.jetN(NOJES)>2) ? v.jetPEall(NOJES,2).Pt()  : -999);
+		flatout_vfloats["jet_pt4_uncalib"]      ->push_back((v.jetN(NOJES)>3) ? v.jetPEall(NOJES,3).Pt()  : -999);
+		flatout_vfloats["jet_eta1_uncalib"]     ->push_back((v.jetN(NOJES)>0) ? v.jetPEall(NOJES,0).Eta() : -999.);
+		flatout_vfloats["jet_eta2_uncalib"]     ->push_back((v.jetN(NOJES)>1) ? v.jetPEall(NOJES,1).Eta() : -999.);
+		flatout_vfloats["jet_eta3_uncalib"]     ->push_back((v.jetN(NOJES)>2) ? v.jetPEall(NOJES,2).Eta() : -999.);
+		flatout_vfloats["jet_eta4_uncalib"]     ->push_back((v.jetN(NOJES)>3) ? v.jetPEall(NOJES,3).Eta() : -999.);
+		flatout_vfloats["jet_phi1_uncalib"]     ->push_back((v.jetN(NOJES)>0) ? v.jetPEall(NOJES,0).Phi() : -999.);
+		flatout_vfloats["jet_phi2_uncalib"]     ->push_back((v.jetN(NOJES)>1) ? v.jetPEall(NOJES,1).Phi() : -999.);
+		flatout_vfloats["jet_phi3_uncalib"]     ->push_back((v.jetN(NOJES)>2) ? v.jetPEall(NOJES,2).Phi() : -999.);
+		flatout_vfloats["jet_phi4_uncalib"]     ->push_back((v.jetN(NOJES)>3) ? v.jetPEall(NOJES,3).Phi() : -999.);
+		flatout_vfloats["jet_m1_uncalib"]       ->push_back((v.jetN(NOJES)>0) ? v.jetPEall(NOJES,0).M()   : -999.);
+		flatout_vfloats["jet_m2_uncalib"]       ->push_back((v.jetN(NOJES)>1) ? v.jetPEall(NOJES,1).M()   : -999.);
+		flatout_vfloats["jet_m3_uncalib"]       ->push_back((v.jetN(NOJES)>2) ? v.jetPEall(NOJES,2).M()   : -999.);
+		flatout_vfloats["jet_m4_uncalib"]       ->push_back((v.jetN(NOJES)>3) ? v.jetPEall(NOJES,3).M()   : -999.);
+		flatout_vfloats["jet_E1_uncalib"]       ->push_back((v.jetN(NOJES)>0) ? v.jetPEall(NOJES,0).E()   : -999.);
+		flatout_vfloats["jet_E2_uncalib"]       ->push_back((v.jetN(NOJES)>1) ? v.jetPEall(NOJES,1).E()   : -999.);
+		flatout_vfloats["jet_E3_uncalib"]       ->push_back((v.jetN(NOJES)>2) ? v.jetPEall(NOJES,2).E()   : -999.);
+		flatout_vfloats["jet_E4_uncalib"]       ->push_back((v.jetN(NOJES)>3) ? v.jetPEall(NOJES,3).E()   : -999.);
+		flatout_vfloats["jet_MV1w1_uncalib"]    ->push_back((v.jetN(NOJES)>0) ? v.jetMV1all(NOJES,0)      : -999.);
+		flatout_vfloats["jet_MV1w2_uncalib"]    ->push_back((v.jetN(NOJES)>1) ? v.jetMV1all(NOJES,1)      : -999.);
+		flatout_vfloats["jet_MV1w3_uncalib"]    ->push_back((v.jetN(NOJES)>2) ? v.jetMV1all(NOJES,2)      : -999.);
+		flatout_vfloats["jet_MV1w4_uncalib"]    ->push_back((v.jetN(NOJES)>3) ? v.jetMV1all(NOJES,3)      : -999.);
+		flatout_vfloats["jet_vtxf1_uncalib"]    ->push_back((v.jetN(NOJES)>0) ? v.jetVtxFall(NOJES,0)     : -999.);
+		flatout_vfloats["jet_vtxf2_uncalib"]    ->push_back((v.jetN(NOJES)>1) ? v.jetVtxFall(NOJES,1)     : -999.);
+		flatout_vfloats["jet_vtxf3_uncalib"]    ->push_back((v.jetN(NOJES)>2) ? v.jetVtxFall(NOJES,2)     : -999.);
+		flatout_vfloats["jet_vtxf4_uncalib"]    ->push_back((v.jetN(NOJES)>3) ? v.jetVtxFall(NOJES,3)     : -999.);
+		flatout_vints["jet_ntrk1_uncalib"]    ->push_back((v.jetN(NOJES)>0) ? v.jetNtrkall(NOJES,0)     : -999.);
+		flatout_vints["jet_ntrk2_uncalib"]    ->push_back((v.jetN(NOJES)>1) ? v.jetNtrkall(NOJES,1)     : -999.);
+		flatout_vints["jet_ntrk3_uncalib"]    ->push_back((v.jetN(NOJES)>2) ? v.jetNtrkall(NOJES,2)     : -999.);
+		flatout_vints["jet_ntrk4_uncalib"]    ->push_back((v.jetN(NOJES)>3) ? v.jetNtrkall(NOJES,3)     : -999.);
+		flatout_vfloats["jet_dphi3muJ1_uncalib"]->push_back((v.jetN(NOJES)>0) ? v.jetDphi3bodyAll(NOJES)  : -999.);
+		flatout_vfloats["jet_dR3muJ1_uncalib"]  ->push_back((v.jetN(NOJES)>0) ? v.jetDR3bodyAll(NOJES)    : -999.);
+		flatout_vfloats["jet_dphiJ1J2_uncalib"] ->push_back((v.jetN(NOJES)>1) ? v.jetDphi12All(NOJES)     : -999.);
+		flatout_vfloats["jet_dRJ1J2_uncalib"]   ->push_back((v.jetN(NOJES)>1) ? v.jetDR12All(NOJES)       : -999.);
+		flatout_vfloats["jet_sumpt12_uncalib"]  ->push_back((v.jetN(NOJES)>1) ? v.jetSumPtAll(NOJES)      : -999.);
 		
 		_DEBUG("");
 
-		flatout_vfloats["jet_pt1"]      ->push_back((v.jetN()>0) ? v.jetPEall(NOMINAL,0).Pt()  : -999);
-		flatout_vfloats["jet_pt2"]      ->push_back((v.jetN()>1) ? v.jetPEall(NOMINAL,1).Pt()  : -999);
-		flatout_vfloats["jet_pt3"]      ->push_back((v.jetN()>2) ? v.jetPEall(NOMINAL,2).Pt()  : -999);
-		flatout_vfloats["jet_pt4"]      ->push_back((v.jetN()>3) ? v.jetPEall(NOMINAL,3).Pt()  : -999);
-		flatout_vfloats["jet_eta1"]     ->push_back((v.jetN()>0) ? v.jetPEall(NOMINAL,0).Eta() : -999.);
-		flatout_vfloats["jet_eta2"]     ->push_back((v.jetN()>1) ? v.jetPEall(NOMINAL,1).Eta() : -999.);
-		flatout_vfloats["jet_eta3"]     ->push_back((v.jetN()>2) ? v.jetPEall(NOMINAL,2).Eta() : -999.);
-		flatout_vfloats["jet_eta4"]     ->push_back((v.jetN()>3) ? v.jetPEall(NOMINAL,3).Eta() : -999.);
-		flatout_vfloats["jet_phi1"]     ->push_back((v.jetN()>0) ? v.jetPEall(NOMINAL,0).Phi() : -999.);
-		flatout_vfloats["jet_phi2"]     ->push_back((v.jetN()>1) ? v.jetPEall(NOMINAL,1).Phi() : -999.);
-		flatout_vfloats["jet_phi3"]     ->push_back((v.jetN()>2) ? v.jetPEall(NOMINAL,2).Phi() : -999.);
-		flatout_vfloats["jet_phi4"]     ->push_back((v.jetN()>3) ? v.jetPEall(NOMINAL,3).Phi() : -999.);
-		flatout_vfloats["jet_m1"]       ->push_back((v.jetN()>0) ? v.jetPEall(NOMINAL,0).M()   : -999.);
-		flatout_vfloats["jet_m2"]       ->push_back((v.jetN()>1) ? v.jetPEall(NOMINAL,1).M()   : -999.);
-		flatout_vfloats["jet_m3"]       ->push_back((v.jetN()>2) ? v.jetPEall(NOMINAL,2).M()   : -999.);
-		flatout_vfloats["jet_m4"]       ->push_back((v.jetN()>3) ? v.jetPEall(NOMINAL,3).M()   : -999.);
-		flatout_vfloats["jet_E1"]       ->push_back((v.jetN()>0) ? v.jetPEall(NOMINAL,0).E()   : -999.);
-		flatout_vfloats["jet_E2"]       ->push_back((v.jetN()>1) ? v.jetPEall(NOMINAL,1).E()   : -999.);
-		flatout_vfloats["jet_E3"]       ->push_back((v.jetN()>2) ? v.jetPEall(NOMINAL,2).E()   : -999.);
-		flatout_vfloats["jet_E4"]       ->push_back((v.jetN()>3) ? v.jetPEall(NOMINAL,3).E()   : -999.);
-		flatout_vfloats["jet_MV1w1"]    ->push_back((v.jetN()>0) ? v.jetMV1all(NOMINAL,0)      : -999.);
-		flatout_vfloats["jet_MV1w2"]    ->push_back((v.jetN()>1) ? v.jetMV1all(NOMINAL,1)      : -999.);
-		flatout_vfloats["jet_MV1w3"]    ->push_back((v.jetN()>2) ? v.jetMV1all(NOMINAL,2)      : -999.);
-		flatout_vfloats["jet_MV1w4"]    ->push_back((v.jetN()>3) ? v.jetMV1all(NOMINAL,3)      : -999.);
-		flatout_vfloats["jet_vtxf1"]    ->push_back((v.jetN()>0) ? v.jetVtxFall(NOMINAL,0)     : -999.);
-		flatout_vfloats["jet_vtxf2"]    ->push_back((v.jetN()>1) ? v.jetVtxFall(NOMINAL,1)     : -999.);
-		flatout_vfloats["jet_vtxf3"]    ->push_back((v.jetN()>2) ? v.jetVtxFall(NOMINAL,2)     : -999.);
-		flatout_vfloats["jet_vtxf4"]    ->push_back((v.jetN()>3) ? v.jetVtxFall(NOMINAL,3)     : -999.);
-		flatout_vfloats["jet_dphi3muJ1"]->push_back((v.jetN()>0) ? v.jetDphi3bodyAll(NOMINAL)  : -999.);
-		flatout_vfloats["jet_dR3muJ1"]  ->push_back((v.jetN()>0) ? v.jetDR3bodyAll(NOMINAL)    : -999.);
-		flatout_vfloats["jet_dphiJ1J2"] ->push_back((v.jetN()>1) ? v.jetDphi12All(NOMINAL)     : -999.);
-		flatout_vfloats["jet_dRJ1J2"]   ->push_back((v.jetN()>1) ? v.jetDR12All(NOMINAL)       : -999.);
-		flatout_vfloats["jet_sumpt12"]  ->push_back((v.jetN()>1) ? v.jetSumPtAll(NOMINAL)      : -999.);
+		flatout_vfloats["jet_pt1"]      ->push_back((v.jetN(NOMINAL)>0) ? v.jetPEall(NOMINAL,0).Pt()  : -999);
+		flatout_vfloats["jet_pt2"]      ->push_back((v.jetN(NOMINAL)>1) ? v.jetPEall(NOMINAL,1).Pt()  : -999);
+		flatout_vfloats["jet_pt3"]      ->push_back((v.jetN(NOMINAL)>2) ? v.jetPEall(NOMINAL,2).Pt()  : -999);
+		flatout_vfloats["jet_pt4"]      ->push_back((v.jetN(NOMINAL)>3) ? v.jetPEall(NOMINAL,3).Pt()  : -999);
+		flatout_vfloats["jet_eta1"]     ->push_back((v.jetN(NOMINAL)>0) ? v.jetPEall(NOMINAL,0).Eta() : -999.);
+		flatout_vfloats["jet_eta2"]     ->push_back((v.jetN(NOMINAL)>1) ? v.jetPEall(NOMINAL,1).Eta() : -999.);
+		flatout_vfloats["jet_eta3"]     ->push_back((v.jetN(NOMINAL)>2) ? v.jetPEall(NOMINAL,2).Eta() : -999.);
+		flatout_vfloats["jet_eta4"]     ->push_back((v.jetN(NOMINAL)>3) ? v.jetPEall(NOMINAL,3).Eta() : -999.);
+		flatout_vfloats["jet_phi1"]     ->push_back((v.jetN(NOMINAL)>0) ? v.jetPEall(NOMINAL,0).Phi() : -999.);
+		flatout_vfloats["jet_phi2"]     ->push_back((v.jetN(NOMINAL)>1) ? v.jetPEall(NOMINAL,1).Phi() : -999.);
+		flatout_vfloats["jet_phi3"]     ->push_back((v.jetN(NOMINAL)>2) ? v.jetPEall(NOMINAL,2).Phi() : -999.);
+		flatout_vfloats["jet_phi4"]     ->push_back((v.jetN(NOMINAL)>3) ? v.jetPEall(NOMINAL,3).Phi() : -999.);
+		flatout_vfloats["jet_m1"]       ->push_back((v.jetN(NOMINAL)>0) ? v.jetPEall(NOMINAL,0).M()   : -999.);
+		flatout_vfloats["jet_m2"]       ->push_back((v.jetN(NOMINAL)>1) ? v.jetPEall(NOMINAL,1).M()   : -999.);
+		flatout_vfloats["jet_m3"]       ->push_back((v.jetN(NOMINAL)>2) ? v.jetPEall(NOMINAL,2).M()   : -999.);
+		flatout_vfloats["jet_m4"]       ->push_back((v.jetN(NOMINAL)>3) ? v.jetPEall(NOMINAL,3).M()   : -999.);
+		flatout_vfloats["jet_E1"]       ->push_back((v.jetN(NOMINAL)>0) ? v.jetPEall(NOMINAL,0).E()   : -999.);
+		flatout_vfloats["jet_E2"]       ->push_back((v.jetN(NOMINAL)>1) ? v.jetPEall(NOMINAL,1).E()   : -999.);
+		flatout_vfloats["jet_E3"]       ->push_back((v.jetN(NOMINAL)>2) ? v.jetPEall(NOMINAL,2).E()   : -999.);
+		flatout_vfloats["jet_E4"]       ->push_back((v.jetN(NOMINAL)>3) ? v.jetPEall(NOMINAL,3).E()   : -999.);
+		flatout_vfloats["jet_MV1w1"]    ->push_back((v.jetN(NOMINAL)>0) ? v.jetMV1all(NOMINAL,0)      : -999.);
+		flatout_vfloats["jet_MV1w2"]    ->push_back((v.jetN(NOMINAL)>1) ? v.jetMV1all(NOMINAL,1)      : -999.);
+		flatout_vfloats["jet_MV1w3"]    ->push_back((v.jetN(NOMINAL)>2) ? v.jetMV1all(NOMINAL,2)      : -999.);
+		flatout_vfloats["jet_MV1w4"]    ->push_back((v.jetN(NOMINAL)>3) ? v.jetMV1all(NOMINAL,3)      : -999.);
+		flatout_vfloats["jet_vtxf1"]    ->push_back((v.jetN(NOMINAL)>0) ? v.jetVtxFall(NOMINAL,0)     : -999.);
+		flatout_vfloats["jet_vtxf2"]    ->push_back((v.jetN(NOMINAL)>1) ? v.jetVtxFall(NOMINAL,1)     : -999.);
+		flatout_vfloats["jet_vtxf3"]    ->push_back((v.jetN(NOMINAL)>2) ? v.jetVtxFall(NOMINAL,2)     : -999.);
+		flatout_vfloats["jet_vtxf4"]    ->push_back((v.jetN(NOMINAL)>3) ? v.jetVtxFall(NOMINAL,3)     : -999.);
+		flatout_vints["jet_ntrk1"]    ->push_back((v.jetN(NOMINAL)>0) ? v.jetNtrkall(NOMINAL,0)     : -999.);
+		flatout_vints["jet_ntrk2"]    ->push_back((v.jetN(NOMINAL)>1) ? v.jetNtrkall(NOMINAL,1)     : -999.);
+		flatout_vints["jet_ntrk3"]    ->push_back((v.jetN(NOMINAL)>2) ? v.jetNtrkall(NOMINAL,2)     : -999.);
+		flatout_vints["jet_ntrk4"]    ->push_back((v.jetN(NOMINAL)>3) ? v.jetNtrkall(NOMINAL,3)     : -999.);
+		flatout_vfloats["jet_dphi3muJ1"]->push_back((v.jetN(NOMINAL)>0) ? v.jetDphi3bodyAll(NOMINAL)  : -999.);
+		flatout_vfloats["jet_dR3muJ1"]  ->push_back((v.jetN(NOMINAL)>0) ? v.jetDR3bodyAll(NOMINAL)    : -999.);
+		flatout_vfloats["jet_dphiJ1J2"] ->push_back((v.jetN(NOMINAL)>1) ? v.jetDphi12All(NOMINAL)     : -999.);
+		flatout_vfloats["jet_dRJ1J2"]   ->push_back((v.jetN(NOMINAL)>1) ? v.jetDR12All(NOMINAL)       : -999.);
+		flatout_vfloats["jet_sumpt12"]  ->push_back((v.jetN(NOMINAL)>1) ? v.jetSumPtAll(NOMINAL)      : -999.);
 		
 		_DEBUG("");
 		
-		flatout_vfloats["jet_pt1_jes_up"]      ->push_back((v.jetN()>0) ? v.jetPEall(JESUP,0).Pt()  : -999);
-		flatout_vfloats["jet_pt2_jes_up"]      ->push_back((v.jetN()>1) ? v.jetPEall(JESUP,1).Pt()  : -999);
-		flatout_vfloats["jet_pt3_jes_up"]      ->push_back((v.jetN()>2) ? v.jetPEall(JESUP,2).Pt()  : -999);
-		flatout_vfloats["jet_pt4_jes_up"]      ->push_back((v.jetN()>3) ? v.jetPEall(JESUP,3).Pt()  : -999);
-		flatout_vfloats["jet_eta1_jes_up"]     ->push_back((v.jetN()>0) ? v.jetPEall(JESUP,0).Eta() : -999.);
-		flatout_vfloats["jet_eta2_jes_up"]     ->push_back((v.jetN()>1) ? v.jetPEall(JESUP,1).Eta() : -999.);
-		flatout_vfloats["jet_eta3_jes_up"]     ->push_back((v.jetN()>2) ? v.jetPEall(JESUP,2).Eta() : -999.);
-		flatout_vfloats["jet_eta4_jes_up"]     ->push_back((v.jetN()>3) ? v.jetPEall(JESUP,3).Eta() : -999.);
-		flatout_vfloats["jet_phi1_jes_up"]     ->push_back((v.jetN()>0) ? v.jetPEall(JESUP,0).Phi() : -999.);
-		flatout_vfloats["jet_phi2_jes_up"]     ->push_back((v.jetN()>1) ? v.jetPEall(JESUP,1).Phi() : -999.);
-		flatout_vfloats["jet_phi3_jes_up"]     ->push_back((v.jetN()>2) ? v.jetPEall(JESUP,2).Phi() : -999.);
-		flatout_vfloats["jet_phi4_jes_up"]     ->push_back((v.jetN()>3) ? v.jetPEall(JESUP,3).Phi() : -999.);
-		flatout_vfloats["jet_m1_jes_up"]       ->push_back((v.jetN()>0) ? v.jetPEall(JESUP,0).M()   : -999.);
-		flatout_vfloats["jet_m2_jes_up"]       ->push_back((v.jetN()>1) ? v.jetPEall(JESUP,1).M()   : -999.);
-		flatout_vfloats["jet_m3_jes_up"]       ->push_back((v.jetN()>2) ? v.jetPEall(JESUP,2).M()   : -999.);
-		flatout_vfloats["jet_m4_jes_up"]       ->push_back((v.jetN()>3) ? v.jetPEall(JESUP,3).M()   : -999.);
-		flatout_vfloats["jet_E1_jes_up"]       ->push_back((v.jetN()>0) ? v.jetPEall(JESUP,0).E()   : -999.);
-		flatout_vfloats["jet_E2_jes_up"]       ->push_back((v.jetN()>1) ? v.jetPEall(JESUP,1).E()   : -999.);
-		flatout_vfloats["jet_E3_jes_up"]       ->push_back((v.jetN()>2) ? v.jetPEall(JESUP,2).E()   : -999.);
-		flatout_vfloats["jet_E4_jes_up"]       ->push_back((v.jetN()>3) ? v.jetPEall(JESUP,3).E()   : -999.);
-		flatout_vfloats["jet_MV1w1_jes_up"]    ->push_back((v.jetN()>0) ? v.jetMV1all(JESUP,0)      : -999.);
-		flatout_vfloats["jet_MV1w2_jes_up"]    ->push_back((v.jetN()>1) ? v.jetMV1all(JESUP,1)      : -999.);
-		flatout_vfloats["jet_MV1w3_jes_up"]    ->push_back((v.jetN()>2) ? v.jetMV1all(JESUP,2)      : -999.);
-		flatout_vfloats["jet_MV1w4_jes_up"]    ->push_back((v.jetN()>3) ? v.jetMV1all(JESUP,3)      : -999.);
-		flatout_vfloats["jet_vtxf1_jes_up"]    ->push_back((v.jetN()>0) ? v.jetVtxFall(JESUP,0)     : -999.);
-		flatout_vfloats["jet_vtxf2_jes_up"]    ->push_back((v.jetN()>1) ? v.jetVtxFall(JESUP,1)     : -999.);
-		flatout_vfloats["jet_vtxf3_jes_up"]    ->push_back((v.jetN()>2) ? v.jetVtxFall(JESUP,2)     : -999.);
-		flatout_vfloats["jet_vtxf4_jes_up"]    ->push_back((v.jetN()>3) ? v.jetVtxFall(JESUP,3)     : -999.);
-		flatout_vfloats["jet_dphi3muJ1_jes_up"]->push_back((v.jetN()>0) ? v.jetDphi3bodyAll(JESUP)  : -999.);
-		flatout_vfloats["jet_dR3muJ1_jes_up"]  ->push_back((v.jetN()>0) ? v.jetDR3bodyAll(JESUP)    : -999.);
-		flatout_vfloats["jet_dphiJ1J2_jes_up"] ->push_back((v.jetN()>1) ? v.jetDphi12All(JESUP)     : -999.);
-		flatout_vfloats["jet_dRJ1J2_jes_up"]   ->push_back((v.jetN()>1) ? v.jetDR12All(JESUP)       : -999.);
-		flatout_vfloats["jet_sumpt12_jes_up"]  ->push_back((v.jetN()>1) ? v.jetSumPtAll(JESUP)      : -999.);
+		flatout_vfloats["jet_pt1_jes_up"]      ->push_back((v.jetN(JESUP)>0) ? v.jetPEall(JESUP,0).Pt()  : -999);
+		flatout_vfloats["jet_pt2_jes_up"]      ->push_back((v.jetN(JESUP)>1) ? v.jetPEall(JESUP,1).Pt()  : -999);
+		flatout_vfloats["jet_pt3_jes_up"]      ->push_back((v.jetN(JESUP)>2) ? v.jetPEall(JESUP,2).Pt()  : -999);
+		flatout_vfloats["jet_pt4_jes_up"]      ->push_back((v.jetN(JESUP)>3) ? v.jetPEall(JESUP,3).Pt()  : -999);
+		flatout_vfloats["jet_eta1_jes_up"]     ->push_back((v.jetN(JESUP)>0) ? v.jetPEall(JESUP,0).Eta() : -999.);
+		flatout_vfloats["jet_eta2_jes_up"]     ->push_back((v.jetN(JESUP)>1) ? v.jetPEall(JESUP,1).Eta() : -999.);
+		flatout_vfloats["jet_eta3_jes_up"]     ->push_back((v.jetN(JESUP)>2) ? v.jetPEall(JESUP,2).Eta() : -999.);
+		flatout_vfloats["jet_eta4_jes_up"]     ->push_back((v.jetN(JESUP)>3) ? v.jetPEall(JESUP,3).Eta() : -999.);
+		flatout_vfloats["jet_phi1_jes_up"]     ->push_back((v.jetN(JESUP)>0) ? v.jetPEall(JESUP,0).Phi() : -999.);
+		flatout_vfloats["jet_phi2_jes_up"]     ->push_back((v.jetN(JESUP)>1) ? v.jetPEall(JESUP,1).Phi() : -999.);
+		flatout_vfloats["jet_phi3_jes_up"]     ->push_back((v.jetN(JESUP)>2) ? v.jetPEall(JESUP,2).Phi() : -999.);
+		flatout_vfloats["jet_phi4_jes_up"]     ->push_back((v.jetN(JESUP)>3) ? v.jetPEall(JESUP,3).Phi() : -999.);
+		flatout_vfloats["jet_m1_jes_up"]       ->push_back((v.jetN(JESUP)>0) ? v.jetPEall(JESUP,0).M()   : -999.);
+		flatout_vfloats["jet_m2_jes_up"]       ->push_back((v.jetN(JESUP)>1) ? v.jetPEall(JESUP,1).M()   : -999.);
+		flatout_vfloats["jet_m3_jes_up"]       ->push_back((v.jetN(JESUP)>2) ? v.jetPEall(JESUP,2).M()   : -999.);
+		flatout_vfloats["jet_m4_jes_up"]       ->push_back((v.jetN(JESUP)>3) ? v.jetPEall(JESUP,3).M()   : -999.);
+		flatout_vfloats["jet_E1_jes_up"]       ->push_back((v.jetN(JESUP)>0) ? v.jetPEall(JESUP,0).E()   : -999.);
+		flatout_vfloats["jet_E2_jes_up"]       ->push_back((v.jetN(JESUP)>1) ? v.jetPEall(JESUP,1).E()   : -999.);
+		flatout_vfloats["jet_E3_jes_up"]       ->push_back((v.jetN(JESUP)>2) ? v.jetPEall(JESUP,2).E()   : -999.);
+		flatout_vfloats["jet_E4_jes_up"]       ->push_back((v.jetN(JESUP)>3) ? v.jetPEall(JESUP,3).E()   : -999.);
+		flatout_vfloats["jet_MV1w1_jes_up"]    ->push_back((v.jetN(JESUP)>0) ? v.jetMV1all(JESUP,0)      : -999.);
+		flatout_vfloats["jet_MV1w2_jes_up"]    ->push_back((v.jetN(JESUP)>1) ? v.jetMV1all(JESUP,1)      : -999.);
+		flatout_vfloats["jet_MV1w3_jes_up"]    ->push_back((v.jetN(JESUP)>2) ? v.jetMV1all(JESUP,2)      : -999.);
+		flatout_vfloats["jet_MV1w4_jes_up"]    ->push_back((v.jetN(JESUP)>3) ? v.jetMV1all(JESUP,3)      : -999.);
+		flatout_vfloats["jet_vtxf1_jes_up"]    ->push_back((v.jetN(JESUP)>0) ? v.jetVtxFall(JESUP,0)     : -999.);
+		flatout_vfloats["jet_vtxf2_jes_up"]    ->push_back((v.jetN(JESUP)>1) ? v.jetVtxFall(JESUP,1)     : -999.);
+		flatout_vfloats["jet_vtxf3_jes_up"]    ->push_back((v.jetN(JESUP)>2) ? v.jetVtxFall(JESUP,2)     : -999.);
+		flatout_vfloats["jet_vtxf4_jes_up"]    ->push_back((v.jetN(JESUP)>3) ? v.jetVtxFall(JESUP,3)     : -999.);
+		flatout_vints["jet_ntrk1_jes_up"]    ->push_back((v.jetN(JESUP)>0) ? v.jetNtrkall(JESUP,0)     : -999.);
+		flatout_vints["jet_ntrk2_jes_up"]    ->push_back((v.jetN(JESUP)>1) ? v.jetNtrkall(JESUP,1)     : -999.);
+		flatout_vints["jet_ntrk3_jes_up"]    ->push_back((v.jetN(JESUP)>2) ? v.jetNtrkall(JESUP,2)     : -999.);
+		flatout_vints["jet_ntrk4_jes_up"]    ->push_back((v.jetN(JESUP)>3) ? v.jetNtrkall(JESUP,3)     : -999.);
+		flatout_vfloats["jet_dphi3muJ1_jes_up"]->push_back((v.jetN(JESUP)>0) ? v.jetDphi3bodyAll(JESUP)  : -999.);
+		flatout_vfloats["jet_dR3muJ1_jes_up"]  ->push_back((v.jetN(JESUP)>0) ? v.jetDR3bodyAll(JESUP)    : -999.);
+		flatout_vfloats["jet_dphiJ1J2_jes_up"] ->push_back((v.jetN(JESUP)>1) ? v.jetDphi12All(JESUP)     : -999.);
+		flatout_vfloats["jet_dRJ1J2_jes_up"]   ->push_back((v.jetN(JESUP)>1) ? v.jetDR12All(JESUP)       : -999.);
+		flatout_vfloats["jet_sumpt12_jes_up"]  ->push_back((v.jetN(JESUP)>1) ? v.jetSumPtAll(JESUP)      : -999.);
 		
 		_DEBUG("");
 		
-		flatout_vfloats["jet_pt1_jes_dwn"]      ->push_back((v.jetN()>0) ? v.jetPEall(JESDWN,0).Pt()  : -999);
-		flatout_vfloats["jet_pt2_jes_dwn"]      ->push_back((v.jetN()>1) ? v.jetPEall(JESDWN,1).Pt()  : -999);
-		flatout_vfloats["jet_pt3_jes_dwn"]      ->push_back((v.jetN()>2) ? v.jetPEall(JESDWN,2).Pt()  : -999);
-		flatout_vfloats["jet_pt4_jes_dwn"]      ->push_back((v.jetN()>3) ? v.jetPEall(JESDWN,3).Pt()  : -999);
-		flatout_vfloats["jet_eta1_jes_dwn"]     ->push_back((v.jetN()>0) ? v.jetPEall(JESDWN,0).Eta() : -999.);
-		flatout_vfloats["jet_eta2_jes_dwn"]     ->push_back((v.jetN()>1) ? v.jetPEall(JESDWN,1).Eta() : -999.);
-		flatout_vfloats["jet_eta3_jes_dwn"]     ->push_back((v.jetN()>2) ? v.jetPEall(JESDWN,2).Eta() : -999.);
-		flatout_vfloats["jet_eta4_jes_dwn"]     ->push_back((v.jetN()>3) ? v.jetPEall(JESDWN,3).Eta() : -999.);
-		flatout_vfloats["jet_phi1_jes_dwn"]     ->push_back((v.jetN()>0) ? v.jetPEall(JESDWN,0).Phi() : -999.);
-		flatout_vfloats["jet_phi2_jes_dwn"]     ->push_back((v.jetN()>1) ? v.jetPEall(JESDWN,1).Phi() : -999.);
-		flatout_vfloats["jet_phi3_jes_dwn"]     ->push_back((v.jetN()>2) ? v.jetPEall(JESDWN,2).Phi() : -999.);
-		flatout_vfloats["jet_phi4_jes_dwn"]     ->push_back((v.jetN()>3) ? v.jetPEall(JESDWN,3).Phi() : -999.);
-		flatout_vfloats["jet_m1_jes_dwn"]       ->push_back((v.jetN()>0) ? v.jetPEall(JESDWN,0).M()   : -999.);
-		flatout_vfloats["jet_m2_jes_dwn"]       ->push_back((v.jetN()>1) ? v.jetPEall(JESDWN,1).M()   : -999.);
-		flatout_vfloats["jet_m3_jes_dwn"]       ->push_back((v.jetN()>2) ? v.jetPEall(JESDWN,2).M()   : -999.);
-		flatout_vfloats["jet_m4_jes_dwn"]       ->push_back((v.jetN()>3) ? v.jetPEall(JESDWN,3).M()   : -999.);
-		flatout_vfloats["jet_E1_jes_dwn"]       ->push_back((v.jetN()>0) ? v.jetPEall(JESDWN,0).E()   : -999.);
-		flatout_vfloats["jet_E2_jes_dwn"]       ->push_back((v.jetN()>1) ? v.jetPEall(JESDWN,1).E()   : -999.);
-		flatout_vfloats["jet_E3_jes_dwn"]       ->push_back((v.jetN()>2) ? v.jetPEall(JESDWN,2).E()   : -999.);
-		flatout_vfloats["jet_E4_jes_dwn"]       ->push_back((v.jetN()>3) ? v.jetPEall(JESDWN,3).E()   : -999.);
-		flatout_vfloats["jet_MV1w1_jes_dwn"]    ->push_back((v.jetN()>0) ? v.jetMV1all(JESDWN,0)      : -999.);
-		flatout_vfloats["jet_MV1w2_jes_dwn"]    ->push_back((v.jetN()>1) ? v.jetMV1all(JESDWN,1)      : -999.);
-		flatout_vfloats["jet_MV1w3_jes_dwn"]    ->push_back((v.jetN()>2) ? v.jetMV1all(JESDWN,2)      : -999.);
-		flatout_vfloats["jet_MV1w4_jes_dwn"]    ->push_back((v.jetN()>3) ? v.jetMV1all(JESDWN,3)      : -999.);
-		flatout_vfloats["jet_vtxf1_jes_dwn"]    ->push_back((v.jetN()>0) ? v.jetVtxFall(JESDWN,0)     : -999.);
-		flatout_vfloats["jet_vtxf2_jes_dwn"]    ->push_back((v.jetN()>1) ? v.jetVtxFall(JESDWN,1)     : -999.);
-		flatout_vfloats["jet_vtxf3_jes_dwn"]    ->push_back((v.jetN()>2) ? v.jetVtxFall(JESDWN,2)     : -999.);
-		flatout_vfloats["jet_vtxf4_jes_dwn"]    ->push_back((v.jetN()>3) ? v.jetVtxFall(JESDWN,3)     : -999.);
-		flatout_vfloats["jet_dphi3muJ1_jes_dwn"]->push_back((v.jetN()>0) ? v.jetDphi3bodyAll(JESDWN)  : -999.);
-		flatout_vfloats["jet_dR3muJ1_jes_dwn"]  ->push_back((v.jetN()>0) ? v.jetDR3bodyAll(JESDWN)    : -999.);
-		flatout_vfloats["jet_dphiJ1J2_jes_dwn"] ->push_back((v.jetN()>1) ? v.jetDphi12All(JESDWN)     : -999.);
-		flatout_vfloats["jet_dRJ1J2_jes_dwn"]   ->push_back((v.jetN()>1) ? v.jetDR12All(JESDWN)       : -999.);
-		flatout_vfloats["jet_sumpt12_jes_dwn"]  ->push_back((v.jetN()>1) ? v.jetSumPtAll(JESDWN)      : -999.);
+		flatout_vfloats["jet_pt1_jes_dwn"]      ->push_back((v.jetN(JESDWN)>0) ? v.jetPEall(JESDWN,0).Pt()  : -999);
+		flatout_vfloats["jet_pt2_jes_dwn"]      ->push_back((v.jetN(JESDWN)>1) ? v.jetPEall(JESDWN,1).Pt()  : -999);
+		flatout_vfloats["jet_pt3_jes_dwn"]      ->push_back((v.jetN(JESDWN)>2) ? v.jetPEall(JESDWN,2).Pt()  : -999);
+		flatout_vfloats["jet_pt4_jes_dwn"]      ->push_back((v.jetN(JESDWN)>3) ? v.jetPEall(JESDWN,3).Pt()  : -999);
+		flatout_vfloats["jet_eta1_jes_dwn"]     ->push_back((v.jetN(JESDWN)>0) ? v.jetPEall(JESDWN,0).Eta() : -999.);
+		flatout_vfloats["jet_eta2_jes_dwn"]     ->push_back((v.jetN(JESDWN)>1) ? v.jetPEall(JESDWN,1).Eta() : -999.);
+		flatout_vfloats["jet_eta3_jes_dwn"]     ->push_back((v.jetN(JESDWN)>2) ? v.jetPEall(JESDWN,2).Eta() : -999.);
+		flatout_vfloats["jet_eta4_jes_dwn"]     ->push_back((v.jetN(JESDWN)>3) ? v.jetPEall(JESDWN,3).Eta() : -999.);
+		flatout_vfloats["jet_phi1_jes_dwn"]     ->push_back((v.jetN(JESDWN)>0) ? v.jetPEall(JESDWN,0).Phi() : -999.);
+		flatout_vfloats["jet_phi2_jes_dwn"]     ->push_back((v.jetN(JESDWN)>1) ? v.jetPEall(JESDWN,1).Phi() : -999.);
+		flatout_vfloats["jet_phi3_jes_dwn"]     ->push_back((v.jetN(JESDWN)>2) ? v.jetPEall(JESDWN,2).Phi() : -999.);
+		flatout_vfloats["jet_phi4_jes_dwn"]     ->push_back((v.jetN(JESDWN)>3) ? v.jetPEall(JESDWN,3).Phi() : -999.);
+		flatout_vfloats["jet_m1_jes_dwn"]       ->push_back((v.jetN(JESDWN)>0) ? v.jetPEall(JESDWN,0).M()   : -999.);
+		flatout_vfloats["jet_m2_jes_dwn"]       ->push_back((v.jetN(JESDWN)>1) ? v.jetPEall(JESDWN,1).M()   : -999.);
+		flatout_vfloats["jet_m3_jes_dwn"]       ->push_back((v.jetN(JESDWN)>2) ? v.jetPEall(JESDWN,2).M()   : -999.);
+		flatout_vfloats["jet_m4_jes_dwn"]       ->push_back((v.jetN(JESDWN)>3) ? v.jetPEall(JESDWN,3).M()   : -999.);
+		flatout_vfloats["jet_E1_jes_dwn"]       ->push_back((v.jetN(JESDWN)>0) ? v.jetPEall(JESDWN,0).E()   : -999.);
+		flatout_vfloats["jet_E2_jes_dwn"]       ->push_back((v.jetN(JESDWN)>1) ? v.jetPEall(JESDWN,1).E()   : -999.);
+		flatout_vfloats["jet_E3_jes_dwn"]       ->push_back((v.jetN(JESDWN)>2) ? v.jetPEall(JESDWN,2).E()   : -999.);
+		flatout_vfloats["jet_E4_jes_dwn"]       ->push_back((v.jetN(JESDWN)>3) ? v.jetPEall(JESDWN,3).E()   : -999.);
+		flatout_vfloats["jet_MV1w1_jes_dwn"]    ->push_back((v.jetN(JESDWN)>0) ? v.jetMV1all(JESDWN,0)      : -999.);
+		flatout_vfloats["jet_MV1w2_jes_dwn"]    ->push_back((v.jetN(JESDWN)>1) ? v.jetMV1all(JESDWN,1)      : -999.);
+		flatout_vfloats["jet_MV1w3_jes_dwn"]    ->push_back((v.jetN(JESDWN)>2) ? v.jetMV1all(JESDWN,2)      : -999.);
+		flatout_vfloats["jet_MV1w4_jes_dwn"]    ->push_back((v.jetN(JESDWN)>3) ? v.jetMV1all(JESDWN,3)      : -999.);
+		flatout_vfloats["jet_vtxf1_jes_dwn"]    ->push_back((v.jetN(JESDWN)>0) ? v.jetVtxFall(JESDWN,0)     : -999.);
+		flatout_vfloats["jet_vtxf2_jes_dwn"]    ->push_back((v.jetN(JESDWN)>1) ? v.jetVtxFall(JESDWN,1)     : -999.);
+		flatout_vfloats["jet_vtxf3_jes_dwn"]    ->push_back((v.jetN(JESDWN)>2) ? v.jetVtxFall(JESDWN,2)     : -999.);
+		flatout_vfloats["jet_vtxf4_jes_dwn"]    ->push_back((v.jetN(JESDWN)>3) ? v.jetVtxFall(JESDWN,3)     : -999.);
+		flatout_vints["jet_ntrk1_jes_dwn"]    ->push_back((v.jetN(JESDWN)>0) ? v.jetNtrkall(JESDWN,0)     : -999.);
+		flatout_vints["jet_ntrk2_jes_dwn"]    ->push_back((v.jetN(JESDWN)>1) ? v.jetNtrkall(JESDWN,1)     : -999.);
+		flatout_vints["jet_ntrk3_jes_dwn"]    ->push_back((v.jetN(JESDWN)>2) ? v.jetNtrkall(JESDWN,2)     : -999.);
+		flatout_vints["jet_ntrk4_jes_dwn"]    ->push_back((v.jetN(JESDWN)>3) ? v.jetNtrkall(JESDWN,3)     : -999.);
+		flatout_vfloats["jet_dphi3muJ1_jes_dwn"]->push_back((v.jetN(JESDWN)>0) ? v.jetDphi3bodyAll(JESDWN)  : -999.);
+		flatout_vfloats["jet_dR3muJ1_jes_dwn"]  ->push_back((v.jetN(JESDWN)>0) ? v.jetDR3bodyAll(JESDWN)    : -999.);
+		flatout_vfloats["jet_dphiJ1J2_jes_dwn"] ->push_back((v.jetN(JESDWN)>1) ? v.jetDphi12All(JESDWN)     : -999.);
+		flatout_vfloats["jet_dRJ1J2_jes_dwn"]   ->push_back((v.jetN(JESDWN)>1) ? v.jetDR12All(JESDWN)       : -999.);
+		flatout_vfloats["jet_sumpt12_jes_dwn"]  ->push_back((v.jetN(JESDWN)>1) ? v.jetSumPtAll(JESDWN)      : -999.);
 		
 		_DEBUG("");
 		
-		flatout_vfloats["jet_pt1_jer_up"]      ->push_back((v.jetN()>0) ? v.jetPEall(JERUP,0).Pt()  : -999);
-		flatout_vfloats["jet_pt2_jer_up"]      ->push_back((v.jetN()>1) ? v.jetPEall(JERUP,1).Pt()  : -999);
-		flatout_vfloats["jet_pt3_jer_up"]      ->push_back((v.jetN()>2) ? v.jetPEall(JERUP,2).Pt()  : -999);
-		flatout_vfloats["jet_pt4_jer_up"]      ->push_back((v.jetN()>3) ? v.jetPEall(JERUP,3).Pt()  : -999);
-		flatout_vfloats["jet_eta1_jer_up"]     ->push_back((v.jetN()>0) ? v.jetPEall(JERUP,0).Eta() : -999.);
-		flatout_vfloats["jet_eta2_jer_up"]     ->push_back((v.jetN()>1) ? v.jetPEall(JERUP,1).Eta() : -999.);
-		flatout_vfloats["jet_eta3_jer_up"]     ->push_back((v.jetN()>2) ? v.jetPEall(JERUP,2).Eta() : -999.);
-		flatout_vfloats["jet_eta4_jer_up"]     ->push_back((v.jetN()>3) ? v.jetPEall(JERUP,3).Eta() : -999.);
-		flatout_vfloats["jet_phi1_jer_up"]     ->push_back((v.jetN()>0) ? v.jetPEall(JERUP,0).Phi() : -999.);
-		flatout_vfloats["jet_phi2_jer_up"]     ->push_back((v.jetN()>1) ? v.jetPEall(JERUP,1).Phi() : -999.);
-		flatout_vfloats["jet_phi3_jer_up"]     ->push_back((v.jetN()>2) ? v.jetPEall(JERUP,2).Phi() : -999.);
-		flatout_vfloats["jet_phi4_jer_up"]     ->push_back((v.jetN()>3) ? v.jetPEall(JERUP,3).Phi() : -999.);
-		flatout_vfloats["jet_m1_jer_up"]       ->push_back((v.jetN()>0) ? v.jetPEall(JERUP,0).M()   : -999.);
-		flatout_vfloats["jet_m2_jer_up"]       ->push_back((v.jetN()>1) ? v.jetPEall(JERUP,1).M()   : -999.);
-		flatout_vfloats["jet_m3_jer_up"]       ->push_back((v.jetN()>2) ? v.jetPEall(JERUP,2).M()   : -999.);
-		flatout_vfloats["jet_m4_jer_up"]       ->push_back((v.jetN()>3) ? v.jetPEall(JERUP,3).M()   : -999.);
-		flatout_vfloats["jet_E1_jer_up"]       ->push_back((v.jetN()>0) ? v.jetPEall(JERUP,0).E()   : -999.);
-		flatout_vfloats["jet_E2_jer_up"]       ->push_back((v.jetN()>1) ? v.jetPEall(JERUP,1).E()   : -999.);
-		flatout_vfloats["jet_E3_jer_up"]       ->push_back((v.jetN()>2) ? v.jetPEall(JERUP,2).E()   : -999.);
-		flatout_vfloats["jet_E4_jer_up"]       ->push_back((v.jetN()>3) ? v.jetPEall(JERUP,3).E()   : -999.);
-		flatout_vfloats["jet_MV1w1_jer_up"]    ->push_back((v.jetN()>0) ? v.jetMV1all(JERUP,0)      : -999.);
-		flatout_vfloats["jet_MV1w2_jer_up"]    ->push_back((v.jetN()>1) ? v.jetMV1all(JERUP,1)      : -999.);
-		flatout_vfloats["jet_MV1w3_jer_up"]    ->push_back((v.jetN()>2) ? v.jetMV1all(JERUP,2)      : -999.);
-		flatout_vfloats["jet_MV1w4_jer_up"]    ->push_back((v.jetN()>3) ? v.jetMV1all(JERUP,3)      : -999.);
-		flatout_vfloats["jet_vtxf1_jer_up"]    ->push_back((v.jetN()>0) ? v.jetVtxFall(JERUP,0)     : -999.);
-		flatout_vfloats["jet_vtxf2_jer_up"]    ->push_back((v.jetN()>1) ? v.jetVtxFall(JERUP,1)     : -999.);
-		flatout_vfloats["jet_vtxf3_jer_up"]    ->push_back((v.jetN()>2) ? v.jetVtxFall(JERUP,2)     : -999.);
-		flatout_vfloats["jet_vtxf4_jer_up"]    ->push_back((v.jetN()>3) ? v.jetVtxFall(JERUP,3)     : -999.);
-		flatout_vfloats["jet_dphi3muJ1_jer_up"]->push_back((v.jetN()>0) ? v.jetDphi3bodyAll(JERUP)  : -999.);
-		flatout_vfloats["jet_dR3muJ1_jer_up"]  ->push_back((v.jetN()>0) ? v.jetDR3bodyAll(JERUP)    : -999.);
-		flatout_vfloats["jet_dphiJ1J2_jer_up"] ->push_back((v.jetN()>1) ? v.jetDphi12All(JERUP)     : -999.);
-		flatout_vfloats["jet_dRJ1J2_jer_up"]   ->push_back((v.jetN()>1) ? v.jetDR12All(JERUP)       : -999.);
-		flatout_vfloats["jet_sumpt12_jer_up"]  ->push_back((v.jetN()>1) ? v.jetSumPtAll(JERUP)      : -999.);
+		flatout_vfloats["jet_pt1_jer_up"]      ->push_back((v.jetN(JERUP)>0) ? v.jetPEall(JERUP,0).Pt()  : -999);
+		flatout_vfloats["jet_pt2_jer_up"]      ->push_back((v.jetN(JERUP)>1) ? v.jetPEall(JERUP,1).Pt()  : -999);
+		flatout_vfloats["jet_pt3_jer_up"]      ->push_back((v.jetN(JERUP)>2) ? v.jetPEall(JERUP,2).Pt()  : -999);
+		flatout_vfloats["jet_pt4_jer_up"]      ->push_back((v.jetN(JERUP)>3) ? v.jetPEall(JERUP,3).Pt()  : -999);
+		flatout_vfloats["jet_eta1_jer_up"]     ->push_back((v.jetN(JERUP)>0) ? v.jetPEall(JERUP,0).Eta() : -999.);
+		flatout_vfloats["jet_eta2_jer_up"]     ->push_back((v.jetN(JERUP)>1) ? v.jetPEall(JERUP,1).Eta() : -999.);
+		flatout_vfloats["jet_eta3_jer_up"]     ->push_back((v.jetN(JERUP)>2) ? v.jetPEall(JERUP,2).Eta() : -999.);
+		flatout_vfloats["jet_eta4_jer_up"]     ->push_back((v.jetN(JERUP)>3) ? v.jetPEall(JERUP,3).Eta() : -999.);
+		flatout_vfloats["jet_phi1_jer_up"]     ->push_back((v.jetN(JERUP)>0) ? v.jetPEall(JERUP,0).Phi() : -999.);
+		flatout_vfloats["jet_phi2_jer_up"]     ->push_back((v.jetN(JERUP)>1) ? v.jetPEall(JERUP,1).Phi() : -999.);
+		flatout_vfloats["jet_phi3_jer_up"]     ->push_back((v.jetN(JERUP)>2) ? v.jetPEall(JERUP,2).Phi() : -999.);
+		flatout_vfloats["jet_phi4_jer_up"]     ->push_back((v.jetN(JERUP)>3) ? v.jetPEall(JERUP,3).Phi() : -999.);
+		flatout_vfloats["jet_m1_jer_up"]       ->push_back((v.jetN(JERUP)>0) ? v.jetPEall(JERUP,0).M()   : -999.);
+		flatout_vfloats["jet_m2_jer_up"]       ->push_back((v.jetN(JERUP)>1) ? v.jetPEall(JERUP,1).M()   : -999.);
+		flatout_vfloats["jet_m3_jer_up"]       ->push_back((v.jetN(JERUP)>2) ? v.jetPEall(JERUP,2).M()   : -999.);
+		flatout_vfloats["jet_m4_jer_up"]       ->push_back((v.jetN(JERUP)>3) ? v.jetPEall(JERUP,3).M()   : -999.);
+		flatout_vfloats["jet_E1_jer_up"]       ->push_back((v.jetN(JERUP)>0) ? v.jetPEall(JERUP,0).E()   : -999.);
+		flatout_vfloats["jet_E2_jer_up"]       ->push_back((v.jetN(JERUP)>1) ? v.jetPEall(JERUP,1).E()   : -999.);
+		flatout_vfloats["jet_E3_jer_up"]       ->push_back((v.jetN(JERUP)>2) ? v.jetPEall(JERUP,2).E()   : -999.);
+		flatout_vfloats["jet_E4_jer_up"]       ->push_back((v.jetN(JERUP)>3) ? v.jetPEall(JERUP,3).E()   : -999.);
+		flatout_vfloats["jet_MV1w1_jer_up"]    ->push_back((v.jetN(JERUP)>0) ? v.jetMV1all(JERUP,0)      : -999.);
+		flatout_vfloats["jet_MV1w2_jer_up"]    ->push_back((v.jetN(JERUP)>1) ? v.jetMV1all(JERUP,1)      : -999.);
+		flatout_vfloats["jet_MV1w3_jer_up"]    ->push_back((v.jetN(JERUP)>2) ? v.jetMV1all(JERUP,2)      : -999.);
+		flatout_vfloats["jet_MV1w4_jer_up"]    ->push_back((v.jetN(JERUP)>3) ? v.jetMV1all(JERUP,3)      : -999.);
+		flatout_vfloats["jet_vtxf1_jer_up"]    ->push_back((v.jetN(JERUP)>0) ? v.jetVtxFall(JERUP,0)     : -999.);
+		flatout_vfloats["jet_vtxf2_jer_up"]    ->push_back((v.jetN(JERUP)>1) ? v.jetVtxFall(JERUP,1)     : -999.);
+		flatout_vfloats["jet_vtxf3_jer_up"]    ->push_back((v.jetN(JERUP)>2) ? v.jetVtxFall(JERUP,2)     : -999.);
+		flatout_vfloats["jet_vtxf4_jer_up"]    ->push_back((v.jetN(JERUP)>3) ? v.jetVtxFall(JERUP,3)     : -999.);
+		flatout_vints["jet_ntrk1_jer_up"]    ->push_back((v.jetN(JERUP)>0) ? v.jetNtrkall(JERUP,0)     : -999.);
+		flatout_vints["jet_ntrk2_jer_up"]    ->push_back((v.jetN(JERUP)>1) ? v.jetNtrkall(JERUP,1)     : -999.);
+		flatout_vints["jet_ntrk3_jer_up"]    ->push_back((v.jetN(JERUP)>2) ? v.jetNtrkall(JERUP,2)     : -999.);
+		flatout_vints["jet_ntrk4_jer_up"]    ->push_back((v.jetN(JERUP)>3) ? v.jetNtrkall(JERUP,3)     : -999.);
+		flatout_vfloats["jet_dphi3muJ1_jer_up"]->push_back((v.jetN(JERUP)>0) ? v.jetDphi3bodyAll(JERUP)  : -999.);
+		flatout_vfloats["jet_dR3muJ1_jer_up"]  ->push_back((v.jetN(JERUP)>0) ? v.jetDR3bodyAll(JERUP)    : -999.);
+		flatout_vfloats["jet_dphiJ1J2_jer_up"] ->push_back((v.jetN(JERUP)>1) ? v.jetDphi12All(JERUP)     : -999.);
+		flatout_vfloats["jet_dRJ1J2_jer_up"]   ->push_back((v.jetN(JERUP)>1) ? v.jetDR12All(JERUP)       : -999.);
+		flatout_vfloats["jet_sumpt12_jer_up"]  ->push_back((v.jetN(JERUP)>1) ? v.jetSumPtAll(JERUP)      : -999.);
 		
 		_DEBUG("");
 		
-		flatout_vfloats["jet_pt1_jer_dwn"]      ->push_back((v.jetN()>0) ? v.jetPEall(JERDWN,0).Pt()  : -999);
-		flatout_vfloats["jet_pt2_jer_dwn"]      ->push_back((v.jetN()>1) ? v.jetPEall(JERDWN,1).Pt()  : -999);
-		flatout_vfloats["jet_pt3_jer_dwn"]      ->push_back((v.jetN()>2) ? v.jetPEall(JERDWN,2).Pt()  : -999);
-		flatout_vfloats["jet_pt4_jer_dwn"]      ->push_back((v.jetN()>3) ? v.jetPEall(JERDWN,3).Pt()  : -999);
-		flatout_vfloats["jet_eta1_jer_dwn"]     ->push_back((v.jetN()>0) ? v.jetPEall(JERDWN,0).Eta() : -999.);
-		flatout_vfloats["jet_eta2_jer_dwn"]     ->push_back((v.jetN()>1) ? v.jetPEall(JERDWN,1).Eta() : -999.);
-		flatout_vfloats["jet_eta3_jer_dwn"]     ->push_back((v.jetN()>2) ? v.jetPEall(JERDWN,2).Eta() : -999.);
-		flatout_vfloats["jet_eta4_jer_dwn"]     ->push_back((v.jetN()>3) ? v.jetPEall(JERDWN,3).Eta() : -999.);
-		flatout_vfloats["jet_phi1_jer_dwn"]     ->push_back((v.jetN()>0) ? v.jetPEall(JERDWN,0).Phi() : -999.);
-		flatout_vfloats["jet_phi2_jer_dwn"]     ->push_back((v.jetN()>1) ? v.jetPEall(JERDWN,1).Phi() : -999.);
-		flatout_vfloats["jet_phi3_jer_dwn"]     ->push_back((v.jetN()>2) ? v.jetPEall(JERDWN,2).Phi() : -999.);
-		flatout_vfloats["jet_phi4_jer_dwn"]     ->push_back((v.jetN()>3) ? v.jetPEall(JERDWN,3).Phi() : -999.);
-		flatout_vfloats["jet_m1_jer_dwn"]       ->push_back((v.jetN()>0) ? v.jetPEall(JERDWN,0).M()   : -999.);
-		flatout_vfloats["jet_m2_jer_dwn"]       ->push_back((v.jetN()>1) ? v.jetPEall(JERDWN,1).M()   : -999.);
-		flatout_vfloats["jet_m3_jer_dwn"]       ->push_back((v.jetN()>2) ? v.jetPEall(JERDWN,2).M()   : -999.);
-		flatout_vfloats["jet_m4_jer_dwn"]       ->push_back((v.jetN()>3) ? v.jetPEall(JERDWN,3).M()   : -999.);
-		flatout_vfloats["jet_E1_jer_dwn"]       ->push_back((v.jetN()>0) ? v.jetPEall(JERDWN,0).E()   : -999.);
-		flatout_vfloats["jet_E2_jer_dwn"]       ->push_back((v.jetN()>1) ? v.jetPEall(JERDWN,1).E()   : -999.);
-		flatout_vfloats["jet_E3_jer_dwn"]       ->push_back((v.jetN()>2) ? v.jetPEall(JERDWN,2).E()   : -999.);
-		flatout_vfloats["jet_E4_jer_dwn"]       ->push_back((v.jetN()>3) ? v.jetPEall(JERDWN,3).E()   : -999.);
-		flatout_vfloats["jet_MV1w1_jer_dwn"]    ->push_back((v.jetN()>0) ? v.jetMV1all(JERDWN,0)      : -999.);
-		flatout_vfloats["jet_MV1w2_jer_dwn"]    ->push_back((v.jetN()>1) ? v.jetMV1all(JERDWN,1)      : -999.);
-		flatout_vfloats["jet_MV1w3_jer_dwn"]    ->push_back((v.jetN()>2) ? v.jetMV1all(JERDWN,2)      : -999.);
-		flatout_vfloats["jet_MV1w4_jer_dwn"]    ->push_back((v.jetN()>3) ? v.jetMV1all(JERDWN,3)      : -999.);
-		flatout_vfloats["jet_vtxf1_jer_dwn"]    ->push_back((v.jetN()>0) ? v.jetVtxFall(JERDWN,0)     : -999.);
-		flatout_vfloats["jet_vtxf2_jer_dwn"]    ->push_back((v.jetN()>1) ? v.jetVtxFall(JERDWN,1)     : -999.);
-		flatout_vfloats["jet_vtxf3_jer_dwn"]    ->push_back((v.jetN()>2) ? v.jetVtxFall(JERDWN,2)     : -999.);
-		flatout_vfloats["jet_vtxf4_jer_dwn"]    ->push_back((v.jetN()>3) ? v.jetVtxFall(JERDWN,3)     : -999.);
-		flatout_vfloats["jet_dphi3muJ1_jer_dwn"]->push_back((v.jetN()>0) ? v.jetDphi3bodyAll(JERDWN)  : -999.);
-		flatout_vfloats["jet_dR3muJ1_jer_dwn"]  ->push_back((v.jetN()>0) ? v.jetDR3bodyAll(JERDWN)    : -999.);
-		flatout_vfloats["jet_dphiJ1J2_jer_dwn"] ->push_back((v.jetN()>1) ? v.jetDphi12All(JERDWN)     : -999.);
-		flatout_vfloats["jet_dRJ1J2_jer_dwn"]   ->push_back((v.jetN()>1) ? v.jetDR12All(JERDWN)       : -999.);
-		flatout_vfloats["jet_sumpt12_jer_dwn"]  ->push_back((v.jetN()>1) ? v.jetSumPtAll(JERDWN)      : -999.);
+		flatout_vfloats["jet_pt1_jer_dwn"]      ->push_back((v.jetN(JERDWN)>0) ? v.jetPEall(JERDWN,0).Pt()  : -999);
+		flatout_vfloats["jet_pt2_jer_dwn"]      ->push_back((v.jetN(JERDWN)>1) ? v.jetPEall(JERDWN,1).Pt()  : -999);
+		flatout_vfloats["jet_pt3_jer_dwn"]      ->push_back((v.jetN(JERDWN)>2) ? v.jetPEall(JERDWN,2).Pt()  : -999);
+		flatout_vfloats["jet_pt4_jer_dwn"]      ->push_back((v.jetN(JERDWN)>3) ? v.jetPEall(JERDWN,3).Pt()  : -999);
+		flatout_vfloats["jet_eta1_jer_dwn"]     ->push_back((v.jetN(JERDWN)>0) ? v.jetPEall(JERDWN,0).Eta() : -999.);
+		flatout_vfloats["jet_eta2_jer_dwn"]     ->push_back((v.jetN(JERDWN)>1) ? v.jetPEall(JERDWN,1).Eta() : -999.);
+		flatout_vfloats["jet_eta3_jer_dwn"]     ->push_back((v.jetN(JERDWN)>2) ? v.jetPEall(JERDWN,2).Eta() : -999.);
+		flatout_vfloats["jet_eta4_jer_dwn"]     ->push_back((v.jetN(JERDWN)>3) ? v.jetPEall(JERDWN,3).Eta() : -999.);
+		flatout_vfloats["jet_phi1_jer_dwn"]     ->push_back((v.jetN(JERDWN)>0) ? v.jetPEall(JERDWN,0).Phi() : -999.);
+		flatout_vfloats["jet_phi2_jer_dwn"]     ->push_back((v.jetN(JERDWN)>1) ? v.jetPEall(JERDWN,1).Phi() : -999.);
+		flatout_vfloats["jet_phi3_jer_dwn"]     ->push_back((v.jetN(JERDWN)>2) ? v.jetPEall(JERDWN,2).Phi() : -999.);
+		flatout_vfloats["jet_phi4_jer_dwn"]     ->push_back((v.jetN(JERDWN)>3) ? v.jetPEall(JERDWN,3).Phi() : -999.);
+		flatout_vfloats["jet_m1_jer_dwn"]       ->push_back((v.jetN(JERDWN)>0) ? v.jetPEall(JERDWN,0).M()   : -999.);
+		flatout_vfloats["jet_m2_jer_dwn"]       ->push_back((v.jetN(JERDWN)>1) ? v.jetPEall(JERDWN,1).M()   : -999.);
+		flatout_vfloats["jet_m3_jer_dwn"]       ->push_back((v.jetN(JERDWN)>2) ? v.jetPEall(JERDWN,2).M()   : -999.);
+		flatout_vfloats["jet_m4_jer_dwn"]       ->push_back((v.jetN(JERDWN)>3) ? v.jetPEall(JERDWN,3).M()   : -999.);
+		flatout_vfloats["jet_E1_jer_dwn"]       ->push_back((v.jetN(JERDWN)>0) ? v.jetPEall(JERDWN,0).E()   : -999.);
+		flatout_vfloats["jet_E2_jer_dwn"]       ->push_back((v.jetN(JERDWN)>1) ? v.jetPEall(JERDWN,1).E()   : -999.);
+		flatout_vfloats["jet_E3_jer_dwn"]       ->push_back((v.jetN(JERDWN)>2) ? v.jetPEall(JERDWN,2).E()   : -999.);
+		flatout_vfloats["jet_E4_jer_dwn"]       ->push_back((v.jetN(JERDWN)>3) ? v.jetPEall(JERDWN,3).E()   : -999.);
+		flatout_vfloats["jet_MV1w1_jer_dwn"]    ->push_back((v.jetN(JERDWN)>0) ? v.jetMV1all(JERDWN,0)      : -999.);
+		flatout_vfloats["jet_MV1w2_jer_dwn"]    ->push_back((v.jetN(JERDWN)>1) ? v.jetMV1all(JERDWN,1)      : -999.);
+		flatout_vfloats["jet_MV1w3_jer_dwn"]    ->push_back((v.jetN(JERDWN)>2) ? v.jetMV1all(JERDWN,2)      : -999.);
+		flatout_vfloats["jet_MV1w4_jer_dwn"]    ->push_back((v.jetN(JERDWN)>3) ? v.jetMV1all(JERDWN,3)      : -999.);
+		flatout_vfloats["jet_vtxf1_jer_dwn"]    ->push_back((v.jetN(JERDWN)>0) ? v.jetVtxFall(JERDWN,0)     : -999.);
+		flatout_vfloats["jet_vtxf2_jer_dwn"]    ->push_back((v.jetN(JERDWN)>1) ? v.jetVtxFall(JERDWN,1)     : -999.);
+		flatout_vfloats["jet_vtxf3_jer_dwn"]    ->push_back((v.jetN(JERDWN)>2) ? v.jetVtxFall(JERDWN,2)     : -999.);
+		flatout_vfloats["jet_vtxf4_jer_dwn"]    ->push_back((v.jetN(JERDWN)>3) ? v.jetVtxFall(JERDWN,3)     : -999.);
+		flatout_vints["jet_ntrk1_jer_dwn"]    ->push_back((v.jetN(JERDWN)>0) ? v.jetNtrkall(JERDWN,0)     : -999.);
+		flatout_vints["jet_ntrk2_jer_dwn"]    ->push_back((v.jetN(JERDWN)>1) ? v.jetNtrkall(JERDWN,1)     : -999.);
+		flatout_vints["jet_ntrk3_jer_dwn"]    ->push_back((v.jetN(JERDWN)>2) ? v.jetNtrkall(JERDWN,2)     : -999.);
+		flatout_vints["jet_ntrk4_jer_dwn"]    ->push_back((v.jetN(JERDWN)>3) ? v.jetNtrkall(JERDWN,3)     : -999.);
+		flatout_vfloats["jet_dphi3muJ1_jer_dwn"]->push_back((v.jetN(JERDWN)>0) ? v.jetDphi3bodyAll(JERDWN)  : -999.);
+		flatout_vfloats["jet_dR3muJ1_jer_dwn"]  ->push_back((v.jetN(JERDWN)>0) ? v.jetDR3bodyAll(JERDWN)    : -999.);
+		flatout_vfloats["jet_dphiJ1J2_jer_dwn"] ->push_back((v.jetN(JERDWN)>1) ? v.jetDphi12All(JERDWN)     : -999.);
+		flatout_vfloats["jet_dRJ1J2_jer_dwn"]   ->push_back((v.jetN(JERDWN)>1) ? v.jetDR12All(JERDWN)       : -999.);
+		flatout_vfloats["jet_sumpt12_jer_dwn"]  ->push_back((v.jetN(JERDWN)>1) ? v.jetSumPtAll(JERDWN)      : -999.);
 		
 		_DEBUG("");
 
-		flatout_vfloats["jet_JES_shift1"]       ->push_back((v.jetN()>0) ? v.jetShiftJES(0) : 0.);
-		flatout_vfloats["jet_JES_shift2"]       ->push_back((v.jetN()>1) ? v.jetShiftJES(1) : 0.);
-		flatout_vfloats["jet_JES_shift3"]       ->push_back((v.jetN()>2) ? v.jetShiftJES(2) : 0.);
-		flatout_vfloats["jet_JES_shift4"]       ->push_back((v.jetN()>3) ? v.jetShiftJES(3) : 0.);
+		flatout_vfloats["jet_JES_shift1"]       ->push_back((v.jetN(NOMINAL)>0) ? v.jetShiftJES(0) : 0.);
+		flatout_vfloats["jet_JES_shift2"]       ->push_back((v.jetN(NOMINAL)>1) ? v.jetShiftJES(1) : 0.);
+		flatout_vfloats["jet_JES_shift3"]       ->push_back((v.jetN(NOMINAL)>2) ? v.jetShiftJES(2) : 0.);
+		flatout_vfloats["jet_JES_shift4"]       ->push_back((v.jetN(NOMINAL)>3) ? v.jetShiftJES(3) : 0.);
 		                                                                                   
-		flatout_vfloats["jet_JER_shift1"]       ->push_back((v.jetN()>0) ? v.jetShiftJER(0) : 0.);
-		flatout_vfloats["jet_JER_shift2"]       ->push_back((v.jetN()>1) ? v.jetShiftJER(1) : 0.);
-		flatout_vfloats["jet_JER_shift3"]       ->push_back((v.jetN()>2) ? v.jetShiftJER(2) : 0.);
-		flatout_vfloats["jet_JER_shift4"]       ->push_back((v.jetN()>3) ? v.jetShiftJER(3) : 0.);
+		flatout_vfloats["jet_JER_shift1"]       ->push_back((v.jetN(NOMINAL)>0) ? v.jetShiftJER(0) : 0.);
+		flatout_vfloats["jet_JER_shift2"]       ->push_back((v.jetN(NOMINAL)>1) ? v.jetShiftJER(1) : 0.);
+		flatout_vfloats["jet_JER_shift3"]       ->push_back((v.jetN(NOMINAL)>2) ? v.jetShiftJER(2) : 0.);
+		flatout_vfloats["jet_JER_shift4"]       ->push_back((v.jetN(NOMINAL)>3) ? v.jetShiftJER(3) : 0.);
 		
 		_DEBUG("");
 		
@@ -3457,12 +3613,15 @@ void fillFlatoutTree(vector<vertex>& vertices, int allPassing)
 		flatout_vfloats["vtx_chi2ndf"]  ->push_back(v.vtxChi2Ndf());
 		flatout_vfloats["vtx_pval"]     ->push_back(v.vtxPvalue());
 		flatout_vfloats["vtx_lxy"]      ->push_back(v.vtxLxy());
-		flatout_vfloats["vtx_lxySig"]   ->push_back((v.vtxLxyErr()!=0.) ? v.vtxLxy()/v.vtxLxyErr() : 0.);
+		flatout_vfloats["vtx_lxyErr"]   ->push_back(v.vtxLxyErr());
 		flatout_vfloats["vtx_a0"]       ->push_back(v.vtxA0());
+		flatout_vfloats["vtx_a0Err"]    ->push_back(v.vtxA0Err());
 		flatout_vfloats["vtx_a0xy"]     ->push_back(v.vtxA0xy());
+		flatout_vfloats["vtx_a0xyErr"]  ->push_back(v.vtxA0xyErr());
 		flatout_vfloats["vtx_cosT"]     ->push_back(fabs(v.vtxCosT()));
 		flatout_vfloats["vtx_cosTxy"]   ->push_back(fabs(v.vtxCosTxy()));
 		flatout_vfloats["vtx_tau"]      ->push_back(v.vtxTau());
+		flatout_vfloats["vtx_tauErr"]   ->push_back(v.vtxTauErr());
 		flatout_vfloats["vtx_ptfrac12"]  ->push_back(v.vtxPtFrac12());
 		flatout_vfloats["vtx_ptfrac23"]  ->push_back(v.vtxPtFrac23());
 		flatout_vfloats["vtx_ptfrac13"]  ->push_back(v.vtxPtFrac13());
@@ -3471,6 +3630,7 @@ void fillFlatoutTree(vector<vertex>& vertices, int allPassing)
 		flatout_vfloats["vtx_dpt13"]     ->push_back(v.vtxDPt13());
 		flatout_vfloats["vtx_dRmax"]     ->push_back(v.vtxDRmax());
 		flatout_vfloats["vtx_dRmin"]     ->push_back(v.vtxDRmin());
+		flatout_vints["vtx_pvNtrk"]      ->push_back(v.vtxPVntrk());
 		
 		flatout_vfloats["vtx_isolation000"]->push_back(v.vtxIsolation(0));
 		flatout_vfloats["vtx_isolation001"]->push_back(v.vtxIsolation(1));
@@ -3529,12 +3689,17 @@ void fillFlatoutTree(vector<vertex>& vertices, int allPassing)
 		flatout_vfloats["met_muons_dPhi3mu_jer_up"] ->push_back(v.metDphi3body(METMUONS,JERUP));
 		flatout_vfloats["met_muons_mT_jer_dwn"]     ->push_back(v.metMt(METMUONS,JERDWN));
 		flatout_vfloats["met_muons_dPhi3mu_jer_dwn"]->push_back(v.metDphi3body(METMUONS,JERDWN));
+		
+		_DEBUG("");
+
+		flatout_vfloats["met_track_mT_uncalib"]     ->push_back(v.metMt(METTRACK,NOJES));
+		flatout_vfloats["met_track_dPhi3mu_uncalib"]->push_back(v.metDphi3body(METTRACK,NOJES));
 	}
 	
 	_DEBUG("");
 	
-	flatout_floats["met_reffinal_et_uncalib"]  = (glob_isWsig) ? uncalibMET.et()  : MET_RefFinal_et; // temp fix foe missing branches in data
-	flatout_floats["met_reffinal_phi_uncalib"] = (glob_isWsig) ? uncalibMET.phi() : MET_RefFinal_phi; // temp fix foe missing branches in data
+	flatout_floats["met_reffinal_et_uncalib"]  = MET_RefFinal_et; 
+	flatout_floats["met_reffinal_phi_uncalib"] = MET_RefFinal_phi;
 	
 	flatout_floats["met_reffinal_et"]  = calibMET_nominal.et();
 	flatout_floats["met_reffinal_phi"] = calibMET_nominal.phi();
@@ -3566,6 +3731,24 @@ void fillFlatoutTree(vector<vertex>& vertices, int allPassing)
 	flatout_floats["met_muons_phi_jer_up"]  = calibMUMET_jer_up.phi();
 	flatout_floats["met_muons_et_jer_dwn"]  = calibMUMET_jer_dwn.et();
 	flatout_floats["met_muons_phi_jer_dwn"] = calibMUMET_jer_dwn.phi();
+	
+	_DEBUG("");
+
+	flatout_floats["met_track_et_uncalib"]  = MET_Track_et;
+	flatout_floats["met_track_phi_uncalib"] = MET_Track_phi;
+
+	flatout_floats["met_track_et"]  = calibMETTRK_nominal.et();
+	flatout_floats["met_track_phi"] = calibMETTRK_nominal.phi();
+	
+	flatout_floats["met_track_et_jes_up"]   = calibMETTRK_jes_up.et();
+	flatout_floats["met_track_phi_jes_up"]  = calibMETTRK_jes_up.phi();
+	flatout_floats["met_track_et_jes_dwn"]  = calibMETTRK_jes_dwn.et();
+	flatout_floats["met_track_phi_jes_dwn"] = calibMETTRK_jes_dwn.phi();
+	
+	flatout_floats["met_track_et_jer_up"]   = calibMETTRK_jer_up.et();
+	flatout_floats["met_track_phi_jer_up"]  = calibMETTRK_jer_up.phi();
+	flatout_floats["met_track_et_jer_dwn"]  = calibMETTRK_jer_dwn.et();
+	flatout_floats["met_track_phi_jer_dwn"] = calibMETTRK_jer_dwn.phi();
 
 	_DEBUG("");
 	
@@ -4489,10 +4672,6 @@ void setBranches(TString tType, TChain* t)
 		AntiKt4LCTopoJets_LArBadHVRatio = 0;
 		
 		AntiKt4LCTopoJets_flavor_weight_MV1 = 0;
-		
-		trk_pt = 0;
-		trk_eta = 0;
-		trk_phi_wrtPV = 0;
         
 		mu_muons_E = 0;
 		mu_muons_pt = 0;
@@ -4503,7 +4682,11 @@ void setBranches(TString tType, TChain* t)
 		mu_muons_ms_phi = 0;
 		mu_muons_ms_theta = 0;
 		mu_muons_ms_qoverp = 0;
-        
+		mu_muons_isCombinedMuon = 0;
+		mu_muons_id_qoverp_exPV = 0;
+		mu_muons_id_theta_exPV = 0;
+		mu_muons_id_phi_exPV = 0;
+ 
 		mu_staco_E = 0;
 		mu_staco_pt = 0;
 		mu_staco_m = 0;
@@ -4513,6 +4696,10 @@ void setBranches(TString tType, TChain* t)
 		mu_staco_ms_phi = 0;
 		mu_staco_ms_theta = 0;
 		mu_staco_ms_qoverp = 0;
+		mu_staco_isCombinedMuon = 0;
+		mu_staco_id_qoverp_exPV = 0;
+		mu_staco_id_theta_exPV = 0;
+		mu_staco_id_phi_exPV = 0;
         
 		mu_muid_E = 0;
 		mu_muid_pt = 0;
@@ -4523,6 +4710,10 @@ void setBranches(TString tType, TChain* t)
 		mu_muid_ms_phi = 0;
 		mu_muid_ms_theta = 0;
 		mu_muid_ms_qoverp = 0;
+		mu_muid_isCombinedMuon = 0;
+		mu_muid_id_qoverp_exPV = 0;
+		mu_muid_id_theta_exPV = 0;
+		mu_muid_id_phi_exPV = 0;
         
 		el_E = 0;
 		el_Et = 0;
@@ -4530,19 +4721,18 @@ void setBranches(TString tType, TChain* t)
 		el_m = 0;
 		el_eta = 0;
 		el_phi = 0;
+		el_cl_E = 0;
+		el_mediumPP = 0;
+		el_author = 0;
+		el_tracketa = 0;
+		el_trackphi = 0;
+		el_Unrefittedtrack_pt = 0;
+		el_Unrefittedtrack_eta = 0;
+		el_Unrefittedtrack_phi = 0;
 		
-		ph_E = 0;
-		ph_Et = 0;
-		ph_pt = 0;
-		ph_m = 0;
-		ph_eta = 0;
-		ph_phi = 0;
-		
-		tau_Et = 0;
-		tau_pt = 0;
-		tau_m = 0;
-		tau_eta = 0;
-		tau_phi = 0;
+		cl_lc_pt = 0;
+		cl_lc_eta = 0;
+		cl_lc_phi = 0;
         
 		el_MET_RefFinal_comp_wpx = 0;
 		el_MET_RefFinal_comp_wpy = 0;
@@ -4589,11 +4779,199 @@ void setBranches(TString tType, TChain* t)
 		
 		vxp_nTracks = 0;
 		
-		TString typo = (glob_isWsig) ? "Jets" : "Lets";
+		//// turn off unnecessary branches
+		if(skim)
+		{
+			//// All unnecessary - turn off !
+			t->SetBranchStatus("L1_*", 0);
+			t->SetBranchStatus("L2_*", 0);
+			t->SetBranchStatus("MET_*_CentralReg", 0);
+			t->SetBranchStatus("MET_*_EndcapRegion", 0);
+			t->SetBranchStatus("MET_*_ForwardReg", 0);
+			t->SetBranchStatus("ph_MET_*", 0);
+			t->SetBranchStatus("tau_MET_*", 0);
+			t->SetBranchStatus("cl_MET_*", 0);
+			t->SetBranchStatus("trk_MET_*", 0);
+		
+			//////////////////////////////////////////////////////
+			//// Most unnecessary - turn off ! ///////////////////
+			t->SetBranchStatus("AntiKt4LCTopoJets_*", 0); ////////
+			t->SetBranchStatus("mu_*", 0); ///////////////////////
+			t->SetBranchStatus("el_*", 0); ///////////////////////
+			t->SetBranchStatus("vxp_*", 0); //////////////////////
+			//////////////////////////////////////////////////////
+			
+			//// Necessary - turn on !
+			t->SetBranchStatus("AntiKt4LCTopoJets_n", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_E", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_pt", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_m", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_eta", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_phi", 1);
+
+			t->SetBranchStatus("AntiKt4LCTopoJets_emfrac", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_hecf", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_LArQuality", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_HECQuality", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_Timing", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_sumPtTrk_pv0_500MeV", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_eta", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_pt", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_fracSamplingMax", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_NegativeE", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_AverageLArQF", 1);
+
+			t->SetBranchStatus("AntiKt4LCTopoJets_EtaOrigin", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_PhiOrigin", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_MOrigin", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_WIDTH", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_n90", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_nTrk", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_sumPtTrk", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_OriginIndex", 1);
+
+			t->SetBranchStatus("AntiKt4LCTopoJets_BCH_CORR_CELL", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_BCH_CORR_DOTX", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_BCH_CORR_JET", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_BCH_CORR_JET_FORCELL", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_ENG_BAD_CELLS", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_N_BAD_CELLS",      1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_N_BAD_CELLS_CORR", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_BAD_CELLS_CORR_E", 1);
+
+			t->SetBranchStatus("AntiKt4LCTopoJets_isUgly", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_isBadLooseMinus", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_isBadLoose",  1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_isBadMedium", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_isBadTight",  1);
+
+			t->SetBranchStatus("AntiKt4LCTopoJets_Offset", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_EMJES",  1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_EMJES_EtaCorr", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_EMJESnooffset", 1);
+
+			t->SetBranchStatus("AntiKt4LCTopoJets_emscale_E",   1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_emscale_pt",  1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_emscale_m",   1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_emscale_eta", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_emscale_phi", 1);
+
+			t->SetBranchStatus("AntiKt4LCTopoJets_jvtx_x", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_jvtx_y", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_jvtx_z", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_jvtxf",  1);
+
+			t->SetBranchStatus("AntiKt4LCTopoJets_LikeLihood_0", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_ActiveArea", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_ActiveAreaPx", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_ActiveAreaPy", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_ActiveAreaPz", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_ActiveAreaE", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_VoronoiArea", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_VoronoiAreaPx", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_VoronoiAreaPy", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_VoronoiAreaPz", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_VoronoiAreaE", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_LowEtConstituentsFrac", 1);
+
+			t->SetBranchStatus("AntiKt4LCTopoJets_e_EMB3", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_e_EME3", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_e_HEC3", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_e_TileBar0", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_e_TileExt0", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_nTrk_pv0_1GeV", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_trackWIDTH_pv0_1GeV", 1);
+
+			t->SetBranchStatus("AntiKt4LCTopoJets_constscale_E", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_constscale_pt", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_constscale_m", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_constscale_eta", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_constscale_phi", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_LArBadHVEnergy", 1);
+			t->SetBranchStatus("AntiKt4LCTopoJets_LArBadHVRatio", 1);
+
+			t->SetBranchStatus("AntiKt4LCTopoJets_flavor_weight_MV1", 1);
+			
+			t->SetBranchStatus("mu_n", 1);
+			t->SetBranchStatus("mu_E", 1);
+			t->SetBranchStatus("mu_pt", 1);
+			t->SetBranchStatus("mu_m",  1);
+			t->SetBranchStatus("mu_eta", 1);
+			t->SetBranchStatus("mu_phi", 1);
+			t->SetBranchStatus("mu_charge",1);
+			t->SetBranchStatus("mu_ms_phi",1);
+			t->SetBranchStatus("mu_ms_theta",  1);
+			t->SetBranchStatus("mu_ms_qoverp", 1);
+			t->SetBranchStatus("mu_isCombinedMuon", 1);
+			t->SetBranchStatus("mu_id_qoverp_exPV", 1);
+			t->SetBranchStatus("mu_id_theta_exPV", 1);
+			t->SetBranchStatus("mu_id_phi_exPV", 1);
+			
+			t->SetBranchStatus("mu_staco_n", 1);
+			t->SetBranchStatus("mu_staco_E", 1);
+			t->SetBranchStatus("mu_staco_pt", 1);
+			t->SetBranchStatus("mu_staco_m",  1);
+			t->SetBranchStatus("mu_staco_eta", 1);
+			t->SetBranchStatus("mu_staco_phi", 1);
+			t->SetBranchStatus("mu_staco_charge",1);
+			t->SetBranchStatus("mu_staco_ms_phi",1);
+			t->SetBranchStatus("mu_staco_ms_theta",  1);
+			t->SetBranchStatus("mu_staco_ms_qoverp", 1);
+			t->SetBranchStatus("mu_staco_isCombinedMuon", 1);
+			t->SetBranchStatus("mu_staco_id_qoverp_exPV", 1);
+			t->SetBranchStatus("mu_staco_id_theta_exPV", 1);
+			t->SetBranchStatus("mu_staco_id_phi_exPV", 1);
+			
+			t->SetBranchStatus("mu_muid_n", 1);
+			t->SetBranchStatus("mu_muid_E", 1);
+			t->SetBranchStatus("mu_muid_pt", 1);
+			t->SetBranchStatus("mu_muid_m",  1);
+			t->SetBranchStatus("mu_muid_eta", 1);
+			t->SetBranchStatus("mu_muid_phi", 1);
+			t->SetBranchStatus("mu_muid_charge",1);
+			t->SetBranchStatus("mu_muid_ms_phi",1);
+			t->SetBranchStatus("mu_muid_ms_theta",  1);
+			t->SetBranchStatus("mu_muid_ms_qoverp", 1);
+			t->SetBranchStatus("mu_muid_isCombinedMuon", 1);
+			t->SetBranchStatus("mu_muid_id_qoverp_exPV", 1);
+			t->SetBranchStatus("mu_muid_id_theta_exPV", 1);
+			t->SetBranchStatus("mu_muid_id_phi_exPV", 1);
+			
+			t->SetBranchStatus("el_n",  1);
+			t->SetBranchStatus("el_E",  1);
+			t->SetBranchStatus("el_Et", 1);
+			t->SetBranchStatus("el_pt", 1);
+			t->SetBranchStatus("el_m", 1);
+			t->SetBranchStatus("el_eta", 1);
+			t->SetBranchStatus("el_phi", 1);
+			t->SetBranchStatus("el_cl_E", 1);
+			t->SetBranchStatus("el_mediumPP", 1);
+			t->SetBranchStatus("el_author", 1);
+			t->SetBranchStatus("el_tracketa", 1);
+			t->SetBranchStatus("el_trackphi", 1);
+			t->SetBranchStatus("el_Unrefittedtrack_pt", 1);
+			t->SetBranchStatus("el_Unrefittedtrack_eta", 1);
+			t->SetBranchStatus("el_Unrefittedtrack_phi", 1);
+			
+			t->SetBranchStatus("vxp_n", 1);
+			t->SetBranchStatus("vxp_x", 1);
+			t->SetBranchStatus("vxp_y", 1);
+			t->SetBranchStatus("vxp_z", 1);
+			t->SetBranchStatus("vxp_type", 1);
+			t->SetBranchStatus("vxp_chi2", 1);
+			t->SetBranchStatus("vxp_ndof", 1);
+			t->SetBranchStatus("vxp_px", 1);
+			t->SetBranchStatus("vxp_py", 1);
+			t->SetBranchStatus("vxp_pz", 1);
+			t->SetBranchStatus("vxp_E", 1);
+			t->SetBranchStatus("vxp_m", 1);
+			t->SetBranchStatus("vxp_nTracks", 1);
+			t->SetBranchStatus("vxp_sumPt", 1);
+		}
 		
 		
-		t->SetBranchAddress("RunNumber",&phys_RunNumber);
-		t->SetBranchAddress("EventNumber",&phys_EventNumber);
+		t->SetBranchAddress("RunNumber",   &phys_RunNumber);
+		t->SetBranchAddress("EventNumber", &phys_EventNumber);
 		if(glob_isMC) t->SetBranchAddress("mc_channel_number",&phys_mc_channel_number);
 		if(glob_isMC) t->SetBranchAddress("mc_event_number",&phys_mc_event_number);
 		if(glob_isMC) t->SetBranchAddress("mc_event_weight",&phys_mc_event_weight);
@@ -4601,95 +4979,95 @@ void setBranches(TString tType, TChain* t)
 		t->SetBranchAddress("actualIntPerXing",&phys_actualIntPerXing);
 		t->SetBranchAddress("averageIntPerXing",&phys_averageIntPerXing);
 
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_n", &AntiKt4LCTopoJets_n);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_E", &AntiKt4LCTopoJets_E);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_pt", &AntiKt4LCTopoJets_pt);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_m", &AntiKt4LCTopoJets_m);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_eta", &AntiKt4LCTopoJets_eta);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_phi", &AntiKt4LCTopoJets_phi);
+		t->SetBranchAddress("AntiKt4LCTopoJets_n", &AntiKt4LCTopoJets_n);
+		t->SetBranchAddress("AntiKt4LCTopoJets_E", &AntiKt4LCTopoJets_E);
+		t->SetBranchAddress("AntiKt4LCTopoJets_pt", &AntiKt4LCTopoJets_pt);
+		t->SetBranchAddress("AntiKt4LCTopoJets_m", &AntiKt4LCTopoJets_m);
+		t->SetBranchAddress("AntiKt4LCTopoJets_eta", &AntiKt4LCTopoJets_eta);
+		t->SetBranchAddress("AntiKt4LCTopoJets_phi", &AntiKt4LCTopoJets_phi);
 		
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_emfrac", &AntiKt4LCTopoJets_emfrac);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_hecf", &AntiKt4LCTopoJets_hecf);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_LArQuality", &AntiKt4LCTopoJets_LArQuality);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_HECQuality", &AntiKt4LCTopoJets_HECQuality);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_Timing", &AntiKt4LCTopoJets_Timing);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_sumPtTrk_pv0_500MeV", &AntiKt4LCTopoJets_sumPtTrk_pv0_500MeV);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_eta", &AntiKt4LCTopoJets_eta);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_pt", &AntiKt4LCTopoJets_pt);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_fracSamplingMax", &AntiKt4LCTopoJets_fracSamplingMax);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_NegativeE", &AntiKt4LCTopoJets_NegativeE);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_AverageLArQF", &AntiKt4LCTopoJets_AverageLArQF);
+		t->SetBranchAddress("AntiKt4LCTopoJets_emfrac", &AntiKt4LCTopoJets_emfrac);
+		t->SetBranchAddress("AntiKt4LCTopoJets_hecf", &AntiKt4LCTopoJets_hecf);
+		t->SetBranchAddress("AntiKt4LCTopoJets_LArQuality", &AntiKt4LCTopoJets_LArQuality);
+		t->SetBranchAddress("AntiKt4LCTopoJets_HECQuality", &AntiKt4LCTopoJets_HECQuality);
+		t->SetBranchAddress("AntiKt4LCTopoJets_Timing", &AntiKt4LCTopoJets_Timing);
+		t->SetBranchAddress("AntiKt4LCTopoJets_sumPtTrk_pv0_500MeV", &AntiKt4LCTopoJets_sumPtTrk_pv0_500MeV);
+		t->SetBranchAddress("AntiKt4LCTopoJets_eta", &AntiKt4LCTopoJets_eta);
+		t->SetBranchAddress("AntiKt4LCTopoJets_pt", &AntiKt4LCTopoJets_pt);
+		t->SetBranchAddress("AntiKt4LCTopoJets_fracSamplingMax", &AntiKt4LCTopoJets_fracSamplingMax);
+		t->SetBranchAddress("AntiKt4LCTopoJets_NegativeE", &AntiKt4LCTopoJets_NegativeE);
+		t->SetBranchAddress("AntiKt4LCTopoJets_AverageLArQF", &AntiKt4LCTopoJets_AverageLArQF);
 		
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_EtaOrigin", &AntiKt4LCTopoJets_EtaOrigin);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_PhiOrigin", &AntiKt4LCTopoJets_PhiOrigin);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_MOrigin", &AntiKt4LCTopoJets_MOrigin);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_WIDTH", &AntiKt4LCTopoJets_WIDTH);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_n90", &AntiKt4LCTopoJets_n90);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_nTrk", &AntiKt4LCTopoJets_nTrk);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_sumPtTrk", &AntiKt4LCTopoJets_sumPtTrk);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_OriginIndex", &AntiKt4LCTopoJets_OriginIndex);
+		t->SetBranchAddress("AntiKt4LCTopoJets_EtaOrigin", &AntiKt4LCTopoJets_EtaOrigin);
+		t->SetBranchAddress("AntiKt4LCTopoJets_PhiOrigin", &AntiKt4LCTopoJets_PhiOrigin);
+		t->SetBranchAddress("AntiKt4LCTopoJets_MOrigin", &AntiKt4LCTopoJets_MOrigin);
+		t->SetBranchAddress("AntiKt4LCTopoJets_WIDTH", &AntiKt4LCTopoJets_WIDTH);
+		t->SetBranchAddress("AntiKt4LCTopoJets_n90", &AntiKt4LCTopoJets_n90);
+		t->SetBranchAddress("AntiKt4LCTopoJets_nTrk", &AntiKt4LCTopoJets_nTrk);
+		t->SetBranchAddress("AntiKt4LCTopoJets_sumPtTrk", &AntiKt4LCTopoJets_sumPtTrk);
+		t->SetBranchAddress("AntiKt4LCTopoJets_OriginIndex", &AntiKt4LCTopoJets_OriginIndex);
 
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_BCH_CORR_CELL", &AntiKt4LCTopoJets_BCH_CORR_CELL);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_BCH_CORR_DOTX", &AntiKt4LCTopoJets_BCH_CORR_DOTX);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_BCH_CORR_JET", &AntiKt4LCTopoJets_BCH_CORR_JET);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_BCH_CORR_JET_FORCELL", &AntiKt4LCTopoJets_BCH_CORR_JET_FORCELL);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_ENG_BAD_CELLS", &AntiKt4LCTopoJets_ENG_BAD_CELLS);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_N_BAD_CELLS", &AntiKt4LCTopoJets_N_BAD_CELLS);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_N_BAD_CELLS_CORR", &AntiKt4LCTopoJets_N_BAD_CELLS_CORR);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_BAD_CELLS_CORR_E", &AntiKt4LCTopoJets_BAD_CELLS_CORR_E);
+		t->SetBranchAddress("AntiKt4LCTopoJets_BCH_CORR_CELL", &AntiKt4LCTopoJets_BCH_CORR_CELL);
+		t->SetBranchAddress("AntiKt4LCTopoJets_BCH_CORR_DOTX", &AntiKt4LCTopoJets_BCH_CORR_DOTX);
+		t->SetBranchAddress("AntiKt4LCTopoJets_BCH_CORR_JET", &AntiKt4LCTopoJets_BCH_CORR_JET);
+		t->SetBranchAddress("AntiKt4LCTopoJets_BCH_CORR_JET_FORCELL", &AntiKt4LCTopoJets_BCH_CORR_JET_FORCELL);
+		t->SetBranchAddress("AntiKt4LCTopoJets_ENG_BAD_CELLS", &AntiKt4LCTopoJets_ENG_BAD_CELLS);
+		t->SetBranchAddress("AntiKt4LCTopoJets_N_BAD_CELLS", &AntiKt4LCTopoJets_N_BAD_CELLS);
+		t->SetBranchAddress("AntiKt4LCTopoJets_N_BAD_CELLS_CORR", &AntiKt4LCTopoJets_N_BAD_CELLS_CORR);
+		t->SetBranchAddress("AntiKt4LCTopoJets_BAD_CELLS_CORR_E", &AntiKt4LCTopoJets_BAD_CELLS_CORR_E);
 
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_isUgly", &AntiKt4LCTopoJets_isUgly);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_isBadLooseMinus", &AntiKt4LCTopoJets_isBadLooseMinus);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_isBadLoose", &AntiKt4LCTopoJets_isBadLoose);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_isBadMedium", &AntiKt4LCTopoJets_isBadMedium);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_isBadTight", &AntiKt4LCTopoJets_isBadTight);
+		t->SetBranchAddress("AntiKt4LCTopoJets_isUgly", &AntiKt4LCTopoJets_isUgly);
+		t->SetBranchAddress("AntiKt4LCTopoJets_isBadLooseMinus", &AntiKt4LCTopoJets_isBadLooseMinus);
+		t->SetBranchAddress("AntiKt4LCTopoJets_isBadLoose", &AntiKt4LCTopoJets_isBadLoose);
+		t->SetBranchAddress("AntiKt4LCTopoJets_isBadMedium", &AntiKt4LCTopoJets_isBadMedium);
+		t->SetBranchAddress("AntiKt4LCTopoJets_isBadTight", &AntiKt4LCTopoJets_isBadTight);
 
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_Offset", &AntiKt4LCTopoJets_Offset);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_EMJES", &AntiKt4LCTopoJets_EMJES);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_EMJES_EtaCorr", &AntiKt4LCTopoJets_EMJES_EtaCorr);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_EMJESnooffset", &AntiKt4LCTopoJets_EMJESnooffset);
+		t->SetBranchAddress("AntiKt4LCTopoJets_Offset", &AntiKt4LCTopoJets_Offset);
+		t->SetBranchAddress("AntiKt4LCTopoJets_EMJES", &AntiKt4LCTopoJets_EMJES);
+		t->SetBranchAddress("AntiKt4LCTopoJets_EMJES_EtaCorr", &AntiKt4LCTopoJets_EMJES_EtaCorr);
+		t->SetBranchAddress("AntiKt4LCTopoJets_EMJESnooffset", &AntiKt4LCTopoJets_EMJESnooffset);
 
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_emscale_E", &AntiKt4LCTopoJets_emscale_E);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_emscale_pt", &AntiKt4LCTopoJets_emscale_pt);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_emscale_m", &AntiKt4LCTopoJets_emscale_m);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_emscale_eta", &AntiKt4LCTopoJets_emscale_eta);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_emscale_phi", &AntiKt4LCTopoJets_emscale_phi);
+		t->SetBranchAddress("AntiKt4LCTopoJets_emscale_E", &AntiKt4LCTopoJets_emscale_E);
+		t->SetBranchAddress("AntiKt4LCTopoJets_emscale_pt", &AntiKt4LCTopoJets_emscale_pt);
+		t->SetBranchAddress("AntiKt4LCTopoJets_emscale_m", &AntiKt4LCTopoJets_emscale_m);
+		t->SetBranchAddress("AntiKt4LCTopoJets_emscale_eta", &AntiKt4LCTopoJets_emscale_eta);
+		t->SetBranchAddress("AntiKt4LCTopoJets_emscale_phi", &AntiKt4LCTopoJets_emscale_phi);
 		
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_jvtx_x", &AntiKt4LCTopoJets_jvtx_x);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_jvtx_y", &AntiKt4LCTopoJets_jvtx_y);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_jvtx_z", &AntiKt4LCTopoJets_jvtx_z);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_jvtxf", &AntiKt4LCTopoJets_jvtxf);
+		t->SetBranchAddress("AntiKt4LCTopoJets_jvtx_x", &AntiKt4LCTopoJets_jvtx_x);
+		t->SetBranchAddress("AntiKt4LCTopoJets_jvtx_y", &AntiKt4LCTopoJets_jvtx_y);
+		t->SetBranchAddress("AntiKt4LCTopoJets_jvtx_z", &AntiKt4LCTopoJets_jvtx_z);
+		t->SetBranchAddress("AntiKt4LCTopoJets_jvtxf", &AntiKt4LCTopoJets_jvtxf);
 		
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_LikeLihood_0", &AntiKt4LCTopoJets_LikeLihood_0);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_ActiveArea", &AntiKt4LCTopoJets_ActiveArea);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_ActiveAreaPx", &AntiKt4LCTopoJets_ActiveAreaPx);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_ActiveAreaPy", &AntiKt4LCTopoJets_ActiveAreaPy);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_ActiveAreaPz", &AntiKt4LCTopoJets_ActiveAreaPz);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_ActiveAreaE", &AntiKt4LCTopoJets_ActiveAreaE);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_VoronoiArea", &AntiKt4LCTopoJets_VoronoiArea);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_VoronoiAreaPx", &AntiKt4LCTopoJets_VoronoiAreaPx);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_VoronoiAreaPy", &AntiKt4LCTopoJets_VoronoiAreaPy);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_VoronoiAreaPz", &AntiKt4LCTopoJets_VoronoiAreaPz);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_VoronoiAreaE", &AntiKt4LCTopoJets_VoronoiAreaE);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_LowEtConstituentsFrac", &AntiKt4LCTopoJets_LowEtConstituentsFrac);
+		t->SetBranchAddress("AntiKt4LCTopoJets_LikeLihood_0", &AntiKt4LCTopoJets_LikeLihood_0);
+		t->SetBranchAddress("AntiKt4LCTopoJets_ActiveArea", &AntiKt4LCTopoJets_ActiveArea);
+		t->SetBranchAddress("AntiKt4LCTopoJets_ActiveAreaPx", &AntiKt4LCTopoJets_ActiveAreaPx);
+		t->SetBranchAddress("AntiKt4LCTopoJets_ActiveAreaPy", &AntiKt4LCTopoJets_ActiveAreaPy);
+		t->SetBranchAddress("AntiKt4LCTopoJets_ActiveAreaPz", &AntiKt4LCTopoJets_ActiveAreaPz);
+		t->SetBranchAddress("AntiKt4LCTopoJets_ActiveAreaE", &AntiKt4LCTopoJets_ActiveAreaE);
+		t->SetBranchAddress("AntiKt4LCTopoJets_VoronoiArea", &AntiKt4LCTopoJets_VoronoiArea);
+		t->SetBranchAddress("AntiKt4LCTopoJets_VoronoiAreaPx", &AntiKt4LCTopoJets_VoronoiAreaPx);
+		t->SetBranchAddress("AntiKt4LCTopoJets_VoronoiAreaPy", &AntiKt4LCTopoJets_VoronoiAreaPy);
+		t->SetBranchAddress("AntiKt4LCTopoJets_VoronoiAreaPz", &AntiKt4LCTopoJets_VoronoiAreaPz);
+		t->SetBranchAddress("AntiKt4LCTopoJets_VoronoiAreaE", &AntiKt4LCTopoJets_VoronoiAreaE);
+		t->SetBranchAddress("AntiKt4LCTopoJets_LowEtConstituentsFrac", &AntiKt4LCTopoJets_LowEtConstituentsFrac);
 		
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_e_EMB3", &AntiKt4LCTopoJets_e_EMB3);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_e_EME3", &AntiKt4LCTopoJets_e_EME3);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_e_HEC3", &AntiKt4LCTopoJets_e_HEC3);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_e_TileBar0", &AntiKt4LCTopoJets_e_TileBar0);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_e_TileExt0", &AntiKt4LCTopoJets_e_TileExt0);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_nTrk_pv0_1GeV", &AntiKt4LCTopoJets_nTrk_pv0_1GeV);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_trackWIDTH_pv0_1GeV", &AntiKt4LCTopoJets_trackWIDTH_pv0_1GeV);
+		t->SetBranchAddress("AntiKt4LCTopoJets_e_EMB3", &AntiKt4LCTopoJets_e_EMB3);
+		t->SetBranchAddress("AntiKt4LCTopoJets_e_EME3", &AntiKt4LCTopoJets_e_EME3);
+		t->SetBranchAddress("AntiKt4LCTopoJets_e_HEC3", &AntiKt4LCTopoJets_e_HEC3);
+		t->SetBranchAddress("AntiKt4LCTopoJets_e_TileBar0", &AntiKt4LCTopoJets_e_TileBar0);
+		t->SetBranchAddress("AntiKt4LCTopoJets_e_TileExt0", &AntiKt4LCTopoJets_e_TileExt0);
+		t->SetBranchAddress("AntiKt4LCTopoJets_nTrk_pv0_1GeV", &AntiKt4LCTopoJets_nTrk_pv0_1GeV);
+		t->SetBranchAddress("AntiKt4LCTopoJets_trackWIDTH_pv0_1GeV", &AntiKt4LCTopoJets_trackWIDTH_pv0_1GeV);
 		
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_constscale_E", &AntiKt4LCTopoJets_constscale_E);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_constscale_pt", &AntiKt4LCTopoJets_constscale_pt);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_constscale_m", &AntiKt4LCTopoJets_constscale_m);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_constscale_eta", &AntiKt4LCTopoJets_constscale_eta);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_constscale_phi", &AntiKt4LCTopoJets_constscale_phi);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_LArBadHVEnergy", &AntiKt4LCTopoJets_LArBadHVEnergy);
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_LArBadHVRatio", &AntiKt4LCTopoJets_LArBadHVRatio);
+		t->SetBranchAddress("AntiKt4LCTopoJets_constscale_E", &AntiKt4LCTopoJets_constscale_E);
+		t->SetBranchAddress("AntiKt4LCTopoJets_constscale_pt", &AntiKt4LCTopoJets_constscale_pt);
+		t->SetBranchAddress("AntiKt4LCTopoJets_constscale_m", &AntiKt4LCTopoJets_constscale_m);
+		t->SetBranchAddress("AntiKt4LCTopoJets_constscale_eta", &AntiKt4LCTopoJets_constscale_eta);
+		t->SetBranchAddress("AntiKt4LCTopoJets_constscale_phi", &AntiKt4LCTopoJets_constscale_phi);
+		t->SetBranchAddress("AntiKt4LCTopoJets_LArBadHVEnergy", &AntiKt4LCTopoJets_LArBadHVEnergy);
+		t->SetBranchAddress("AntiKt4LCTopoJets_LArBadHVRatio", &AntiKt4LCTopoJets_LArBadHVRatio);
 		
-		t->SetBranchAddress("AntiKt4LCTopo"+typo+"_flavor_weight_MV1", &AntiKt4LCTopoJets_flavor_weight_MV1);
+		t->SetBranchAddress("AntiKt4LCTopoJets_flavor_weight_MV1", &AntiKt4LCTopoJets_flavor_weight_MV1);
 		
 		t->SetBranchAddress("MET_RefFinal_etx", &MET_RefFinal_etx);
 		t->SetBranchAddress("MET_RefFinal_ety", &MET_RefFinal_ety);
@@ -4697,237 +5075,197 @@ void setBranches(TString tType, TChain* t)
 		t->SetBranchAddress("MET_RefFinal_et", &MET_RefFinal_et);
 		t->SetBranchAddress("MET_RefFinal_sumet", &MET_RefFinal_sumet);
 		
+		t->SetBranchAddress("MET_RefMuon_etx", &MET_RefMuon_etx);
+		t->SetBranchAddress("MET_RefMuon_ety", &MET_RefMuon_ety);
+		t->SetBranchAddress("MET_RefMuon_phi", &MET_RefMuon_phi);
+		t->SetBranchAddress("MET_RefMuon_et", &MET_RefMuon_et);
+		t->SetBranchAddress("MET_RefMuon_sumet", &MET_RefMuon_sumet);
+        
+		t->SetBranchAddress("MET_RefTau_etx", &MET_RefTau_etx);
+		t->SetBranchAddress("MET_RefTau_ety", &MET_RefTau_ety);
+		t->SetBranchAddress("MET_RefTau_phi", &MET_RefTau_phi);
+		t->SetBranchAddress("MET_RefTau_et", &MET_RefTau_et);
+		t->SetBranchAddress("MET_RefTau_sumet", &MET_RefTau_sumet);
+        
+		t->SetBranchAddress("MET_CellOut_Eflow_etx", &MET_CellOut_Eflow_etx);
+		t->SetBranchAddress("MET_CellOut_Eflow_ety", &MET_CellOut_Eflow_ety);
+		t->SetBranchAddress("MET_CellOut_Eflow_phi", &MET_CellOut_Eflow_phi);
+		t->SetBranchAddress("MET_CellOut_Eflow_et", &MET_CellOut_Eflow_et);
+		t->SetBranchAddress("MET_CellOut_Eflow_sumet", &MET_CellOut_Eflow_sumet);
 		
-		if(glob_isWsig)
-		{
-			t->SetBranchAddress("MET_RefMuon_etx", &MET_RefMuon_etx);
-			t->SetBranchAddress("MET_RefMuon_ety", &MET_RefMuon_ety);
-			t->SetBranchAddress("MET_RefMuon_phi", &MET_RefMuon_phi);
-			t->SetBranchAddress("MET_RefMuon_et", &MET_RefMuon_et);
-			t->SetBranchAddress("MET_RefMuon_sumet", &MET_RefMuon_sumet);
-        	
-			t->SetBranchAddress("MET_RefTau_etx", &MET_RefTau_etx);
-			t->SetBranchAddress("MET_RefTau_ety", &MET_RefTau_ety);
-			t->SetBranchAddress("MET_RefTau_phi", &MET_RefTau_phi);
-			t->SetBranchAddress("MET_RefTau_et", &MET_RefTau_et);
-			t->SetBranchAddress("MET_RefTau_sumet", &MET_RefTau_sumet);
-        	
-			t->SetBranchAddress("MET_CellOut_Eflow_etx", &MET_CellOut_Eflow_etx);
-			t->SetBranchAddress("MET_CellOut_Eflow_ety", &MET_CellOut_Eflow_ety);
-			t->SetBranchAddress("MET_CellOut_Eflow_phi", &MET_CellOut_Eflow_phi);
-			t->SetBranchAddress("MET_CellOut_Eflow_et", &MET_CellOut_Eflow_et);
-			t->SetBranchAddress("MET_CellOut_Eflow_sumet", &MET_CellOut_Eflow_sumet);
-			
-			t->SetBranchAddress("MET_SoftJets_etx", &MET_SoftJets_etx);
-			t->SetBranchAddress("MET_SoftJets_ety", &MET_SoftJets_ety);
-			t->SetBranchAddress("MET_SoftJets_phi", &MET_SoftJets_phi);
-			t->SetBranchAddress("MET_SoftJets_et", &MET_SoftJets_et);
-			t->SetBranchAddress("MET_SoftJets_sumet", &MET_SoftJets_sumet);
-        	
-			t->SetBranchAddress("MET_Track_etx", &MET_Track_etx);
-			t->SetBranchAddress("MET_Track_ety", &MET_Track_ety);
-			t->SetBranchAddress("MET_Track_phi", &MET_Track_phi);
-			t->SetBranchAddress("MET_Track_et", &MET_Track_et);
-			t->SetBranchAddress("MET_Track_sumet", &MET_Track_sumet);
-        	
-			t->SetBranchAddress("MET_MuonBoy_etx", &MET_MuonBoy_etx);
-			t->SetBranchAddress("MET_MuonBoy_ety", &MET_MuonBoy_ety);
-			t->SetBranchAddress("MET_MuonBoy_phi", &MET_MuonBoy_phi);
-			t->SetBranchAddress("MET_MuonBoy_et", &MET_MuonBoy_et);
-			t->SetBranchAddress("MET_MuonBoy_sumet", &MET_MuonBoy_sumet);
-        	
-			t->SetBranchAddress("MET_Muon_etx", &MET_Muon_etx);
-			t->SetBranchAddress("MET_Muon_ety", &MET_Muon_ety);
-			t->SetBranchAddress("MET_Muon_phi", &MET_Muon_phi);
-			t->SetBranchAddress("MET_Muon_et", &MET_Muon_et);
-			t->SetBranchAddress("MET_Muon_sumet", &MET_Muon_sumet);
-			
-			t->SetBranchAddress("MET_Muons_etx", &MET_Muons_etx);
-			t->SetBranchAddress("MET_Muons_ety", &MET_Muons_ety);
-			t->SetBranchAddress("MET_Muons_phi", &MET_Muons_phi);
-			t->SetBranchAddress("MET_Muons_et", &MET_Muons_et);
-			t->SetBranchAddress("MET_Muons_sumet", &MET_Muons_sumet);
-
-			t->SetBranchAddress("MET_Muid_etx", &MET_Muid_etx);
-			t->SetBranchAddress("MET_Muid_ety", &MET_Muid_ety);
-			t->SetBranchAddress("MET_Muid_phi", &MET_Muid_phi);
-			t->SetBranchAddress("MET_Muid_et", &MET_Muid_et);
-			t->SetBranchAddress("MET_Muid_sumet", &MET_Muid_sumet);
-        	
-			t->SetBranchAddress("MET_RefGamma_etx", &MET_RefGamma_etx);
-			t->SetBranchAddress("MET_RefGamma_ety", &MET_RefGamma_ety);
-			t->SetBranchAddress("MET_RefGamma_phi", &MET_RefGamma_phi);
-			t->SetBranchAddress("MET_RefGamma_et", &MET_RefGamma_et);
-			t->SetBranchAddress("MET_RefGamma_sumet", &MET_RefGamma_sumet);
-        	
-			t->SetBranchAddress("MET_RefEle_etx", &MET_RefEle_etx);
-			t->SetBranchAddress("MET_RefEle_ety", &MET_RefEle_ety);
-			t->SetBranchAddress("MET_RefEle_phi", &MET_RefEle_phi);
-			t->SetBranchAddress("MET_RefEle_et", &MET_RefEle_et);
-			t->SetBranchAddress("MET_RefEle_sumet", &MET_RefEle_sumet);
-        	
-			t->SetBranchAddress("MET_RefJet_etx", &MET_RefJet_etx);
-			t->SetBranchAddress("MET_RefJet_ety", &MET_RefJet_ety);
-			t->SetBranchAddress("MET_RefJet_phi", &MET_RefJet_phi);
-			t->SetBranchAddress("MET_RefJet_et", &MET_RefJet_et);
-			t->SetBranchAddress("MET_RefJet_sumet", &MET_RefJet_sumet);
-        	
-			t->SetBranchAddress("MET_Truth_NonInt_etx", &MET_Truth_NonInt_etx);
-			t->SetBranchAddress("MET_Truth_NonInt_ety", &MET_Truth_NonInt_ety);
-			t->SetBranchAddress("MET_Truth_NonInt_phi", &MET_Truth_NonInt_phi);
-			t->SetBranchAddress("MET_Truth_NonInt_et", &MET_Truth_NonInt_et);
-			t->SetBranchAddress("MET_Truth_NonInt_sumet", &MET_Truth_NonInt_sumet);
-			
-			// t->SetBranchAddress("trk_n", &trk_n);
-			// t->SetBranchAddress("trk_pt", &trk_pt);
-			// t->SetBranchAddress("trk_eta", &trk_eta);
-			// t->SetBranchAddress("trk_phi_wrtPV", &trk_phi_wrtPV);
-   	
-			t->SetBranchAddress("mu_n", &mu_muons_n);
-			t->SetBranchAddress("mu_E", &mu_muons_E);
-			t->SetBranchAddress("mu_pt", &mu_muons_pt);
-			t->SetBranchAddress("mu_m", &mu_muons_m);
-			t->SetBranchAddress("mu_eta", &mu_muons_eta);
-			t->SetBranchAddress("mu_phi", &mu_muons_phi);
-			t->SetBranchAddress("mu_charge", &mu_muons_charge);
-			t->SetBranchAddress("mu_ms_phi", &mu_muons_ms_phi);
-			t->SetBranchAddress("mu_ms_theta", &mu_muons_ms_theta);
-			t->SetBranchAddress("mu_ms_qoverp", &mu_muons_ms_qoverp);
-        	
-			t->SetBranchAddress("mu_staco_n", &mu_staco_n);
-			t->SetBranchAddress("mu_staco_E", &mu_staco_E);
-			t->SetBranchAddress("mu_staco_pt", &mu_staco_pt);
-			t->SetBranchAddress("mu_staco_m", &mu_staco_m);
-			t->SetBranchAddress("mu_staco_eta", &mu_staco_eta);
-			t->SetBranchAddress("mu_staco_phi", &mu_staco_phi);
-			t->SetBranchAddress("mu_staco_charge", &mu_staco_charge);
-			t->SetBranchAddress("mu_staco_ms_phi", &mu_staco_ms_phi);
-			t->SetBranchAddress("mu_staco_ms_theta", &mu_staco_ms_theta);
-			t->SetBranchAddress("mu_staco_ms_qoverp", &mu_staco_ms_qoverp);
-        	
-			t->SetBranchAddress("mu_muid_n", &mu_muid_n);
-			t->SetBranchAddress("mu_muid_E", &mu_muid_E);
-			t->SetBranchAddress("mu_muid_pt", &mu_muid_pt);
-			t->SetBranchAddress("mu_muid_m", &mu_muid_m);
-			t->SetBranchAddress("mu_muid_eta", &mu_muid_eta);
-			t->SetBranchAddress("mu_muid_phi", &mu_muid_phi);
-			t->SetBranchAddress("mu_muid_charge", &mu_muid_charge);
-			t->SetBranchAddress("mu_muid_ms_phi", &mu_muid_ms_phi);
-			t->SetBranchAddress("mu_muid_ms_theta", &mu_muid_ms_theta);
-			t->SetBranchAddress("mu_muid_ms_qoverp", &mu_muid_ms_qoverp);
-
-			t->SetBranchAddress("el_n", &el_n);
-			t->SetBranchAddress("el_E", &el_E);
-			t->SetBranchAddress("el_Et", &el_Et);
-			t->SetBranchAddress("el_pt", &el_pt);
-			t->SetBranchAddress("el_m", &el_m);
-			t->SetBranchAddress("el_eta", &el_eta);
-			t->SetBranchAddress("el_phi", &el_phi);
-			         	
-			t->SetBranchAddress("ph_n", &ph_n);
-			t->SetBranchAddress("ph_E", &ph_E);
-			t->SetBranchAddress("ph_Et", &ph_Et);
-			t->SetBranchAddress("ph_pt", &ph_pt);
-			t->SetBranchAddress("ph_m", &ph_m);
-			t->SetBranchAddress("ph_eta", &ph_eta);
-			t->SetBranchAddress("ph_phi", &ph_phi);
-			         	
-			// t->SetBranchAddress("tau_n", &tau_n);
-			// t->SetBranchAddress("tau_Et", &tau_Et);
-			// t->SetBranchAddress("tau_pt", &tau_pt);
-			// t->SetBranchAddress("tau_m", &tau_m);
-			// t->SetBranchAddress("tau_eta", &tau_eta);
-			// t->SetBranchAddress("tau_phi", &tau_phi);
-
-			t->SetBranchAddress("el_MET_RefFinal_comp_n", &el_MET_RefFinal_comp_n);
-			t->SetBranchAddress("el_MET_RefFinal_comp_wpx", &el_MET_RefFinal_comp_wpx);
-			t->SetBranchAddress("el_MET_RefFinal_comp_wpy", &el_MET_RefFinal_comp_wpy);
-			t->SetBranchAddress("el_MET_RefFinal_comp_wet", &el_MET_RefFinal_comp_wet);
-			t->SetBranchAddress("el_MET_RefFinal_comp_statusWord", &el_MET_RefFinal_comp_statusWord);
-			t->SetBranchAddress("ph_MET_RefFinal_comp_n", &ph_MET_RefFinal_comp_n);
-			t->SetBranchAddress("ph_MET_RefFinal_comp_wpx", &ph_MET_RefFinal_comp_wpx);
-			t->SetBranchAddress("ph_MET_RefFinal_comp_wpy", &ph_MET_RefFinal_comp_wpy);
-			t->SetBranchAddress("ph_MET_RefFinal_comp_wet", &ph_MET_RefFinal_comp_wet);
-			t->SetBranchAddress("ph_MET_RefFinal_comp_statusWord", &ph_MET_RefFinal_comp_statusWord);
-			t->SetBranchAddress("mu_staco_MET_RefFinal_comp_n", &mu_staco_MET_RefFinal_comp_n);
-			t->SetBranchAddress("mu_staco_MET_RefFinal_comp_wpx", &mu_staco_MET_RefFinal_comp_wpx);
-			t->SetBranchAddress("mu_staco_MET_RefFinal_comp_wpy", &mu_staco_MET_RefFinal_comp_wpy);
-			t->SetBranchAddress("mu_staco_MET_RefFinal_comp_wet", &mu_staco_MET_RefFinal_comp_wet);
-			t->SetBranchAddress("mu_staco_MET_RefFinal_comp_statusWord", &mu_staco_MET_RefFinal_comp_statusWord);
-			t->SetBranchAddress("mu_muid_MET_RefFinal_comp_n", &mu_muid_MET_RefFinal_comp_n);
-			t->SetBranchAddress("mu_muid_MET_RefFinal_comp_wpx", &mu_muid_MET_RefFinal_comp_wpx);
-			t->SetBranchAddress("mu_muid_MET_RefFinal_comp_wpy", &mu_muid_MET_RefFinal_comp_wpy);
-			t->SetBranchAddress("mu_muid_MET_RefFinal_comp_wet", &mu_muid_MET_RefFinal_comp_wet);
-			t->SetBranchAddress("mu_muid_MET_RefFinal_comp_statusWord", &mu_muid_MET_RefFinal_comp_statusWord);
-			t->SetBranchAddress("mu_MET_RefFinal_comp_n", &mu_MET_RefFinal_comp_n);
-			t->SetBranchAddress("mu_MET_RefFinal_comp_wpx", &mu_MET_RefFinal_comp_wpx);
-			t->SetBranchAddress("mu_MET_RefFinal_comp_wpy", &mu_MET_RefFinal_comp_wpy);
-			t->SetBranchAddress("mu_MET_RefFinal_comp_wet", &mu_MET_RefFinal_comp_wet);
-			t->SetBranchAddress("mu_MET_RefFinal_comp_statusWord", &mu_MET_RefFinal_comp_statusWord);
-			// t->SetBranchAddress("tau_MET_RefFinal_comp_n", &tau_MET_RefFinal_comp_n);
-			// t->SetBranchAddress("tau_MET_RefFinal_comp_wpx", &tau_MET_RefFinal_comp_wpx);
-			// t->SetBranchAddress("tau_MET_RefFinal_comp_wpy", &tau_MET_RefFinal_comp_wpy);
-			// t->SetBranchAddress("tau_MET_RefFinal_comp_wet", &tau_MET_RefFinal_comp_wet);
-			// t->SetBranchAddress("tau_MET_RefFinal_comp_statusWord", &tau_MET_RefFinal_comp_statusWord);
-			t->SetBranchAddress("jet_antikt4LCtopo_MET_RefFinal_comp_n", &jet_antikt4LCtopo_MET_RefFinal_comp_n);
-			t->SetBranchAddress("jet_antikt4LCtopo_MET_RefFinal_comp_wpx", &jet_antikt4LCtopo_MET_RefFinal_comp_wpx);
-			t->SetBranchAddress("jet_antikt4LCtopo_MET_RefFinal_comp_wpy", &jet_antikt4LCtopo_MET_RefFinal_comp_wpy);
-			t->SetBranchAddress("jet_antikt4LCtopo_MET_RefFinal_comp_wet", &jet_antikt4LCtopo_MET_RefFinal_comp_wet);
-			t->SetBranchAddress("jet_antikt4LCtopo_MET_RefFinal_comp_statusWord", &jet_antikt4LCtopo_MET_RefFinal_comp_statusWord);
-			// t->SetBranchAddress("cl_MET_RefFinal_comp_n", &cl_MET_RefFinal_comp_n);
-			// t->SetBranchAddress("cl_MET_RefFinal_comp_wpx", &cl_MET_RefFinal_comp_wpx);
-			// t->SetBranchAddress("cl_MET_RefFinal_comp_wpy", &cl_MET_RefFinal_comp_wpy);
-			// t->SetBranchAddress("cl_MET_RefFinal_comp_wet", &cl_MET_RefFinal_comp_wet);
-			// t->SetBranchAddress("cl_MET_RefFinal_comp_statusWord", &cl_MET_RefFinal_comp_statusWord);
-			// t->SetBranchAddress("trk_MET_RefFinal_comp_n", &trk_MET_RefFinal_comp_n);
-			// t->SetBranchAddress("trk_MET_RefFinal_comp_wpx", &trk_MET_RefFinal_comp_wpx);
-			// t->SetBranchAddress("trk_MET_RefFinal_comp_wpy", &trk_MET_RefFinal_comp_wpy);
-			// t->SetBranchAddress("trk_MET_RefFinal_comp_wet", &trk_MET_RefFinal_comp_wet);
-			// t->SetBranchAddress("trk_MET_RefFinal_comp_statusWord", &trk_MET_RefFinal_comp_statusWord);
-		}
+		t->SetBranchAddress("MET_SoftJets_etx", &MET_SoftJets_etx);
+		t->SetBranchAddress("MET_SoftJets_ety", &MET_SoftJets_ety);
+		t->SetBranchAddress("MET_SoftJets_phi", &MET_SoftJets_phi);
+		t->SetBranchAddress("MET_SoftJets_et", &MET_SoftJets_et);
+		t->SetBranchAddress("MET_SoftJets_sumet", &MET_SoftJets_sumet);
+        
+		t->SetBranchAddress("MET_Track_etx", &MET_Track_etx);
+		t->SetBranchAddress("MET_Track_ety", &MET_Track_ety);
+		t->SetBranchAddress("MET_Track_phi", &MET_Track_phi);
+		t->SetBranchAddress("MET_Track_et", &MET_Track_et);
+		t->SetBranchAddress("MET_Track_sumet", &MET_Track_sumet);
+        
+		t->SetBranchAddress("MET_MuonBoy_etx", &MET_MuonBoy_etx);
+		t->SetBranchAddress("MET_MuonBoy_ety", &MET_MuonBoy_ety);
+		t->SetBranchAddress("MET_MuonBoy_phi", &MET_MuonBoy_phi);
+		t->SetBranchAddress("MET_MuonBoy_et", &MET_MuonBoy_et);
+		t->SetBranchAddress("MET_MuonBoy_sumet", &MET_MuonBoy_sumet);
+        
+		t->SetBranchAddress("MET_Muon_etx", &MET_Muon_etx);
+		t->SetBranchAddress("MET_Muon_ety", &MET_Muon_ety);
+		t->SetBranchAddress("MET_Muon_phi", &MET_Muon_phi);
+		t->SetBranchAddress("MET_Muon_et", &MET_Muon_et);
+		t->SetBranchAddress("MET_Muon_sumet", &MET_Muon_sumet);
+		
+		t->SetBranchAddress("MET_Muons_etx", &MET_Muons_etx);
+		t->SetBranchAddress("MET_Muons_ety", &MET_Muons_ety);
+		t->SetBranchAddress("MET_Muons_phi", &MET_Muons_phi);
+		t->SetBranchAddress("MET_Muons_et", &MET_Muons_et);
+		t->SetBranchAddress("MET_Muons_sumet", &MET_Muons_sumet);
+        
+		t->SetBranchAddress("MET_Muid_etx", &MET_Muid_etx);
+		t->SetBranchAddress("MET_Muid_ety", &MET_Muid_ety);
+		t->SetBranchAddress("MET_Muid_phi", &MET_Muid_phi);
+		t->SetBranchAddress("MET_Muid_et", &MET_Muid_et);
+		t->SetBranchAddress("MET_Muid_sumet", &MET_Muid_sumet);
+        
+		t->SetBranchAddress("MET_RefGamma_etx", &MET_RefGamma_etx);
+		t->SetBranchAddress("MET_RefGamma_ety", &MET_RefGamma_ety);
+		t->SetBranchAddress("MET_RefGamma_phi", &MET_RefGamma_phi);
+		t->SetBranchAddress("MET_RefGamma_et", &MET_RefGamma_et);
+		t->SetBranchAddress("MET_RefGamma_sumet", &MET_RefGamma_sumet);
+        
+		t->SetBranchAddress("MET_RefEle_etx", &MET_RefEle_etx);
+		t->SetBranchAddress("MET_RefEle_ety", &MET_RefEle_ety);
+		t->SetBranchAddress("MET_RefEle_phi", &MET_RefEle_phi);
+		t->SetBranchAddress("MET_RefEle_et", &MET_RefEle_et);
+		t->SetBranchAddress("MET_RefEle_sumet", &MET_RefEle_sumet);
+        
+		t->SetBranchAddress("MET_RefJet_etx", &MET_RefJet_etx);
+		t->SetBranchAddress("MET_RefJet_ety", &MET_RefJet_ety);
+		t->SetBranchAddress("MET_RefJet_phi", &MET_RefJet_phi);
+		t->SetBranchAddress("MET_RefJet_et", &MET_RefJet_et);
+		t->SetBranchAddress("MET_RefJet_sumet", &MET_RefJet_sumet);
+        
+		if(glob_isMC) t->SetBranchAddress("MET_Truth_NonInt_etx", &MET_Truth_NonInt_etx);
+		if(glob_isMC) t->SetBranchAddress("MET_Truth_NonInt_ety", &MET_Truth_NonInt_ety);
+		if(glob_isMC) t->SetBranchAddress("MET_Truth_NonInt_phi", &MET_Truth_NonInt_phi);
+		if(glob_isMC) t->SetBranchAddress("MET_Truth_NonInt_et", &MET_Truth_NonInt_et);
+		if(glob_isMC) t->SetBranchAddress("MET_Truth_NonInt_sumet", &MET_Truth_NonInt_sumet);
+		
+		// t->SetBranchAddress("trk_n", &trk_n);
+		// t->SetBranchAddress("trk_pt", &trk_pt);
+		// t->SetBranchAddress("trk_eta", &trk_eta);
+		// t->SetBranchAddress("trk_phi_wrtPV", &trk_phi_wrtPV);
+   	    
+		t->SetBranchAddress("mu_n", &mu_muons_n);
+		t->SetBranchAddress("mu_E", &mu_muons_E);
+		t->SetBranchAddress("mu_pt", &mu_muons_pt);
+		t->SetBranchAddress("mu_m", &mu_muons_m);
+		t->SetBranchAddress("mu_eta", &mu_muons_eta);
+		t->SetBranchAddress("mu_phi", &mu_muons_phi);
+		t->SetBranchAddress("mu_charge", &mu_muons_charge);
+		t->SetBranchAddress("mu_ms_phi", &mu_muons_ms_phi);
+		t->SetBranchAddress("mu_ms_theta", &mu_muons_ms_theta);
+		t->SetBranchAddress("mu_ms_qoverp", &mu_muons_ms_qoverp);
+		t->SetBranchAddress("mu_isCombinedMuon", &mu_muons_isCombinedMuon);
+		t->SetBranchAddress("mu_id_qoverp_exPV", &mu_muons_id_qoverp_exPV);
+		t->SetBranchAddress("mu_id_theta_exPV", &mu_muons_id_theta_exPV);
+		t->SetBranchAddress("mu_id_phi_exPV", &mu_muons_id_phi_exPV);
+        
+		t->SetBranchAddress("mu_staco_n", &mu_staco_n);
+		t->SetBranchAddress("mu_staco_E", &mu_staco_E);
+		t->SetBranchAddress("mu_staco_pt", &mu_staco_pt);
+		t->SetBranchAddress("mu_staco_m", &mu_staco_m);
+		t->SetBranchAddress("mu_staco_eta", &mu_staco_eta);
+		t->SetBranchAddress("mu_staco_phi", &mu_staco_phi);
+		t->SetBranchAddress("mu_staco_charge", &mu_staco_charge);
+		t->SetBranchAddress("mu_staco_ms_phi", &mu_staco_ms_phi);
+		t->SetBranchAddress("mu_staco_ms_theta", &mu_staco_ms_theta);
+		t->SetBranchAddress("mu_staco_ms_qoverp", &mu_staco_ms_qoverp);
+		t->SetBranchAddress("mu_staco_isCombinedMuon", &mu_staco_isCombinedMuon);
+		t->SetBranchAddress("mu_staco_id_qoverp_exPV", &mu_staco_id_qoverp_exPV);
+		t->SetBranchAddress("mu_staco_id_theta_exPV", &mu_staco_id_theta_exPV);
+		t->SetBranchAddress("mu_staco_id_phi_exPV", &mu_staco_id_phi_exPV);
+        
+		t->SetBranchAddress("mu_muid_n", &mu_muid_n);
+		t->SetBranchAddress("mu_muid_E", &mu_muid_E);
+		t->SetBranchAddress("mu_muid_pt", &mu_muid_pt);
+		t->SetBranchAddress("mu_muid_m", &mu_muid_m);
+		t->SetBranchAddress("mu_muid_eta", &mu_muid_eta);
+		t->SetBranchAddress("mu_muid_phi", &mu_muid_phi);
+		t->SetBranchAddress("mu_muid_charge", &mu_muid_charge);
+		t->SetBranchAddress("mu_muid_ms_phi", &mu_muid_ms_phi);
+		t->SetBranchAddress("mu_muid_ms_theta", &mu_muid_ms_theta);
+		t->SetBranchAddress("mu_muid_ms_qoverp", &mu_muid_ms_qoverp);
+		t->SetBranchAddress("mu_muid_isCombinedMuon", &mu_muid_isCombinedMuon);
+		t->SetBranchAddress("mu_muid_id_qoverp_exPV", &mu_muid_id_qoverp_exPV);
+		t->SetBranchAddress("mu_muid_id_theta_exPV", &mu_muid_id_theta_exPV);
+		t->SetBranchAddress("mu_muid_id_phi_exPV", &mu_muid_id_phi_exPV);
+        
+		t->SetBranchAddress("el_n", &el_n);
+		t->SetBranchAddress("el_E", &el_E);
+		t->SetBranchAddress("el_Et", &el_Et);
+		t->SetBranchAddress("el_pt", &el_pt);
+		t->SetBranchAddress("el_m", &el_m);
+		t->SetBranchAddress("el_eta", &el_eta);
+		t->SetBranchAddress("el_phi", &el_phi);
+		t->SetBranchAddress("el_cl_E", &el_cl_E);
+		t->SetBranchAddress("el_mediumPP", &el_mediumPP);
+		t->SetBranchAddress("el_author", &el_author);
+		t->SetBranchAddress("el_tracketa", &el_tracketa);
+		t->SetBranchAddress("el_trackphi", &el_trackphi);
+		t->SetBranchAddress("el_Unrefittedtrack_pt", &el_Unrefittedtrack_pt);
+		t->SetBranchAddress("el_Unrefittedtrack_eta", &el_Unrefittedtrack_eta);
+		t->SetBranchAddress("el_Unrefittedtrack_phi", &el_Unrefittedtrack_phi);
+        
+		t->SetBranchAddress("cl_lc_pt", &cl_lc_pt);
+		t->SetBranchAddress("cl_lc_eta", &cl_lc_eta);
+		t->SetBranchAddress("cl_lc_phi", &cl_lc_phi);
+        
+		t->SetBranchAddress("el_MET_RefFinal_comp_n", &el_MET_RefFinal_comp_n);
+		t->SetBranchAddress("el_MET_RefFinal_comp_wpx", &el_MET_RefFinal_comp_wpx);
+		t->SetBranchAddress("el_MET_RefFinal_comp_wpy", &el_MET_RefFinal_comp_wpy);
+		t->SetBranchAddress("el_MET_RefFinal_comp_wet", &el_MET_RefFinal_comp_wet);
+		t->SetBranchAddress("el_MET_RefFinal_comp_statusWord", &el_MET_RefFinal_comp_statusWord);
+		t->SetBranchAddress("ph_MET_RefFinal_comp_n", &ph_MET_RefFinal_comp_n);
+		t->SetBranchAddress("ph_MET_RefFinal_comp_wpx", &ph_MET_RefFinal_comp_wpx);
+		t->SetBranchAddress("ph_MET_RefFinal_comp_wpy", &ph_MET_RefFinal_comp_wpy);
+		t->SetBranchAddress("ph_MET_RefFinal_comp_wet", &ph_MET_RefFinal_comp_wet);
+		t->SetBranchAddress("ph_MET_RefFinal_comp_statusWord", &ph_MET_RefFinal_comp_statusWord);
+		t->SetBranchAddress("mu_staco_MET_RefFinal_comp_n", &mu_staco_MET_RefFinal_comp_n);
+		t->SetBranchAddress("mu_staco_MET_RefFinal_comp_wpx", &mu_staco_MET_RefFinal_comp_wpx);
+		t->SetBranchAddress("mu_staco_MET_RefFinal_comp_wpy", &mu_staco_MET_RefFinal_comp_wpy);
+		t->SetBranchAddress("mu_staco_MET_RefFinal_comp_wet", &mu_staco_MET_RefFinal_comp_wet);
+		t->SetBranchAddress("mu_staco_MET_RefFinal_comp_statusWord", &mu_staco_MET_RefFinal_comp_statusWord);
+		t->SetBranchAddress("mu_muid_MET_RefFinal_comp_n", &mu_muid_MET_RefFinal_comp_n);
+		t->SetBranchAddress("mu_muid_MET_RefFinal_comp_wpx", &mu_muid_MET_RefFinal_comp_wpx);
+		t->SetBranchAddress("mu_muid_MET_RefFinal_comp_wpy", &mu_muid_MET_RefFinal_comp_wpy);
+		t->SetBranchAddress("mu_muid_MET_RefFinal_comp_wet", &mu_muid_MET_RefFinal_comp_wet);
+		t->SetBranchAddress("mu_muid_MET_RefFinal_comp_statusWord", &mu_muid_MET_RefFinal_comp_statusWord);
+		t->SetBranchAddress("mu_MET_RefFinal_comp_n", &mu_MET_RefFinal_comp_n);
+		t->SetBranchAddress("mu_MET_RefFinal_comp_wpx", &mu_MET_RefFinal_comp_wpx);
+		t->SetBranchAddress("mu_MET_RefFinal_comp_wpy", &mu_MET_RefFinal_comp_wpy);
+		t->SetBranchAddress("mu_MET_RefFinal_comp_wet", &mu_MET_RefFinal_comp_wet);
+		t->SetBranchAddress("mu_MET_RefFinal_comp_statusWord", &mu_MET_RefFinal_comp_statusWord);
+		t->SetBranchAddress("jet_antikt4LCtopo_MET_RefFinal_comp_n", &jet_antikt4LCtopo_MET_RefFinal_comp_n);
+		t->SetBranchAddress("jet_antikt4LCtopo_MET_RefFinal_comp_wpx", &jet_antikt4LCtopo_MET_RefFinal_comp_wpx);
+		t->SetBranchAddress("jet_antikt4LCtopo_MET_RefFinal_comp_wpy", &jet_antikt4LCtopo_MET_RefFinal_comp_wpy);
+		t->SetBranchAddress("jet_antikt4LCtopo_MET_RefFinal_comp_wet", &jet_antikt4LCtopo_MET_RefFinal_comp_wet);
+		t->SetBranchAddress("jet_antikt4LCtopo_MET_RefFinal_comp_statusWord", &jet_antikt4LCtopo_MET_RefFinal_comp_statusWord);
 		
 		t->SetBranchAddress("rhorhoKt3EM", &rhorhoKt3EM);
 		t->SetBranchAddress("rhorhoKt4EM", &rhorhoKt4EM);
 		t->SetBranchAddress("rhorhoKt3LC", &rhorhoKt3LC);
 		t->SetBranchAddress("rhorhoKt4LC", &rhorhoKt4LC);
 		
-		if(glob_isWsig)
-		{
-			t->SetBranchAddress("musp_eta", &musp_eta);
-			t->SetBranchAddress("musp_phi", &musp_phi);
-			t->SetBranchAddress("musp_innerSegments", &musp_innerSegments);
-			t->SetBranchAddress("musp_middleSegments", &musp_middleSegments);
-			t->SetBranchAddress("musp_outerSegments", &musp_outerSegments);
+		t->SetBranchAddress("musp_eta", &musp_eta);
+		t->SetBranchAddress("musp_phi", &musp_phi);
+		t->SetBranchAddress("musp_innerSegments", &musp_innerSegments);
+		t->SetBranchAddress("musp_middleSegments", &musp_middleSegments);
+		t->SetBranchAddress("musp_outerSegments", &musp_outerSegments);
 		
-			t->SetBranchAddress("vxp_nTracks", &vxp_nTracks);
-		}
-
-		if(skim)
-		{
-		  	t->SetBranchStatus("trig_*_mu18it_*", 0);
-		  	t->SetBranchStatus("trig_*_mu4T_j*",  0);
-		  	t->SetBranchStatus("trig_*_mu6i*",  0);
-		  	t->SetBranchStatus("trig_*_Jpsi*",  0);
-		  	t->SetBranchStatus("trig_*_a4tchad*",  0);
-		  	t->SetBranchStatus("trig_*2mu8_EFxe40*",  0);
-		  	t->SetBranchStatus("trig_*l2muonSA*",  0);
-		  	t->SetBranchStatus("trig_*_Trk_*",  0);
-		  	t->SetBranchStatus("trig_*Upsi*",  0);
-		  	t->SetBranchStatus("trig_*Bmumux*",  0);
-		  	t->SetBranchStatus("trig_*_c4cchad_*",  0);
-		  	t->SetBranchStatus("AntiKt4LCTopo"+typo+"_ptconst_default*",  0);
-		
-			if(glob_isWsig)
-			{	
-				t->SetBranchStatus("trk_*", 0);
-				t->SetBranchStatus("tau_*", 0);
-				t->SetBranchStatus("cl_*", 0);
-		    	
-				t->SetBranchStatus("tau_MET_*", 0);
-				t->SetBranchStatus("cl_MET_*", 0);
-				t->SetBranchStatus("trk_MET_*", 0);
-			}
-		}
+		t->SetBranchAddress("vxp_nTracks", &vxp_nTracks);
 	}
 	
 
@@ -5241,6 +5579,17 @@ void setBranches(TString tType, TChain* t)
 		
 		trks_pixeldEdx = 0;
 		trks_nUsedHitsdEdx = 0;
+
+		trks_d0 = 0;
+		trks_z0 = 0;
+		trks_extrapZ0 = 0;
+		trks_extrapD0 = 0;
+		trks_phi0 = 0;
+		trks_theta = 0;
+		trks_d0Err = 0;
+		trks_z0Err = 0;
+		trks_phi0Err = 0;
+		trks_thetaErr = 0;
 		
 		t->SetBranchAddress(prefix+"chi2",&trks_chi2);
 		t->SetBranchAddress(prefix+"qOverPErr",&trks_qoverpErr);
@@ -5265,6 +5614,17 @@ void setBranches(TString tType, TChain* t)
 		t->SetBranchAddress(prefix+"expectBLayer",&trks_expectBLayer);
 		t->SetBranchAddress(prefix+"pixeldEdx",    &trks_pixeldEdx);
 		t->SetBranchAddress(prefix+"nUsedHitsdEdx",&trks_nUsedHitsdEdx);
+
+		t->SetBranchAddress(prefix+"d0",&trks_d0);
+		t->SetBranchAddress(prefix+"z0",&trks_z0);
+		t->SetBranchAddress(prefix+"extrapZ0",&trks_extrapZ0);
+		t->SetBranchAddress(prefix+"extrapD0",&trks_extrapD0);
+		t->SetBranchAddress(prefix+"phi0",&trks_phi0);
+		t->SetBranchAddress(prefix+"theta",&trks_theta);
+		t->SetBranchAddress(prefix+"d0Err",&trks_d0Err);
+		t->SetBranchAddress(prefix+"z0Err",&trks_z0Err);
+		t->SetBranchAddress(prefix+"phi0Err",&trks_phi0Err);
+		t->SetBranchAddress(prefix+"thetaErr",&trks_thetaErr);
 		
 		///////////////////////////////////
 		// disable unnecessary branches ///
@@ -5283,17 +5643,6 @@ void setBranches(TString tType, TChain* t)
 			t->SetBranchStatus(prefix+"BS_phi0Err", 0);
 			t->SetBranchStatus(prefix+"BS_thetaErr", 0);
 			t->SetBranchStatus(prefix+"BS_qOverPErr", 0);
-			
-			t->SetBranchStatus(prefix+"d0", 0);
-			t->SetBranchStatus(prefix+"z0", 0);
-			t->SetBranchStatus(prefix+"extrapZ0", 0);
-			t->SetBranchStatus(prefix+"extrapD0", 0);
-			t->SetBranchStatus(prefix+"phi0", 0);
-			t->SetBranchStatus(prefix+"theta", 0);
-			t->SetBranchStatus(prefix+"d0Err", 0);
-			t->SetBranchStatus(prefix+"z0Err", 0);
-			t->SetBranchStatus(prefix+"phi0Err", 0);
-			t->SetBranchStatus(prefix+"thetaErr", 0);
 		}
 	}
 	
@@ -5509,6 +5858,13 @@ void setBranches(TString tType, TChain* t)
 		t->SetBranchAddress(prefix+"RefFinal_sumET",&met_RefFinal_sumet);
 		t->SetBranchAddress(prefix+"RefFinal_et",&met_RefFinal_et);
 		t->SetBranchAddress(prefix+"RefFinal_phi",&met_RefFinal_phi);
+
+		t->SetBranchAddress(prefix+"Track_source",&met_Track_source);
+                t->SetBranchAddress(prefix+"Track_etX",&met_Track_etX);
+                t->SetBranchAddress(prefix+"Track_etY",&met_Track_etY);
+                t->SetBranchAddress(prefix+"Track_sumET",&met_Track_sumet);
+                t->SetBranchAddress(prefix+"Track_et",&met_Track_et);
+                t->SetBranchAddress(prefix+"Track_phi",&met_Track_phi);
 		
 		///////////////////////////////////
 		// disable unnecessary branches ///
@@ -6204,6 +6560,8 @@ void prepareChains(TString name, TString mastertree, TMapTSP2TCHAIN& chains, TMa
 
 void reBlindAllMassHists(TMapTSP2TH1& histos, double mMin, double mMax)
 {
+	if(!doBlind) return;
+
 	for(TMapTSP2TH1::iterator it=histos.begin() ; it!=histos.end() ; ++it)
 	{
 		TString name = it->first;
@@ -6223,6 +6581,8 @@ void reBlindAllMassHists(TMapTSP2TH1& histos, double mMin, double mMax)
 }
 void reBlindAllMassHists(TMapTSP2TH2& histos, double mMin, double mMax)
 {
+	if(!doBlind) return;
+
 	for(TMapTSP2TH2::iterator it=histos.begin() ; it!=histos.end() ; ++it)
 	{
 		TString name = it->first;
@@ -6269,6 +6629,8 @@ void reBlindAllMassHists(TMapTSP2TH2& histos, double mMin, double mMax)
 }
 bool reBlind(TH1* h, double m, double mMin, double mMax)
 {
+	if(!doBlind) return false;
+
 	TString name = h->GetName();
 	if(!isData(name)) return false;
 	Int_t bMin = h->FindBin(mMin);
@@ -6722,6 +7084,7 @@ double tripletpTconeXX(int trk1, int trk2, int trk3, double conemargins=0.)
 	dRmax = (p1.DeltaR(p2)>dRmax) ? p1.DeltaR(p2) : dRmax;
 	dRmax = (p1.DeltaR(p3)>dRmax) ? p1.DeltaR(p3) : dRmax;
 	dRmax = (p2.DeltaR(p3)>dRmax) ? p2.DeltaR(p3) : dRmax;
+	//dRmax *= 2.;
 	// dRmax += (dRmax<0.1) ? conemargins : 0.;
 	dRmax += conemargins;
 	for(int trk=0 ; trk<(int)trks_pt->size() ; ++trk)
@@ -6942,8 +7305,8 @@ void fillHistsMVAvars(unsigned int vtx, TString name, TString suffix, TMapTSP2TH
 	if(pv1.size()>1) _ERROR("nPV>1");
 	int pvindex = pv1[0];
 	double m3mu = p3body.M();
-	float met_adhoc    = (glob_isWsig) ? uncalibMET.et()  : MET_RefFinal_et; // temp fix for missing branches in data
-	float metphi_adhoc = (glob_isWsig) ? uncalibMET.phi() : MET_RefFinal_phi; // temp fix for missing branches in data
+	float met_adhoc    = MET_RefFinal_et;
+	float metphi_adhoc = MET_RefFinal_phi;
 	
 	if(foundOS1) histos[name+"_MVA_vars_mOS1"+suffix]->Fill(pOS1.M(),weight);
 	if(foundOS2) histos[name+"_MVA_vars_mOS2"+suffix]->Fill(pOS2.M(),weight);
@@ -7172,13 +7535,17 @@ void vertex::set(unsigned int vtx)
 	vector<int> pv1; findPVindex(pv1,1);
 	if(pv1.size()<1) _ERROR("PV not found OR too many (>1) PVs were found: nPV="+_s((int)pv1.size()));
 	int pvindex = pv1[0];
-	m_lxy    = vtx_lxy->at(vtx)[pvindex];
-	m_lxyErr = vtx_lxyErr->at(vtx)[pvindex];
-	m_tau    = vtx_tau->at(vtx)[pvindex];
-	m_a0     = vtx_a0->at(vtx)[pvindex];
-	m_a0xy   = vtx_a0XY->at(vtx)[pvindex];
-	m_cosT   = vtx_cosTheta->at(vtx)[pvindex];
-	m_cosTxy = vtx_cosThetaXY->at(vtx)[pvindex];
+	m_lxy       = vtx_lxy->at(vtx)[pvindex];
+	m_lxyErr    = vtx_lxyErr->at(vtx)[pvindex];
+	m_tau       = vtx_tau->at(vtx)[pvindex];
+	m_tauErr    = vtx_tauErr->at(vtx)[pvindex];
+	m_a0        = vtx_a0->at(vtx)[pvindex];
+	m_a0Err     = vtx_a0Err->at(vtx)[pvindex];
+	m_a0xy      = vtx_a0XY->at(vtx)[pvindex];
+	m_a0xyErr   = vtx_a0XYErr->at(vtx)[pvindex];
+	m_cosT      = vtx_cosTheta->at(vtx)[pvindex];
+	m_cosTxy    = vtx_cosThetaXY->at(vtx)[pvindex];
+	m_pvNtrk    = pv_ntrk->at(pvindex);
 	
 	_DEBUG("");
 	
@@ -8212,17 +8579,19 @@ void vertex::set(unsigned int vtx)
 	dRmin = (psum.DeltaR(p1)<dRmin) ? psum.DeltaR(p1) : dRmin;
 	dRmin = (psum.DeltaR(p2)<dRmin) ? psum.DeltaR(p2) : dRmin;
 	dRmin = (psum.DeltaR(p3)<dRmin) ? psum.DeltaR(p3) : dRmin;
+	//dRmin *= 2.;
 	double dRmax = -1.e20;
 	dRmax = (psum.DeltaR(p1)>dRmax) ? psum.DeltaR(p1) : dRmax;
 	dRmax = (psum.DeltaR(p2)>dRmax) ? psum.DeltaR(p2) : dRmax;
 	dRmax = (psum.DeltaR(p3)>dRmax) ? psum.DeltaR(p3) : dRmax;
+	//dRmax *= 2.;
 	m_drmax = dRmax;
 	m_drmin = dRmin;
 	
 	_DEBUG("");
 	
-	m_met[METSTACO][NOJES]          = (glob_isWsig) ? uncalibMET.et() :  MET_RefFinal_et; // temp fix for missing MET branches for data
-	m_metPhi[METSTACO][NOJES]       = (glob_isWsig) ? uncalibMET.phi() : MET_RefFinal_phi; // temp fix for missing MET branches for data
+	m_met[METSTACO][NOJES]          = MET_RefFinal_et;
+	m_metPhi[METSTACO][NOJES]       = MET_RefFinal_phi;
 	m_metDphi3body[METSTACO][NOJES] = fabs(dPhi(m_metPhi[METSTACO][NOJES],psum.Phi()));
 	m_metMt[METSTACO][NOJES]        = mT(m_met[METSTACO][NOJES],m_metPhi[METSTACO][NOJES],psum.Pt(),psum.Phi());
 	
@@ -8230,6 +8599,11 @@ void vertex::set(unsigned int vtx)
 	m_metPhi[METMUONS][NOJES]       = uncalibMUMET.phi();
 	m_metDphi3body[METMUONS][NOJES] = fabs(dPhi(m_metPhi[METMUONS][NOJES],psum.Phi()));
 	m_metMt[METMUONS][NOJES]        = mT(m_met[METMUONS][NOJES],m_metPhi[METMUONS][NOJES],psum.Pt(),psum.Phi());
+	
+	m_met[METTRACK][NOJES]          = MET_Track_et;
+	m_metPhi[METTRACK][NOJES]       = MET_Track_phi;
+	m_metDphi3body[METTRACK][NOJES] = fabs(dPhi(m_metPhi[METTRACK][NOJES],psum.Phi()));
+	m_metMt[METTRACK][NOJES]        = mT(m_met[METTRACK][NOJES],m_metPhi[METTRACK][NOJES],psum.Pt(),psum.Phi());
 
 	if(!skim)
 	{
@@ -8285,6 +8659,35 @@ void vertex::set(unsigned int vtx)
 		m_metPhi[METMUONS][JERDWN]       = calibMUMET_jer_dwn.phi();
 		m_metDphi3body[METMUONS][JERDWN] = fabs(dPhi(calibMUMET_jer_dwn.phi(),psum.Phi()));
 		m_metMt[METMUONS][JERDWN]        = mT(calibMUMET_jer_dwn.et(),calibMUMET_jer_dwn.phi(),psum.Pt(),psum.Phi());
+
+
+
+		
+
+		m_met[METTRACK][NOMINAL]          = calibMETTRK_nominal.et();
+		m_metPhi[METTRACK][NOMINAL]       = calibMETTRK_nominal.phi();
+		m_metDphi3body[METTRACK][NOMINAL] = fabs(dPhi(calibMETTRK_nominal.phi(),psum.Phi()));
+		m_metMt[METTRACK][NOMINAL]        = mT(calibMETTRK_nominal.et(),calibMETTRK_nominal.phi(),psum.Pt(),psum.Phi());
+		
+		m_met[METTRACK][JESUP]          = calibMETTRK_jes_up.et();
+		m_metPhi[METTRACK][JESUP]       = calibMETTRK_jes_up.phi();
+		m_metDphi3body[METTRACK][JESUP] = fabs(dPhi(calibMETTRK_jes_up.phi(),psum.Phi()));
+		m_metMt[METTRACK][JESUP]        = mT(calibMETTRK_jes_up.et(),calibMETTRK_jes_up.phi(),psum.Pt(),psum.Phi());
+		
+		m_met[METTRACK][JESDWN]          = calibMETTRK_jes_dwn.et();
+		m_metPhi[METTRACK][JESDWN]       = calibMETTRK_jes_dwn.phi();
+		m_metDphi3body[METTRACK][JESDWN] = fabs(dPhi(calibMETTRK_jes_dwn.phi(),psum.Phi()));
+		m_metMt[METTRACK][JESDWN]        = mT(calibMETTRK_jes_dwn.et(),calibMETTRK_jes_dwn.phi(),psum.Pt(),psum.Phi());
+		
+		m_met[METTRACK][JERUP]          = calibMETTRK_jer_up.et();
+		m_metPhi[METTRACK][JERUP]       = calibMETTRK_jer_up.phi();
+		m_metDphi3body[METTRACK][JERUP] = fabs(dPhi(calibMETTRK_jer_up.phi(),psum.Phi()));
+		m_metMt[METTRACK][JERUP]        = mT(calibMETTRK_jer_up.et(),calibMETTRK_jer_up.phi(),psum.Pt(),psum.Phi());
+		
+		m_met[METTRACK][JERDWN]          = calibMETTRK_jer_dwn.et();
+		m_metPhi[METTRACK][JERDWN]       = calibMETTRK_jer_dwn.phi();
+		m_metDphi3body[METTRACK][JERDWN] = fabs(dPhi(calibMETTRK_jer_dwn.phi(),psum.Phi()));
+		m_metMt[METTRACK][JERDWN]        = mT(calibMETTRK_jer_dwn.et(),calibMETTRK_jer_dwn.phi(),psum.Pt(),psum.Phi());
 	}
 	
 	_DEBUG("");
@@ -8302,23 +8705,58 @@ void vertex::set(unsigned int vtx)
 	vector<int> ijet_jes_dwn;
 	vector<int> ijet_jer_up;
 	vector<int> ijet_jer_dwn;
+
+	float dR3bodyJetMin = 0.2; // 0.2+dRmax/2.; // this is for the overlap removal
 	for(int i=0 ; i<AntiKt4LCTopoJets_n ; i++)
 	{
-		if(!isGoodJet(i,JetQuality))            continue;
-		if(fabs(calibJets[i].DeltaR(psum))<0.4) continue;
-		
-		pt2i_uncalib.insert(make_pair(AntiKt4LCTopoJets_pt->at(i),i));
-
-		if(!skim && glob_doJetCalib)
+		if(!isGoodJet(i,JetQuality)) continue;
+		TLorentzVector Jet; Jet.SetPtEtaPhiE(AntiKt4LCTopoJets_pt->at(i), AntiKt4LCTopoJets_eta->at(i), AntiKt4LCTopoJets_phi->at(i), AntiKt4LCTopoJets_E->at(i));
+		if(fabs(Jet.DeltaR(psum))<dR3bodyJetMin) continue; // overlap removal
+		pt2i_uncalib.insert(make_pair(Jet.Pt(),i));
+	}
+	if(!skim && glob_doJetCalib)
+	{
+		_DEBUG("");
+		for(int i=0 ; i<AntiKt4LCTopoJets_n ; i++)
 		{
-			pt2i.insert(make_pair(AntiKt4LCTopoJets_calibrated_pt->at(i),i));
-			
-			TLorentzVector Jet;
-			Jet = calibJets[i]; Jet*=(1+calibJetsUnc[i]);   pt2i_jes_up.insert(make_pair(Jet.Pt(),i));
-			Jet = calibJets[i]; Jet*=(1-calibJetsUnc[i]);   pt2i_jes_dwn.insert(make_pair(Jet.Pt(),i));
-			Jet = calibJets[i]; Jet*=(1+smearedJetsUnc[i]); pt2i_jer_up.insert(make_pair(Jet.Pt(),i));
-			Jet = calibJets[i]; Jet*=(1-smearedJetsUnc[i]); pt2i_jer_dwn.insert(make_pair(Jet.Pt(),i));
+			if(!isGoodJet(i,JetQuality)) continue;
+			TLorentzVector Jet; Jet = calibJets[i];
+			if(fabs(Jet.DeltaR(psum))<dR3bodyJetMin) continue; // overlap removal
+			pt2i.insert(make_pair(Jet.Pt(),i));
 		}
+		_DEBUG("");
+		for(int i=0 ; i<AntiKt4LCTopoJets_n ; i++)
+		{
+			if(!isGoodJet(i,JetQuality)) continue;
+			TLorentzVector Jet; Jet = calibJets[i]; Jet*=(1+calibJetsUnc[i]);
+			if(fabs(Jet.DeltaR(psum))<dR3bodyJetMin) continue; // overlap removal
+			pt2i_jes_up.insert(make_pair(Jet.Pt(),i));
+		}
+		_DEBUG("");
+		for(int i=0 ; i<AntiKt4LCTopoJets_n ; i++)
+		{
+			if(!isGoodJet(i,JetQuality)) continue;
+			TLorentzVector Jet; Jet = calibJets[i]; Jet*=(1-calibJetsUnc[i]);
+			if(fabs(Jet.DeltaR(psum))<dR3bodyJetMin) continue; // overlap removal
+			pt2i_jes_dwn.insert(make_pair(Jet.Pt(),i));
+		}
+		_DEBUG("");
+		for(int i=0 ; i<AntiKt4LCTopoJets_n ; i++)
+		{
+			if(!isGoodJet(i,JetQuality)) continue;
+			TLorentzVector Jet; Jet = calibJets[i]; Jet*=(1+smearedJetsUnc[i]);
+			if(fabs(Jet.DeltaR(psum))<dR3bodyJetMin) continue; // overlap removal
+			pt2i_jer_up.insert(make_pair(Jet.Pt(),i));
+		}
+		_DEBUG("");
+		for(int i=0 ; i<AntiKt4LCTopoJets_n ; i++)
+		{
+			if(!isGoodJet(i,JetQuality)) continue;
+			TLorentzVector Jet; Jet = calibJets[i]; Jet*=(1-smearedJetsUnc[i]);
+			if(fabs(Jet.DeltaR(psum))<dR3bodyJetMin) continue; // overlap removal
+			pt2i_jer_dwn.insert(make_pair(Jet.Pt(),i));
+		}
+		_DEBUG("");
 	}
 	for(multimap<double,int>::reverse_iterator rit=pt2i_uncalib.rbegin() ; rit!=pt2i_uncalib.rend() ; ++rit) ijet_uncalib.push_back(rit->second);
 	for(multimap<double,int>::reverse_iterator rit=pt2i.rbegin()         ; rit!=pt2i.rend()         ; ++rit) ijet.push_back(rit->second);
@@ -8326,156 +8764,225 @@ void vertex::set(unsigned int vtx)
 	for(multimap<double,int>::reverse_iterator rit=pt2i_jes_dwn.rbegin() ; rit!=pt2i_jes_dwn.rend() ; ++rit) ijet_jes_dwn.push_back(rit->second);
 	for(multimap<double,int>::reverse_iterator rit=pt2i_jer_up.rbegin()  ; rit!=pt2i_jer_up.rend()  ; ++rit) ijet_jer_up.push_back(rit->second);
 	for(multimap<double,int>::reverse_iterator rit=pt2i_jer_dwn.rbegin() ; rit!=pt2i_jer_dwn.rend() ; ++rit) ijet_jer_dwn.push_back(rit->second);
-	unsigned int njet = ijet.size(); // same for all options
+	unsigned int njet_uncalib = ijet_uncalib.size(); // uncalibrated
+	unsigned int njet         = ijet.size(); // calibrated
+	unsigned int njet_jes_up  = ijet_jes_up.size();
+	unsigned int njet_jes_dwn = ijet_jes_dwn.size();
+	unsigned int njet_jer_up  = ijet_jer_up.size();
+	unsigned int njet_jer_dwn = ijet_jer_dwn.size();
 
 	_DEBUG("");
-
-	if(njet>0)
+	
+	if(njet_uncalib>0)
 	{	
 		int j1_uncalib = ijet_uncalib[0];
-		int j1         = ijet[0];
-		int j1_jes_up  = ijet_jes_up[0];
-		int j1_jes_dwn = ijet_jes_dwn[0];
-		int j1_jer_up  = ijet_jer_up[0];
-		int j1_jer_dwn = ijet_jer_dwn[0];
-		
-		TLorentzVector Jet1_jes_up, Jet1_jes_dwn, Jet1_jer_up, Jet1_jer_dwn;
-		Jet1_jes_up  = calibJets[j1_jes_up];  Jet1_jes_up*=(1+calibJetsUnc[j1_jes_up]);
-		Jet1_jes_dwn = calibJets[j1_jes_dwn]; Jet1_jes_dwn*=(1-calibJetsUnc[j1_jes_dwn]);
-		Jet1_jer_up  = calibJets[j1_jer_up];  Jet1_jer_up*=(1+smearedJetsUnc[j1_jer_up]);
-		Jet1_jer_dwn = calibJets[j1_jer_dwn]; Jet1_jer_dwn*=(1-smearedJetsUnc[j1_jer_dwn]);
 
 		double ptj1_uncalib  = AntiKt4LCTopoJets_pt->at(j1_uncalib);
 		double phij1_uncalib = AntiKt4LCTopoJets_phi->at(j1_uncalib);
 		double etaj1_uncalib = AntiKt4LCTopoJets_eta->at(j1_uncalib);
 
-		double ptj1  = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_calibrated_pt->at(j1)  : -1;
-		double phij1 = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_calibrated_phi->at(j1) : -1;
-		double etaj1 = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_calibrated_eta->at(j1) : -1;
-		
-		double ptj1_jes_up  = (!skim && glob_doJetCalib) ? Jet1_jes_up.Pt()  : -1;
-		double phij1_jes_up = (!skim && glob_doJetCalib) ? Jet1_jes_up.Phi() : -1;
-		double etaj1_jes_up = (!skim && glob_doJetCalib) ? Jet1_jes_up.Eta() : -1;
-		
-		double ptj1_jes_dwn  = (!skim && glob_doJetCalib) ? Jet1_jes_dwn.Pt()  : -1;
-		double phij1_jes_dwn = (!skim && glob_doJetCalib) ? Jet1_jes_dwn.Phi() : -1;
-		double etaj1_jes_dwn = (!skim && glob_doJetCalib) ? Jet1_jes_dwn.Eta() : -1;
-		
-		double ptj1_jer_up  = (!skim && glob_doJetCalib) ? Jet1_jer_up.Pt()  : -1;
-		double phij1_jer_up = (!skim && glob_doJetCalib) ? Jet1_jer_up.Phi() : -1;
-		double etaj1_jer_up = (!skim && glob_doJetCalib) ? Jet1_jer_up.Eta() : -1;
-		
-		double ptj1_jer_dwn  = (!skim && glob_doJetCalib) ? Jet1_jer_dwn.Pt()  : -1;
-		double phij1_jer_dwn = (!skim && glob_doJetCalib) ? Jet1_jer_dwn.Phi() : -1;
-		double etaj1_jer_dwn = (!skim && glob_doJetCalib) ? Jet1_jer_dwn.Eta() : -1;
-
 		m_jetDphi3body[NOJES] = fabs(dPhi(psum.Phi(),phij1_uncalib));
 		m_jetDR3body[NOJES]   = deltaR(psum.Eta(),psum.Phi(),etaj1_uncalib,phij1_uncalib);
-
-		m_jetDphi3body[NOMINAL] = (!skim && glob_doJetCalib) ? fabs(dPhi(psum.Phi(),phij1))              : -1;
-		m_jetDR3body[NOMINAL]   = (!skim && glob_doJetCalib) ? deltaR(psum.Eta(),psum.Phi(),etaj1,phij1) : -1;
-		
-		m_jetDphi3body[JESUP]  = (!skim && glob_doJetCalib) ? fabs(dPhi(psum.Phi(),phij1_jes_up))                     : -1;
-		m_jetDR3body[JESUP]    = (!skim && glob_doJetCalib) ? deltaR(psum.Eta(),psum.Phi(),etaj1_jes_up,phij1_jes_up) : -1;
-		
-		m_jetDphi3body[JESDWN] = (!skim && glob_doJetCalib) ? fabs(dPhi(psum.Phi(),phij1_jes_dwn))                      : -1;
-		m_jetDR3body[JESDWN]   = (!skim && glob_doJetCalib) ? deltaR(psum.Eta(),psum.Phi(),etaj1_jes_dwn,phij1_jes_dwn) : -1;
-		
-		m_jetDphi3body[JERUP]  = (!skim && glob_doJetCalib) ? fabs(dPhi(psum.Phi(),phij1_jer_up))                     : -1;
-		m_jetDR3body[JERUP]    = (!skim && glob_doJetCalib) ? deltaR(psum.Eta(),psum.Phi(),etaj1_jer_up,phij1_jer_up) : -1;
-		
-		m_jetDphi3body[JERDWN] = (!skim && glob_doJetCalib) ? fabs(dPhi(psum.Phi(),phij1_jer_dwn))                      : -1;
-		m_jetDR3body[JERDWN]   = (!skim && glob_doJetCalib) ? deltaR(psum.Eta(),psum.Phi(),etaj1_jer_dwn,phij1_jer_dwn) : -1;
 		
 		_DEBUG("");
 
-		if(njet>1)
+		if(njet_uncalib>1)
 		{	
 			int j2_uncalib = ijet_uncalib[1];
-			int j2         = ijet[1];
-			int j2_jes_up  = ijet_jes_up[1];
-			int j2_jes_dwn = ijet_jes_dwn[1];
-			int j2_jer_up  = ijet_jer_up[1];
-			int j2_jer_dwn = ijet_jer_dwn[1];
-			
-			TLorentzVector Jet2_jes_up, Jet2_jes_dwn, Jet2_jer_up, Jet2_jer_dwn;
-			Jet2_jes_up  = calibJets[j2_jes_up];  Jet2_jes_up*=(1+calibJetsUnc[j2_jes_up]);
-			Jet2_jes_dwn = calibJets[j2_jes_dwn]; Jet2_jes_dwn*=(1-calibJetsUnc[j2_jes_dwn]);
-			Jet2_jer_up  = calibJets[j2_jer_up];  Jet2_jer_up*=(1+smearedJetsUnc[j2_jer_up]);
-			Jet2_jer_dwn = calibJets[j2_jer_dwn]; Jet2_jer_dwn*=(1-smearedJetsUnc[j2_jer_dwn]);
 
 			double ptj2_uncalib  = AntiKt4LCTopoJets_pt->at(j2_uncalib);
 			double phij2_uncalib = AntiKt4LCTopoJets_phi->at(j2_uncalib);
 			double etaj2_uncalib = AntiKt4LCTopoJets_eta->at(j2_uncalib);
 
-			double ptj2  = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_calibrated_pt->at(j2)  : -1;
-			double phij2 = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_calibrated_phi->at(j2) : -1;
-			double etaj2 = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_calibrated_eta->at(j2) : -1;
-
-			double ptj2_jes_up  = (!skim && glob_doJetCalib) ? Jet2_jes_up.Pt()  : -1;
-			double phij2_jes_up = (!skim && glob_doJetCalib) ? Jet2_jes_up.Phi() : -1;
-			double etaj2_jes_up = (!skim && glob_doJetCalib) ? Jet2_jes_up.Eta() : -1;
-
-			double ptj2_jes_dwn  = (!skim && glob_doJetCalib) ? Jet2_jes_dwn.Pt()  : -1;
-			double phij2_jes_dwn = (!skim && glob_doJetCalib) ? Jet2_jes_dwn.Phi() : -1;
-			double etaj2_jes_dwn = (!skim && glob_doJetCalib) ? Jet2_jes_dwn.Eta() : -1;
-
-			double ptj2_jer_up  = (!skim && glob_doJetCalib) ? Jet2_jer_up.Pt()  : -1;
-			double phij2_jer_up = (!skim && glob_doJetCalib) ? Jet2_jer_up.Phi() : -1;
-			double etaj2_jer_up = (!skim && glob_doJetCalib) ? Jet2_jer_up.Eta() : -1;
-
-			double ptj2_jer_dwn  = (!skim && glob_doJetCalib) ? Jet2_jer_dwn.Pt()  : -1;
-			double phij2_jer_dwn = (!skim && glob_doJetCalib) ? Jet2_jer_dwn.Phi() : -1;
-			double etaj2_jer_dwn = (!skim && glob_doJetCalib) ? Jet2_jer_dwn.Eta() : -1;
-
 			m_jetSumpt12[NOJES] = ptj1_uncalib+ptj2_uncalib;
 			m_jetDphi12[NOJES]  = fabs(dPhi(phij1_uncalib,phij2_uncalib));
 			m_jetDR12[NOJES]    = deltaR(etaj1_uncalib,phij1_uncalib,etaj2_uncalib,phij2_uncalib);
-
+		}
+	}
+	_DEBUG("");
+	if(njet>0)
+	{	
+		int j1 = ijet[0];
+	
+		double ptj1  = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_calibrated_pt->at(j1)  : -1;
+		double phij1 = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_calibrated_phi->at(j1) : -1;
+		double etaj1 = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_calibrated_eta->at(j1) : -1;
+	
+		m_jetDphi3body[NOMINAL] = (!skim && glob_doJetCalib) ? fabs(dPhi(psum.Phi(),phij1))              : -1;
+		m_jetDR3body[NOMINAL]   = (!skim && glob_doJetCalib) ? deltaR(psum.Eta(),psum.Phi(),etaj1,phij1) : -1;
+			
+		_DEBUG("");
+	
+		if(njet>1)
+		{	
+			int j2 = ijet[1];
+	
+			double ptj2  = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_calibrated_pt->at(j2)  : -1;
+			double phij2 = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_calibrated_phi->at(j2) : -1;
+			double etaj2 = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_calibrated_eta->at(j2) : -1;
+	
 			m_jetSumpt12[NOMINAL] = (!skim && glob_doJetCalib) ? ptj1+ptj2                       : -1;
 			m_jetDphi12[NOMINAL]  = (!skim && glob_doJetCalib) ? fabs(dPhi(phij1,phij2))         : -1;
 			m_jetDR12[NOMINAL]    = (!skim && glob_doJetCalib) ? deltaR(etaj1,phij1,etaj2,phij2) : -1;
+		}
+	}
+	_DEBUG("");
+	if(njet_jes_up>0)
+	{	
+		int j1_jes_up = ijet_jes_up[0];
+		TLorentzVector Jet1_jes_up;
+		Jet1_jes_up  = calibJets[j1_jes_up]; Jet1_jes_up*=(1+calibJetsUnc[j1_jes_up]);
+		
+		double ptj1_jes_up  = (!skim && glob_doJetCalib) ? Jet1_jes_up.Pt()  : -1;
+		double phij1_jes_up = (!skim && glob_doJetCalib) ? Jet1_jes_up.Phi() : -1;
+		double etaj1_jes_up = (!skim && glob_doJetCalib) ? Jet1_jes_up.Eta() : -1;
+		
+		m_jetDphi3body[JESUP]  = (!skim && glob_doJetCalib) ? fabs(dPhi(psum.Phi(),phij1_jes_up))                     : -1;
+		m_jetDR3body[JESUP]    = (!skim && glob_doJetCalib) ? deltaR(psum.Eta(),psum.Phi(),etaj1_jes_up,phij1_jes_up) : -1;
 			
+		_DEBUG("");
+	
+		if(njet_jes_up>1)
+		{	
+			int j2_jes_up = ijet_jes_up[1];
+			TLorentzVector Jet2_jes_up;
+			Jet2_jes_up  = calibJets[j2_jes_up];  Jet2_jes_up*=(1+calibJetsUnc[j2_jes_up]);
+	
+			double ptj2_jes_up  = (!skim && glob_doJetCalib) ? Jet2_jes_up.Pt()  : -1;
+			double phij2_jes_up = (!skim && glob_doJetCalib) ? Jet2_jes_up.Phi() : -1;
+			double etaj2_jes_up = (!skim && glob_doJetCalib) ? Jet2_jes_up.Eta() : -1;
+	
 			m_jetSumpt12[JESUP]  = (!skim && glob_doJetCalib) ? ptj1_jes_up+ptj2_jes_up                                     : -1;
 			m_jetDphi12[JESUP]   = (!skim && glob_doJetCalib) ? fabs(dPhi(phij1_jes_up,phij2_jes_up))                       : -1;
-			m_jetDR12[JESUP]     = (!skim && glob_doJetCalib) ? deltaR(etaj1_jes_up,phij1_jes_up,etaj2_jes_up,phij2_jes_up) : -1;
+			m_jetDR12[JESUP]     = (!skim && glob_doJetCalib) ? deltaR(etaj1_jes_up,phij1_jes_up,etaj2_jes_up,phij2_jes_up) : -1;			
+		}
+	}
+	_DEBUG("");
+	if(njet_jes_dwn>0)
+	{	
+		int j1_jes_dwn = ijet_jes_dwn[0];
+		TLorentzVector Jet1_jes_dwn;
+		Jet1_jes_dwn = calibJets[j1_jes_dwn]; Jet1_jes_dwn*=(1-calibJetsUnc[j1_jes_dwn]);
+		
+		double ptj1_jes_dwn  = (!skim && glob_doJetCalib) ? Jet1_jes_dwn.Pt()  : -1;
+		double phij1_jes_dwn = (!skim && glob_doJetCalib) ? Jet1_jes_dwn.Phi() : -1;
+		double etaj1_jes_dwn = (!skim && glob_doJetCalib) ? Jet1_jes_dwn.Eta() : -1;
+		
+		m_jetDphi3body[JESDWN] = (!skim && glob_doJetCalib) ? fabs(dPhi(psum.Phi(),phij1_jes_dwn))                      : -1;
+		m_jetDR3body[JESDWN]   = (!skim && glob_doJetCalib) ? deltaR(psum.Eta(),psum.Phi(),etaj1_jes_dwn,phij1_jes_dwn) : -1;
+				
+		_DEBUG("");
+	
+		if(njet_jes_dwn>1)
+		{	
+			int j2_jes_dwn = ijet_jes_dwn[1];
+			TLorentzVector Jet2_jes_dwn;
+			Jet2_jes_dwn = calibJets[j2_jes_dwn]; Jet2_jes_dwn*=(1-calibJetsUnc[j2_jes_dwn]);
+	
+			double ptj2_jes_dwn  = (!skim && glob_doJetCalib) ? Jet2_jes_dwn.Pt()  : -1;
+			double phij2_jes_dwn = (!skim && glob_doJetCalib) ? Jet2_jes_dwn.Phi() : -1;
+			double etaj2_jes_dwn = (!skim && glob_doJetCalib) ? Jet2_jes_dwn.Eta() : -1;
 			
 			m_jetSumpt12[JESDWN] = (!skim && glob_doJetCalib) ? ptj1_jes_dwn+ptj2_jes_dwn                                       : -1;
 			m_jetDphi12[JESDWN]  = (!skim && glob_doJetCalib) ? fabs(dPhi(phij1_jes_dwn,phij2_jes_dwn))                         : -1;
 			m_jetDR12[JESDWN]    = (!skim && glob_doJetCalib) ? deltaR(etaj1_jes_dwn,phij1_jes_dwn,etaj2_jes_dwn,phij2_jes_dwn) : -1;
+		}
+	}
+	_DEBUG("");
+	if(njet_jer_up>0)
+	{	
+		int j1_jer_up = ijet_jer_up[0];
+		TLorentzVector Jet1_jer_up;
+		Jet1_jer_up  = calibJets[j1_jer_up];  Jet1_jer_up*=(1+smearedJetsUnc[j1_jer_up]);
+		
+		double ptj1_jer_up  = (!skim && glob_doJetCalib) ? Jet1_jer_up.Pt()  : -1;
+		double phij1_jer_up = (!skim && glob_doJetCalib) ? Jet1_jer_up.Phi() : -1;
+		double etaj1_jer_up = (!skim && glob_doJetCalib) ? Jet1_jer_up.Eta() : -1;
+		
+		m_jetDphi3body[JERUP]  = (!skim && glob_doJetCalib) ? fabs(dPhi(psum.Phi(),phij1_jer_up))                     : -1;
+		m_jetDR3body[JERUP]    = (!skim && glob_doJetCalib) ? deltaR(psum.Eta(),psum.Phi(),etaj1_jer_up,phij1_jer_up) : -1;
+
+		_DEBUG("");
+	
+		if(njet_jer_up>1)
+		{	
+			int j2_jer_up = ijet_jer_up[1];
+			TLorentzVector Jet2_jer_up;
+			Jet2_jer_up = calibJets[j2_jer_up];  Jet2_jer_up*=(1+smearedJetsUnc[j2_jer_up]);
+	
+			double ptj2_jer_up  = (!skim && glob_doJetCalib) ? Jet2_jer_up.Pt()  : -1;
+			double phij2_jer_up = (!skim && glob_doJetCalib) ? Jet2_jer_up.Phi() : -1;
+			double etaj2_jer_up = (!skim && glob_doJetCalib) ? Jet2_jer_up.Eta() : -1;
 			
 			m_jetSumpt12[JERUP]  = (!skim && glob_doJetCalib) ? ptj1_jer_up+ptj2_jer_up                                     : -1;
 			m_jetDphi12[JERUP]   = (!skim && glob_doJetCalib) ? fabs(dPhi(phij1_jer_up,phij2_jer_up))                       : -1;
 			m_jetDR12[JERUP]     = (!skim && glob_doJetCalib) ? deltaR(etaj1_jer_up,phij1_jer_up,etaj2_jer_up,phij2_jer_up) : -1;
+		}
+	}
+	_DEBUG("");
+	if(njet_jer_dwn>0)
+	{
+		int j1_jer_dwn = ijet_jer_dwn[0];
+		TLorentzVector Jet1_jer_dwn;
+		Jet1_jer_dwn = calibJets[j1_jer_dwn]; Jet1_jer_dwn*=(1-smearedJetsUnc[j1_jer_dwn]);
+
+		double ptj1_jer_dwn  = (!skim && glob_doJetCalib) ? Jet1_jer_dwn.Pt()  : -1;
+		double phij1_jer_dwn = (!skim && glob_doJetCalib) ? Jet1_jer_dwn.Phi() : -1;
+		double etaj1_jer_dwn = (!skim && glob_doJetCalib) ? Jet1_jer_dwn.Eta() : -1;
+		
+		m_jetDphi3body[JERDWN] = (!skim && glob_doJetCalib) ? fabs(dPhi(psum.Phi(),phij1_jer_dwn))                      : -1;
+		m_jetDR3body[JERDWN]   = (!skim && glob_doJetCalib) ? deltaR(psum.Eta(),psum.Phi(),etaj1_jer_dwn,phij1_jer_dwn) : -1;
+		
+		_DEBUG("");
+	
+		if(njet_jer_dwn>1)
+		{	
+			int j2_jer_dwn = ijet_jer_dwn[1];
+			TLorentzVector Jet2_jer_dwn;
+			Jet2_jer_dwn = calibJets[j2_jer_dwn]; Jet2_jer_dwn*=(1-smearedJetsUnc[j2_jer_dwn]);
+	
+			double ptj2_jer_dwn  = (!skim && glob_doJetCalib) ? Jet2_jer_dwn.Pt()  : -1;
+			double phij2_jer_dwn = (!skim && glob_doJetCalib) ? Jet2_jer_dwn.Phi() : -1;
+			double etaj2_jer_dwn = (!skim && glob_doJetCalib) ? Jet2_jer_dwn.Eta() : -1;
+	
 			m_jetSumpt12[JERDWN] = (!skim && glob_doJetCalib) ? ptj1_jer_dwn+ptj2_jer_dwn                                       : -1;
 			m_jetDphi12[JERDWN]  = (!skim && glob_doJetCalib) ? fabs(dPhi(phij1_jer_dwn,phij2_jer_dwn))                         : -1;
 			m_jetDR12[JERDWN]    = (!skim && glob_doJetCalib) ? deltaR(etaj1_jer_dwn,phij1_jer_dwn,etaj2_jer_dwn,phij2_jer_dwn) : -1;
 		}
 	}
 	
+	
 	_DEBUG("");
-
-	m_njets = (njet<5) ? njet : 4;
-	for(int i=0 ; i<m_njets ; ++i)
+	m_njets[NOJES]   = (njet_uncalib<5) ? njet_uncalib : 4;
+	m_njets[NOMINAL] = (njet<5)         ? njet         : 4;
+	m_njets[JESUP]   = (njet_jes_up<5)  ? njet_jes_up  : 4;
+	m_njets[JESDWN]  = (njet_jes_dwn<5) ? njet_jes_up  : 4;
+	m_njets[JERUP]   = (njet_jes_up<5)  ? njet_jes_up  : 4;
+	m_njets[JERDWN]  = (njet_jer_dwn<5) ? njet_jes_up  : 4;
+	_DEBUG("");
+	
+	
+	for(int i=0 ; i<m_njets[NOJES] ; ++i)
 	{	
 		int j_uncalib = ijet_uncalib[i];
-		int j         = ijet[i];
-		int j_jes_up  = ijet_jes_up[i];
-		int j_jes_dwn = ijet_jes_dwn[i];
-		int j_jer_up  = ijet_jer_up[i];
-		int j_jer_dwn = ijet_jer_dwn[i];
-		
-		TLorentzVector Jet_jes_up, Jet_jes_dwn, Jet_jer_up, Jet_jer_dwn;
-		Jet_jes_up  = calibJets[j_jes_up];  Jet_jes_up*=(1+calibJetsUnc[j_jes_up]);
-		Jet_jes_dwn = calibJets[j_jes_dwn]; Jet_jes_dwn*=(1-calibJetsUnc[j_jes_dwn]);
-		Jet_jer_up  = calibJets[j_jer_up];  Jet_jer_up*=(1+smearedJetsUnc[j_jer_up]);
-		Jet_jer_dwn = calibJets[j_jer_dwn]; Jet_jer_dwn*=(1-smearedJetsUnc[j_jer_dwn]);
-
+				
 		double ptj_uncalib  = AntiKt4LCTopoJets_pt->at(j_uncalib);
 		double Ej_uncalib   = AntiKt4LCTopoJets_E->at(j_uncalib);
 		double mj_uncalib   = AntiKt4LCTopoJets_m->at(j_uncalib);
 		double etaj_uncalib = AntiKt4LCTopoJets_eta->at(j_uncalib);
 		double phij_uncalib = AntiKt4LCTopoJets_phi->at(j_uncalib);
+		
+		m_jetPEall[NOJES][i].SetPtEtaPhiE(ptj_uncalib,etaj_uncalib,phij_uncalib,Ej_uncalib);
+		m_jetPMall[NOJES][i].SetPtEtaPhiM(ptj_uncalib,etaj_uncalib,phij_uncalib,mj_uncalib);
+		
+		m_jetMV1all[NOJES][i]  = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_flavor_weight_MV1->at(j_uncalib) : -999;
+		m_jetVtxFall[NOJES][i] = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_jvtxf->at(j_uncalib)             : -999;
+		m_jetNtrkall[NOJES][i] = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_nTrk->at(j_uncalib)              : -999;
+	}
+	_DEBUG("");
+	for(int i=0 ; i<m_njets[NOMINAL] ; ++i)
+	{
+		int j = ijet[i];
 		
 		double ptj  = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_calibrated_pt->at(j)  : -1;
 		double Ej   = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_calibrated_E->at(j)   : -1;
@@ -8483,17 +8990,63 @@ void vertex::set(unsigned int vtx)
 		double etaj = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_calibrated_eta->at(j) : -1;
 		double phij = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_calibrated_phi->at(j) : -1;
 		
+		m_jetPEall[NOMINAL][i].SetPtEtaPhiE(ptj,etaj,phij,Ej);
+		m_jetPMall[NOMINAL][i].SetPtEtaPhiM(ptj,etaj,phij,mj);
+
+		m_jetMV1all[NOMINAL][i]  = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_flavor_weight_MV1->at(j) : -999;
+		m_jetVtxFall[NOMINAL][i] = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_jvtxf->at(j)             : -999;
+		m_jetNtrkall[NOMINAL][i] = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_nTrk->at(j)              : -999;
+		
+		
+		m_jet_shiftJES[i] = (!skim && glob_doJetCalib) ? calibJetsUnc[j]   : 0.;
+		m_jet_shiftJER[i] = (!skim && glob_doJetCalib) ? smearedJetsUnc[j] : 0.;
+	}
+	_DEBUG("");
+	for(int i=0 ; i<m_njets[JESUP] ; ++i)
+	{	
+		int j_jes_up  = ijet_jes_up[i];
+		TLorentzVector Jet_jes_up;
+		Jet_jes_up  = calibJets[j_jes_up];  Jet_jes_up*=(1+calibJetsUnc[j_jes_up]);
+		
 		double ptj_jes_up  = (!skim && glob_doJetCalib) ? Jet_jes_up.Pt()  : -1;
 		double Ej_jes_up   = (!skim && glob_doJetCalib) ? Jet_jes_up.E()   : -1;
 		double mj_jes_up   = (!skim && glob_doJetCalib) ? Jet_jes_up.M()   : -1;
 		double etaj_jes_up = (!skim && glob_doJetCalib) ? Jet_jes_up.Eta() : -1;
 		double phij_jes_up = (!skim && glob_doJetCalib) ? Jet_jes_up.Phi() : -1;
 		
+		m_jetPEall[JESUP][i].SetPtEtaPhiE(ptj_jes_up,etaj_jes_up,phij_jes_up,Ej_jes_up);
+		m_jetPMall[JESUP][i].SetPtEtaPhiM(ptj_jes_up,etaj_jes_up,phij_jes_up,mj_jes_up);
+		
+		m_jetMV1all[JESUP][i]  = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_flavor_weight_MV1->at(j_jes_up)  : -999;
+		m_jetVtxFall[JESUP][i] = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_jvtxf->at(j_jes_up)              : -999;
+		m_jetNtrkall[JESUP][i] = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_nTrk->at(j_jes_up)               : -999;
+	}
+	_DEBUG("");
+	for(int i=0 ; i<m_njets[JESDWN] ; ++i)
+	{	
+		int j_jes_dwn = ijet_jes_dwn[i];
+		TLorentzVector Jet_jes_dwn;
+		Jet_jes_dwn = calibJets[j_jes_dwn]; Jet_jes_dwn*=(1-calibJetsUnc[j_jes_dwn]);
+		
 		double ptj_jes_dwn  = (!skim && glob_doJetCalib) ? Jet_jes_dwn.Pt()  : -1;
 		double Ej_jes_dwn   = (!skim && glob_doJetCalib) ? Jet_jes_dwn.E()   : -1;
 		double mj_jes_dwn   = (!skim && glob_doJetCalib) ? Jet_jes_dwn.M()   : -1;
 		double etaj_jes_dwn = (!skim && glob_doJetCalib) ? Jet_jes_dwn.Eta() : -1;
 		double phij_jes_dwn = (!skim && glob_doJetCalib) ? Jet_jes_dwn.Phi() : -1;
+	
+		m_jetPEall[JESDWN][i].SetPtEtaPhiE(ptj_jes_dwn,etaj_jes_dwn,phij_jes_dwn,Ej_jes_dwn);
+		m_jetPMall[JESDWN][i].SetPtEtaPhiM(ptj_jes_dwn,etaj_jes_dwn,phij_jes_dwn,mj_jes_dwn);
+		
+		m_jetMV1all[JESDWN][i]  = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_flavor_weight_MV1->at(j_jes_dwn) : -999;
+		m_jetVtxFall[JESDWN][i] = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_jvtxf->at(j_jes_dwn)             : -999;
+		m_jetNtrkall[JESDWN][i] = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_nTrk->at(j_jes_dwn)              : -999;
+	}
+	_DEBUG("");
+	for(int i=0 ; i<m_njets[JERUP] ; ++i)
+	{	
+		int j_jer_up  = ijet_jer_up[i];
+		TLorentzVector Jet_jer_up;
+		Jet_jer_up  = calibJets[j_jer_up];  Jet_jer_up*=(1+smearedJetsUnc[j_jer_up]);
 		
 		double ptj_jer_up  = (!skim && glob_doJetCalib) ? Jet_jer_up.Pt()  : -1;
 		double Ej_jer_up   = (!skim && glob_doJetCalib) ? Jet_jer_up.E()   : -1;
@@ -8501,55 +9054,33 @@ void vertex::set(unsigned int vtx)
 		double etaj_jer_up = (!skim && glob_doJetCalib) ? Jet_jer_up.Eta() : -1;
 		double phij_jer_up = (!skim && glob_doJetCalib) ? Jet_jer_up.Phi() : -1;
 		
+		m_jetPEall[JERUP][i].SetPtEtaPhiE(ptj_jer_up,etaj_jer_up,phij_jer_up,Ej_jer_up);
+		m_jetPMall[JERUP][i].SetPtEtaPhiM(ptj_jer_up,etaj_jer_up,phij_jer_up,mj_jer_up);
+        
+		m_jetMV1all[JERUP][i]  = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_flavor_weight_MV1->at(j_jer_up)   : -999;
+		m_jetVtxFall[JERUP][i] = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_jvtxf->at(j_jer_up)               : -999;
+		m_jetNtrkall[JERUP][i] = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_nTrk->at(j_jer_up)                : -999;
+	}
+	_DEBUG("");
+	for(int i=0 ; i<m_njets[JERDWN] ; ++i)
+	{	
+		int j_jer_dwn = ijet_jer_dwn[i];
+		TLorentzVector Jet_jer_dwn;
+		Jet_jer_dwn = calibJets[j_jer_dwn]; Jet_jer_dwn*=(1-smearedJetsUnc[j_jer_dwn]);
+		
 		double ptj_jer_dwn  = (!skim && glob_doJetCalib) ? Jet_jer_dwn.Pt()   : -1;
 		double Ej_jer_dwn   = (!skim && glob_doJetCalib) ? Jet_jer_dwn.E()    : -1;
 		double mj_jer_dwn   = (!skim && glob_doJetCalib) ? Jet_jer_dwn.M()    : -1;
 		double etaj_jer_dwn = (!skim && glob_doJetCalib) ? Jet_jer_dwn.Eta()  : -1;
 		double phij_jer_dwn = (!skim && glob_doJetCalib) ? Jet_jer_dwn.Phi()  : -1;
-	
-		
-		m_jetPEall[NOJES][i].SetPtEtaPhiE(ptj_uncalib,etaj_uncalib,phij_uncalib,Ej_uncalib);
-		m_jetPMall[NOJES][i].SetPtEtaPhiM(ptj_uncalib,etaj_uncalib,phij_uncalib,mj_uncalib);
-		
-		m_jetPEall[NOMINAL][i].SetPtEtaPhiE(ptj,etaj,phij,Ej);
-		m_jetPMall[NOMINAL][i].SetPtEtaPhiM(ptj,etaj,phij,mj);
-		
-		m_jetPEall[JESUP][i].SetPtEtaPhiE(ptj_jes_up,etaj_jes_up,phij_jes_up,Ej_jes_up);
-		m_jetPMall[JESUP][i].SetPtEtaPhiM(ptj_jes_up,etaj_jes_up,phij_jes_up,mj_jes_up);
-	
-		m_jetPEall[JESDWN][i].SetPtEtaPhiE(ptj_jes_dwn,etaj_jes_dwn,phij_jes_dwn,Ej_jes_dwn);
-		m_jetPMall[JESDWN][i].SetPtEtaPhiM(ptj_jes_dwn,etaj_jes_dwn,phij_jes_dwn,mj_jes_dwn);
-		
-		m_jetPEall[JERUP][i].SetPtEtaPhiE(ptj_jer_up,etaj_jer_up,phij_jer_up,Ej_jer_up);
-		m_jetPMall[JERUP][i].SetPtEtaPhiM(ptj_jer_up,etaj_jer_up,phij_jer_up,mj_jer_up);
         
 		m_jetPEall[JERDWN][i].SetPtEtaPhiE(ptj_jer_dwn,etaj_jer_dwn,phij_jer_dwn,Ej_jer_dwn);
 		m_jetPMall[JERDWN][i].SetPtEtaPhiM(ptj_jer_dwn,etaj_jer_dwn,phij_jer_dwn,mj_jer_dwn);
 		
-		
-		m_jetMV1all[NOJES][i]  = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_flavor_weight_MV1->at(j_uncalib) : -999;
-		m_jetVtxFall[NOJES][i] = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_jvtxf->at(j_uncalib)             : -999;
-		
-		m_jetMV1all[NOMINAL][i]  = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_flavor_weight_MV1->at(j)       : -999;
-		m_jetVtxFall[NOMINAL][i] = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_jvtxf->at(j)                   : -999;
-		
-		m_jetMV1all[JESUP][i]  = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_flavor_weight_MV1->at(j_jes_up)  : -999;
-		m_jetVtxFall[JESUP][i] = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_jvtxf->at(j_jes_up)              : -999;
-		
-		m_jetMV1all[JESDWN][i]  = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_flavor_weight_MV1->at(j_jes_dwn) : -999;
-		m_jetVtxFall[JESDWN][i] = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_jvtxf->at(j_jes_dwn)             : -999;
-		
-		m_jetMV1all[JERUP][i]  = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_flavor_weight_MV1->at(j_jer_up)   : -999;
-		m_jetVtxFall[JERUP][i] = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_jvtxf->at(j_jer_up)               : -999;
-		
 		m_jetMV1all[JERDWN][i]  = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_flavor_weight_MV1->at(j_jer_dwn) : -999;
 		m_jetVtxFall[JERDWN][i] = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_jvtxf->at(j_jer_dwn)             : -999;
-		
-		
-		m_jet_shiftJES[i] = (!skim && glob_isWsig) ? calibJetsUnc[j]   : 0.;
-		m_jet_shiftJER[i] = (!skim && glob_isWsig) ? smearedJetsUnc[j] : 0.;
+		m_jetNtrkall[JERDWN][i] = (!skim && glob_doJetCalib) ? AntiKt4LCTopoJets_nTrk->at(j_jer_dwn)              : -999;
 	}
-	
 	_DEBUG("");
 }
 
@@ -9255,10 +9786,12 @@ bool acceptVtxMET(TString method, unsigned int vtx, vector<vertex>& vertices, TS
 	dRmin = (pMuSum.DeltaR(p1)<dRmin) ? pMuSum.DeltaR(p1) : dRmin;
 	dRmin = (pMuSum.DeltaR(p2)<dRmin) ? pMuSum.DeltaR(p2) : dRmin;
 	dRmin = (pMuSum.DeltaR(p3)<dRmin) ? pMuSum.DeltaR(p3) : dRmin;
+	//dRmin *= 2.;
 	double dRmax = -1.e20;
 	dRmax = (pMuSum.DeltaR(p1)>dRmax) ? pMuSum.DeltaR(p1) : dRmax;
 	dRmax = (pMuSum.DeltaR(p2)>dRmax) ? pMuSum.DeltaR(p2) : dRmax;
 	dRmax = (pMuSum.DeltaR(p3)>dRmax) ? pMuSum.DeltaR(p3) : dRmax;
+	//dRmax *= 2.;
 	
 	_DEBUG("");
 	
@@ -9288,8 +9821,8 @@ bool acceptVtxMET(TString method, unsigned int vtx, vector<vertex>& vertices, TS
 	float vertex_cosTxy    = fabs(vtx_cosThetaXY->at(vtx)[pvindex]);
 	
 	// float met_reffinal_sumet   = MET_RefFinal_sumet;
-	float met_reffinal_et      = (glob_isWsig) ? uncalibMET.et()  : MET_RefFinal_et; // temp fix for missing branches in data
-	float met_reffinal_phi     = (glob_isWsig) ? uncalibMET.phi() : MET_RefFinal_phi; // temp fix for missing branches in data
+	float met_reffinal_et      = MET_RefFinal_et;
+	float met_reffinal_phi     = MET_RefFinal_phi;
 	float met_reffinal_mT      = mT(met_reffinal_et,met_reffinal_phi,pMuSum.Pt(),pMuSum.Phi());
 	float met_reffinal_dPhi3mu = fabs(dPhi(met_reffinal_phi,pMuSum.Phi()));
 	
@@ -9440,7 +9973,7 @@ bool acceptVtxMET(TString method, unsigned int vtx, vector<vertex>& vertices, TS
 		// before any W cuts are applied
 		fillHistsMassPt3mu(vtx,name,"_before_W",histos,histos2,weight,mBlindMin,mBlindMax);
 		///////////////////////////////////////////////////////////////////////////////////
-		float met_adhoc = (glob_isWsig) ? uncalibMET.et() : MET_RefFinal_et; // temp fix for missing branches in data
+		float met_adhoc = MET_RefFinal_et; ////////////////////////////////////////////////
 		if(isCounter("nPassing_W_MET") && met_adhoc<15.*GeV2MeV) return false; ////////////
 		incrementCounter("nPassing_W_MET",weight); ////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////////
@@ -9576,10 +10109,12 @@ bool acceptTriplet(unsigned int vtx, TString name, TMapTSP2TH1& histos, TMapTSP2
 	dRmin = (psum.DeltaR(p1)<dRmin) ? psum.DeltaR(p1) : dRmin;
 	dRmin = (psum.DeltaR(p2)<dRmin) ? psum.DeltaR(p2) : dRmin;
 	dRmin = (psum.DeltaR(p3)<dRmin) ? psum.DeltaR(p3) : dRmin;
+	//dRmin *= 2.;
 	double dRmax = -1.e20;
 	dRmax = (psum.DeltaR(p1)>dRmax) ? psum.DeltaR(p1) : dRmax;
 	dRmax = (psum.DeltaR(p2)>dRmax) ? psum.DeltaR(p2) : dRmax;
 	dRmax = (psum.DeltaR(p3)>dRmax) ? psum.DeltaR(p3) : dRmax;
+	//dRmax *= 2.;
 	histos[name+"_triplet_dRmin"]->Fill(dRmin,weight);
 	histos2[name+"_m3mu_vs_dRmin"]->Fill(dRmin,mass,weight);
 	histos[name+"_triplet_dRmax"]->Fill(dRmax,weight);
@@ -10003,7 +10538,7 @@ bool acceptHadClean(unsigned int vtx, TString name, TMapTSP2TH1& histos, TMapTSP
 	_DEBUG("");
 	
 	//////////////////////////////////////////////////////////////////////////////////////////
-	float met_adhoc = (glob_isWsig) ? uncalibMET.et() : MET_RefFinal_et; // temp fix for missing branches in data
+	float met_adhoc = MET_RefFinal_et; ///////////////////////////////////////////////////////
 	if(isCounter("nPassing_met_metLoose") && met_adhoc<10.*GeV2MeV) return false; ////////////
 	incrementCounter("nPassing_met_metLoose",weight); ////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////////////
@@ -10018,10 +10553,12 @@ bool acceptHadClean(unsigned int vtx, TString name, TMapTSP2TH1& histos, TMapTSP
 	dRmin = (pMuSum.DeltaR(p1)<dRmin) ? pMuSum.DeltaR(p1) : dRmin;
 	dRmin = (pMuSum.DeltaR(p2)<dRmin) ? pMuSum.DeltaR(p2) : dRmin;
 	dRmin = (pMuSum.DeltaR(p3)<dRmin) ? pMuSum.DeltaR(p3) : dRmin;
+	//dRmin *= 2.;
 	double dRmax = -1.e20;
 	dRmax = (pMuSum.DeltaR(p1)>dRmax) ? pMuSum.DeltaR(p1) : dRmax;
 	dRmax = (pMuSum.DeltaR(p2)>dRmax) ? pMuSum.DeltaR(p2) : dRmax;
 	dRmax = (pMuSum.DeltaR(p3)>dRmax) ? pMuSum.DeltaR(p3) : dRmax;
+	//dRmax *= 2.;
 	histos[name+"_triplet_dRmin_after_hadclean"]->Fill(dRmin,weight);
 	histos[name+"_triplet_dRmax_after_hadclean"]->Fill(dRmax,weight);
 	histos2[name+"_m3mu_vs_dRmin_after_hadclean"]->Fill(dRmin,m3mu,weight); // need to blind Y axis
@@ -10117,8 +10654,8 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 	bool issignal = isSignal(name);
 
 	
-	double mBlindMinInitial = 1670.;
-	double mBlindMaxInitial = 1890.;
+	double mBlindMinInitial = 1660.;
+	double mBlindMaxInitial = 1900.;
 	double mBlindMin = mBlindMinInitial;
 	double mBlindMax = mBlindMaxInitial;
 	mBlindMinGlob = mBlindMinInitial;
@@ -10130,10 +10667,11 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 	{
 		initializePileup(); // PU tool is needed for BCH cleaning !
 		initBCH(isdata); // BCH cleaning should be used either for data or signal
-		initJES(isdata); // Jet Energy Scale
+		initJES(isdata,JESconfig); // Jet Energy Scale
 		initJER();       // Jet Energy Resolution
-		initJUN();       // Jet Energy Scale uncertainty
+		initJUN(JESconfig);       // Jet Energy Scale uncertainty
 		initMET();       // MET Utility
+		initMETTRK();    // MET Track tool
 	}
 
 	
@@ -10156,6 +10694,9 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 		// TrackParticles do not have builtin "phi"
 		// so I have to set it by hand
 		setTPmusPhi();
+		
+		//// set the track vectors manually (double-->float...)
+		setTracksFloat();
 			
 		// //////////////////////////////////////////////////
 		// // Veto HF in JZxW *only* ////////////////////////
@@ -10178,7 +10719,7 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 		double wLumi       = (!isdata)                                                ? getSampleWeight(bname)    : 1.;
 		double wKfac       = (name.Contains("NpX"))                                   ? getKfactorWeight(name)    : 1.;
 		double wDijet      = (name.Contains("JZ"))                                    ? getDijetWeight(name)      : 1.;
-		double wPileup     = (name=="Wtaunu_3mu")                                     ? getPileupWeight()         : 1.;
+		double wPileup     = (!skim && name=="Wtaunu_3mu")                            ? getPileupWeight()         : 1.;
 		wgt *= wFONLLshape;
 		wgt *= wFONLLflat;
 		wgt *= wLumi;
@@ -10238,7 +10779,7 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 				ucJet.SetPtEtaPhiE(AntiKt4LCTopoJets_pt->at(jet),AntiKt4LCTopoJets_eta->at(jet),AntiKt4LCTopoJets_phi->at(jet),AntiKt4LCTopoJets_E->at(jet));
 				jets_uncalibrated.push_back(ucJet);
 
-				TLorentzVector Jet = getJES(jet);
+				TLorentzVector Jet = getJES(jet,JESconfig);
 				calibJets.push_back(Jet);
 				addCalibratedJet(Jet);
 				jets_jes_nominal.push_back(Jet);
@@ -10246,7 +10787,7 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 				bool badBCHjet = isBadCalibJetBCH(jet);
 				badBCHJets.push_back(badBCHjet);
 				
-				double quadJES  = getJUNC(jet, Jet, JetShiftsUp, JetShiftsDwn);
+				double quadJES  = getJUNC(jet,Jet,JetShiftsUp,JetShiftsDwn,JESconfig);
 				calibJetsUnc.push_back(quadJES);
 				calibJetsIndex.push_back(jet);
 				jets_jes_up.push_back(Jet*(1+quadJES));
@@ -10272,12 +10813,12 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 			// cout << "Y: RefMuon=" << MET_RefMuon_ety << ", RefTau=" << MET_RefTau_ety << ", CellOut_Eflow=" << MET_CellOut_Eflow_ety << ", RefEle=" << MET_RefEle_ety << ", RefGamma=" << MET_RefGamma_ety << ", RefJet=" << MET_RefJet_ety << ", MuonBoy=" << MET_MuonBoy_ety << " --> Sum=" << METy << "  :  RefFinal=" << MET_RefFinal_ety << endl;
 			
 			// cout << "MET_RefFinal_et=" << MET_RefFinal_et << ", met_reffinal_et=" << met_RefFinal_et << endl;
-			setJetVectorPointers(jets_uncalibrated); uncalibMET       = getMETU(METSTACO); uncalibMUMET       = getMETU(METMUONS);
-			setJetVectorPointers(jets_jes_nominal);  calibMET_nominal = getMETU(METSTACO); calibMUMET_nominal = getMETU(METMUONS);
-			setJetVectorPointers(jets_jes_up);       calibMET_jes_up  = getMETU(METSTACO); calibMUMET_jes_up  = getMETU(METMUONS);
-			setJetVectorPointers(jets_jes_dwn);      calibMET_jes_dwn = getMETU(METSTACO); calibMUMET_jes_dwn = getMETU(METMUONS);
-			setJetVectorPointers(jets_jer_up);       calibMET_jer_up  = getMETU(METSTACO); calibMUMET_jer_up  = getMETU(METMUONS);
-			setJetVectorPointers(jets_jer_dwn);      calibMET_jer_dwn = getMETU(METSTACO); calibMUMET_jer_dwn = getMETU(METMUONS);
+			setJetVectorPointers(jets_uncalibrated); uncalibMET       = getMETU(METSTACO); uncalibMUMET       = getMETU(METMUONS); setMETTRK(); uncalibMETTRK       = getMETTRK();
+			setJetVectorPointers(jets_jes_nominal);  calibMET_nominal = getMETU(METSTACO); calibMUMET_nominal = getMETU(METMUONS); setMETTRK(); calibMETTRK_nominal = getMETTRK();
+			setJetVectorPointers(jets_jes_up);       calibMET_jes_up  = getMETU(METSTACO); calibMUMET_jes_up  = getMETU(METMUONS); setMETTRK(); calibMETTRK_jes_up  = getMETTRK();
+			setJetVectorPointers(jets_jes_dwn);      calibMET_jes_dwn = getMETU(METSTACO); calibMUMET_jes_dwn = getMETU(METMUONS); setMETTRK(); calibMETTRK_jes_dwn = getMETTRK();
+			setJetVectorPointers(jets_jer_up);       calibMET_jer_up  = getMETU(METSTACO); calibMUMET_jer_up  = getMETU(METMUONS); setMETTRK(); calibMETTRK_jer_up  = getMETTRK();
+			setJetVectorPointers(jets_jer_dwn);      calibMET_jer_dwn = getMETU(METSTACO); calibMUMET_jer_dwn = getMETU(METMUONS); setMETTRK(); calibMETTRK_jer_dwn = getMETTRK();
 			
 			// setJetVectorPointers(calibJets,calibJetsUnc,NOSHIFT);    calibMET_nominal = getMETU();
 			// setJetVectorPointers(calibJets,calibJetsUnc,SHIFTUP);    calibMET_jes_up  = getMETU();
@@ -10306,7 +10847,7 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 			// 	}
 			// }
 			
-			fillMETCalibrationHistos(calibMET_nominal, name, histos/*, histos2*/, wgt);
+			fillMETCalibrationHistos(calibMET_nominal, calibMETTRK_nominal, name, histos/*, histos2*/, wgt);
 		}
 
 
@@ -10765,7 +11306,7 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 	writeCoutners(ftxtname,scounters);
 	writeCoutners(ftxtname,"\n\n"); // add 2 blanc lines at the end
 
-	if(name=="Wtaunu_3mu") finalizePileup();
+	if(!skim && makepufile && name=="Wtaunu_3mu") finalizePileup();
 }
 
 // ///////////////////////////////////////////
@@ -11777,8 +12318,11 @@ void NTUPmaker(TString runType, TString outDir, TString chnl, TString master, TS
 		
 		_DEBUG("");
 		
-		addHist(histos,name,"met_calibration_et_reldiff", ";MET E_{T}^{calib.}/E_{T}^{uncalib.}-1;Normalized", labels,100,-3.,3.);
-		addHist(histos,name,"met_calibration_phi_reldiff", ";MET #phi^{calib.}/#phi^{uncalib.}-1;Normalized", labels,100,-3.,3.);
+		addHist(histos,name,"met_calibration_et_reldiff", ";RefFinal MET E_{T}^{calib.}/E_{T}^{uncalib.}-1;Normalized", labels,100,-3.,3.);
+		addHist(histos,name,"met_calibration_phi_reldiff", ";RefFinal MET #phi^{calib.}/#phi^{uncalib.}-1;Normalized", labels,100,-3.,3.);
+
+		addHist(histos,name,"mettrk_calibration_et_reldiff", ";Track MET E_{T}^{calib.}/E_{T}^{uncalib.}-1;Normalized", labels,100,-3.,3.);
+		addHist(histos,name,"mettrk_calibration_phi_reldiff", ";Track MET #phi^{calib.}/#phi^{uncalib.}-1;Normalized", labels,100,-3.,3.);
 
 		addHist(histos,name,"jet_calibration_pt_reldiff", ";Jets p_{T}^{calib.}/p_{T}^{uncalib.}-1;Normalized", labels,100,-3.,3.);
 		addHist(histos,name,"jet_calibration_E_reldiff", ";Jets E^{calib.}/E^{uncalib.}-1;Normalized", labels,100,-3.,3.);
@@ -12538,7 +13082,6 @@ void NTUPmaker(TString runType, TString outDir, TString chnl, TString master, TS
 		glob_isMC   = (!isData(name));
 		glob_isWsig = (isWsignal(name));
 		glob_doJetCalib = true;
-		glob_doMETCalib = glob_isWsig;
 		
 		
 		///////////////////////////////////////
@@ -12948,11 +13491,13 @@ void NTUPmaker(TString runType, TString outDir, TString chnl, TString master, TS
 	
 	_INFO("");
 	divx=2;
-	divy=1;
+	divy=2;
 	makeCnv(divx,divy,false);
 	pcounter = -1;
 	drawPadSingle("Wtaunu_3mu",  "met_calibration_et_reldiff",  pads[increment(pcounter)], channels, histos, "hist");
 	drawPadSingle("Wtaunu_3mu",  "met_calibration_phi_reldiff",   pads[increment(pcounter)], channels, histos, "hist");
+	drawPadSingle("Wtaunu_3mu",  "mettrk_calibration_et_reldiff",  pads[increment(pcounter)], channels, histos, "hist");
+	drawPadSingle("Wtaunu_3mu",  "mettrk_calibration_phi_reldiff",   pads[increment(pcounter)], channels, histos, "hist");
 	closeCnv(pdffilename);
 	/////////////////////////////////////////////////////////
 
