@@ -3,6 +3,7 @@
 
 static const unsigned int nMaxTracks = 6; // including the triplet, i.e. 3+3 here
 
+/*
 enum vtx_systshift
 {
 	VTX_SHIFTDWN=-1,
@@ -14,8 +15,12 @@ enum vtx_uncertainties
 	VTX_NOJES,
 	VTX_NOMINAL,
 	VTX_JESUP, VTX_JESDWN,
-	VTX_JERUP, VTX_JERDWN
+	VTX_JERUP, VTX_JERDWN,
+	VTX_JETTRKNOM, VTX_JETTRKUP, VTX_JETTRKDWN
+	VTX_SOFTTRKNOM, VTX_SOFTTRKUP, VTX_SOFTTRKDWN
+	VTX_SOFTTRKRESPARA, VTX_SOFTTRKRESPREP, VTX_SOFTTRKRESCORR
 };
+*/
 
 enum met_types
 {
@@ -75,6 +80,7 @@ public:
 	double         vtxDRmax()          { return m_drmax;        };
 	double         vtxDRmin()          { return m_drmin;        };
 	int            vtxPVntrk()         { return m_pvNtrk;       };
+	int            vtxNelectrons()     { return m_nElectrons;   };
 	
 	//// tracks
  	string         trkSrc(int i)            { return m_src[iSorted(i)];               };
@@ -176,6 +182,7 @@ private:
 	TLorentzVector m_trkP[nMaxTracks];
 	int m_njets[6];
 	int m_pvNtrk;
+	int m_nElectrons;
 	TLorentzVector m_jetPEall[6][4], m_jetPMall[6][4];
 	double m_jet_shiftJES[4], m_jet_shiftJER[4];
 	double m_jetMV1all[6][4], m_jetVtxFall[6][4];
@@ -199,7 +206,7 @@ private:
 	int m_trkOutliersOnTrack[nMaxTracks], m_trkStdDevOfChi2OS[nMaxTracks];
 	int m_trkPrecisionHits[nMaxTracks], m_trkPhiLayers[nMaxTracks], m_trkEtaPhiLayers[nMaxTracks], m_trkPrecisionHoles[nMaxTracks], m_trkEtaTriggerHoleLayers[nMaxTracks], m_trkPhiHoleLayers[nMaxTracks], m_trkPrecisionOutliers[nMaxTracks];
 	
-	double m_met[3][6], m_metPhi[3][6], m_metDphi3body[3][6], m_metMt[3][6];
+	double m_met[3][15], m_metPhi[3][15], m_metDphi3body[3][15], m_metMt[3][15];
 	
 	double m_chi2, m_ndf, m_chi2ndf, m_pvalue, m_lxy, m_lxyErr, m_tau, m_tauErr;
 	double m_a0, m_a0Err, m_a0xy, m_a0xyErr, m_cosT, m_cosTxy, m_charge, m_isolation[21], m_drmax, m_drmin;

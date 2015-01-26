@@ -66,6 +66,9 @@ MissingETUtility
 	make -f Makefile.Standalone
 if one or more packages complain about some missing headers,
 just have to add the absolute paths to the ones which cannot be found.
+Need to copy all conf files from METSystematics to the NTUPMaker working dir - otherwise the tool won't be able to find them
+	cp ../METSystematics/data/*.config .
+	cp ../METSystematics/data/*.root .
 
 
 

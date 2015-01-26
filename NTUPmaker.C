@@ -9,6 +9,7 @@
 #include "../ApplyJetResolutionSmearing/ApplyJetResolutionSmearing/ApplyJetSmearing.h"
 #include "../JetUncertainties/JetUncertainties/JESUncertaintyProvider.h"
 #include "../MissingETUtility/MissingETUtility/METUtility.h"
+#include "../METSystematics/METSystematics/METSystTool.h"
 #include "../METTrackUtil/METTrackUtil/TrackMETMaker.h"
 #include "../TileTripReader/TileTripReader/TTileTripReader.h"
 #include "../BCHCleaningTool/BCHCleaningTool/BCHCleaningToolRoot.h"
@@ -137,6 +138,16 @@ METUtil::METObject calibMETTRK_jes_up;
 METUtil::METObject calibMETTRK_jes_dwn;
 METUtil::METObject calibMETTRK_jer_up;
 METUtil::METObject calibMETTRK_jer_dwn;
+METUtil::METObject calibMETTRK_jettrk_nom;
+METUtil::METObject calibMETTRK_jettrk_up;
+METUtil::METObject calibMETTRK_jettrk_dwn;
+METUtil::METObject calibMETTRK_softtrk_nom;
+METUtil::METObject calibMETTRK_softtrk_up;
+METUtil::METObject calibMETTRK_softtrk_dwn;
+METUtil::METObject calibMETTRK_softtrkres_para;
+METUtil::METObject calibMETTRK_softtrkres_perp;
+METUtil::METObject calibMETTRK_softtrkres_corr;
+
 
 double isolation;
 vector<double> iso10;
@@ -994,6 +1005,7 @@ vector<float>* el_eta;
 vector<float>* el_phi;
 vector<float>* el_cl_E;
 vector<int>* el_mediumPP;
+vector<int>* el_tightPP;
 vector<int>* el_author;
 vector<float>* el_tracketa;
 vector<float>* el_trackphi;
@@ -1154,7 +1166,7 @@ vector<float>* ftrk_phi0 = new vector<float>;
 vector<float>* ftrk_d0 = new vector<float>;
 vector<float>* ftrk_z0 = new vector<float>;
 vector<float>* ftrk_qoverp = new vector<float>;
-vector<float>* ftrk_qoverpErr = new vector<float>;
+vector<float>* ftrk_qoverpCov = new vector<float>;
 
 
 //////////////////////////////////////////////////////////////////////
@@ -1711,29 +1723,24 @@ METUtil::METObject getMETU(int mettype)
 	
 	METU->defineMissingET(true,true,true,true,true,true,true);
 	// METU->setIsMuid(true);
-	// METU->setIsMuons(true);
+	if(mettype==METMUONS) METU->setIsMuons(true);
 	
 	//// soft muons and other leptons
-	METU->setMETTerm(METUtil::RefMuon,   MET_RefMuon_etx, MET_RefMuon_ety, MET_RefMuon_sumet); // must be done in addition to the staco code below
+	METU->setMETTerm(METUtil::RefMuon,   MET_RefMuon_etx, MET_RefMuon_ety, MET_RefMuon_sumet); // must be done in addition to the staco/Muons code below
 	METU->setMETTerm(METUtil::RefTau,    MET_RefTau_etx,  MET_RefTau_ety,  MET_RefTau_sumet);
 	// METU->setElectronParameters(el_pt, el_eta, el_phi, el_MET_RefFinal_comp_wet, el_MET_RefFinal_comp_wpx, el_MET_RefFinal_comp_wpy, el_MET_RefFinal_comp_statusWord);
 	METU->setMETTerm(METUtil::RefEle, MET_RefEle_etx, MET_RefEle_ety, MET_RefEle_sumet);
 	// METU->setPhotonParameters(ph_pt, ph_eta, ph_phi, ph_MET_RefFinal_comp_wet, ph_MET_RefFinal_comp_wpx, ph_MET_RefFinal_comp_wpy, ph_MET_RefFinal_comp_statusWord);
 	METU->setMETTerm(METUtil::RefGamma, MET_RefGamma_etx, MET_RefGamma_ety, MET_RefGamma_sumet);
 	
-	// //// Jets and soft terms
-	// if(glob_isWsig)
-	// {
-	// 	METU->setMETTerm(METUtil::SoftTerms, MET_CellOut_Eflow_etx, MET_CellOut_Eflow_ety, MET_CellOut_Eflow_sumet);
-	// 	METU->setJetParameters(akt4lc_jet_pt, akt4lc_jet_eta, akt4lc_jet_phi,akt4lc_jet_E, jet_antikt4LCtopo_MET_RefFinal_comp_wet, jet_antikt4LCtopo_MET_RefFinal_comp_wpx, jet_antikt4LCtopo_MET_RefFinal_comp_wpy, jet_antikt4LCtopo_MET_RefFinal_comp_statusWord);
-	// }
-	// else
-	// {
-	// 	METU->setMETTerm(METUtil::SoftTerms, MET_CellOut_Eflow_etx+MET_SoftJets_etx, MET_CellOut_Eflow_ety+MET_SoftJets_ety, MET_CellOut_Eflow_sumet+MET_SoftJets_sumet);
-	// 	METU->setMETTerm(METUtil::RefJet, MET_RefJet_etx, MET_RefJet_ety, MET_RefJet_sumet);
-	// }
-	METU->setMETTerm(METUtil::SoftTerms, MET_CellOut_Eflow_etx, MET_CellOut_Eflow_ety, MET_CellOut_Eflow_sumet);                                                                                                                                                  
+	//// soft terms
+	METU->setMETTerm(METUtil::SoftTerms, MET_CellOut_Eflow_etx, MET_CellOut_Eflow_ety, MET_CellOut_Eflow_sumet);
+	// METU->setMETTerm(METUtil::SoftTerms, MET_CellOut_Eflow_etx+MET_SoftJets_etx, MET_CellOut_Eflow_ety+MET_SoftJets_ety, MET_CellOut_Eflow_sumet+MET_SoftJets_sumet);
+	
+	//// Jets
 	METU->setJetParameters(akt4lc_jet_pt, akt4lc_jet_eta, akt4lc_jet_phi,akt4lc_jet_E, jet_antikt4LCtopo_MET_RefFinal_comp_wet, jet_antikt4LCtopo_MET_RefFinal_comp_wpx, jet_antikt4LCtopo_MET_RefFinal_comp_wpy, jet_antikt4LCtopo_MET_RefFinal_comp_statusWord);
+	// 	METU->setMETTerm(METUtil::RefJet, MET_RefJet_etx, MET_RefJet_ety, MET_RefJet_sumet);
+	
 
 	//// "Hard" muons
 	if(mettype==METSTACO)
@@ -1833,17 +1840,17 @@ void setTracksFloat()
 	ftrk_d0->clear();
 	ftrk_z0->clear();
 	ftrk_qoverp->clear();
-	ftrk_qoverpErr->clear();
+	ftrk_qoverpCov->clear();
 	
 	for(unsigned int i=0 ; i<trks_pt->size() ; ++i)
 	{
 		ftrk_pt->push_back(trks_pt->at(i));
 		ftrk_eta->push_back(trks_eta->at(i));
 		ftrk_phi0->push_back(trks_phi0->at(i));
-		ftrk_d0->push_back(trks_d0->at(i));
-		ftrk_z0->push_back(trks_z0->at(i));
+		ftrk_d0->push_back(trks_extrapD0->at(i) /*trks_d0->at(i)*/);
+		ftrk_z0->push_back(trks_extrapZ0->at(i) /*trks_z0->at(i)*/);
 		ftrk_qoverp->push_back(trks_qoverp->at(i));
-		ftrk_qoverpErr->push_back(trks_qoverpErr->at(i));
+		ftrk_qoverpCov->push_back(trks_qoverpErr->at(i)*trks_qoverpErr->at(i));
 	}
 }
 
@@ -1851,7 +1858,7 @@ void setMETTRK()
 {
 	METTRK->reset();
 	METTRK->fillTracks(ftrk_pt,ftrk_eta,ftrk_phi0,ftrk_d0,ftrk_z0,trks_nPix,trks_nSCT/*trkpt4_pt,trkpt4_phi*/); // default to 0 pointer
-	METTRK->filterTracks(ftrk_qoverpErr,ftrk_qoverp,cl_lc_pt,cl_lc_eta,cl_lc_phi);
+	METTRK->filterTracks(ftrk_qoverpCov,ftrk_qoverp,cl_lc_pt,cl_lc_eta,cl_lc_phi);
 	METTRK->setMuons(mu_muons_pt,mu_muons_eta,mu_muons_phi,mu_muons_isCombinedMuon,mu_muons_id_qoverp_exPV,mu_muons_id_theta_exPV,mu_muons_id_phi_exPV);
 	METTRK->setElectrons(el_cl_E,el_eta,el_mediumPP,el_author,el_tracketa,el_trackphi,el_Unrefittedtrack_pt,el_Unrefittedtrack_eta,el_Unrefittedtrack_phi/*el_trk_index*/); // optional -- if left 0 will match via dR and relative pt
 	METTRK->setJets(akt4lc_jet_pt,akt4lc_jet_eta,akt4lc_jet_phi,akt4lc_jet_E,AntiKt4LCTopoJets_jvtxf);
@@ -1865,6 +1872,42 @@ METUtil::METObject getMETTRK()
 {
 	_DEBUG("");
 	return METTRK->getTrackMET();
+}
+
+METSyst::METSystTool* METTRKU;
+void initMETTRKU()
+{
+	METTRKU = new METSyst::METSystTool();
+	// METTRKU->initialise("/afs/cern.ch/user/h/hod/METSystematics/data/METTrack_2012.config");	
+	METTRKU->initialise("METTrack_2012.config");	
+}
+void setMETTRKU()
+{
+	_DEBUG("");
+	METUtil::METObject softTerms = METU->getMissingET(METUtil::SoftTerms);
+	METUtil::METObject hardTerms = METU->getMissingET(METUtil::HardTerms);
+	METUtil::METObject truth     = METU->getMissingET(METUtil::Truth);
+	METTRKU->setupMET(softTerms,hardTerms,truth);
+
+	vector<const METTrack::Track*> jettracks = METTRK->getTermTracks(METTrack::TrkJet);
+	// cout << "jettracks.size()=" << jettracks.size() << endl;
+	METTRKU->setJetTracks(akt4lc_jet_pt,akt4lc_jet_eta,jettracks);
+}
+METUtil::METObject getMETTRKU(int syst)
+{
+	_DEBUG("");
+	METUtil::METObject mettrk_syst;
+	if     (syst==JETTRKNOM)      mettrk_syst = METTRKU->getJetTrackMET(METSyst::JetTrk_Nom);
+	else if(syst==JETTRKUP)       mettrk_syst = METTRKU->getJetTrackMET(METSyst::JetTrk_Up);
+	else if(syst==JETTRKDWN)      mettrk_syst = METTRKU->getJetTrackMET(METSyst::JetTrk_Down);
+	else if(syst==SOFTTRKNOM)     mettrk_syst = METTRKU->getSoftTerms(METSyst::SoftTrk_Nom);
+	else if(syst==SOFTTRKUP)      mettrk_syst = METTRKU->getSoftTerms(METSyst::SoftTrk_ScaleUp);
+	else if(syst==SOFTTRKDWN)     mettrk_syst = METTRKU->getSoftTerms(METSyst::SoftTrk_ScaleDown);
+	else if(syst==SOFTTRKRESPARA) mettrk_syst = METTRKU->getSoftTerms(METSyst::SoftTrk_ResoPara);
+	else if(syst==SOFTTRKRESPERP) mettrk_syst = METTRKU->getSoftTerms(METSyst::SoftTrk_ResoPerp);
+	else if(syst==SOFTTRKRESCORR) mettrk_syst = METTRKU->getSoftTerms(METSyst::SoftTrk_ResoCorr);
+	else _FATAL("Unknown enum for systematic in TrackMET");
+	return mettrk_syst;
 }
 
 
@@ -1925,7 +1968,7 @@ void fillJetCalibrationHistos(unsigned int jet, TLorentzVector Jet, TLorentzVect
 	// }
 }
 
-void fillMETCalibrationHistos(METUtil::METObject calibMET, METUtil::METObject trkMET, TString name, TMapTSP2TH1& histos/*, TMapTSP2TH2& histos2*/, double wgt)
+void fillMETCalibrationHistos(METUtil::METObject calibMET, METUtil::METObject trkMET, METUtil::METObject trkMETucalib, TString name, TMapTSP2TH1& histos/*, TMapTSP2TH2& histos2*/, double wgt)
 {
 	double refFinal_et = calibMET.et();
 	double refFinal_phi = calibMET.phi();
@@ -1947,7 +1990,40 @@ void fillMETCalibrationHistos(METUtil::METObject calibMET, METUtil::METObject tr
 	relDiff_phi = (trackmet_phi-MET_Track_phi)/MET_Track_phi;
 
 	histos[name+"_mettrk_calibration_et_reldiff"]->Fill(relDiff_et,wgt);
-	histos[name+"_mettrk_calibration_phi_reldiff"]->Fill(relDiff_phi,wgt);	
+	histos[name+"_mettrk_calibration_phi_reldiff"]->Fill(relDiff_phi,wgt);
+	
+	
+	
+	//// track met
+	double trackmet_et_uncalib = trkMETucalib.et();
+	double trackmet_phi_uncalib = trkMETucalib.phi();
+	double trackmet_sumet_uncalib = trkMETucalib.sumet();
+
+	relDiff_et  = (trackmet_et_uncalib-MET_Track_et)/MET_Track_et;
+	relDiff_phi = (trackmet_phi_uncalib-MET_Track_phi)/MET_Track_phi;
+
+	histos[name+"_mettrk_toolVSntuple_et_reldiff"]->Fill(relDiff_et,wgt);
+	histos[name+"_mettrk_toolVSntuple_phi_reldiff"]->Fill(relDiff_phi,wgt);
+	
+	histos[name+"_mettrk_tool_et"]->Fill(trackmet_et_uncalib,wgt);
+	histos[name+"_mettrk_ntuple_et"]->Fill(MET_Track_et,wgt);
+	histos[name+"_mettrk_tool_phi"]->Fill(trackmet_phi_uncalib,wgt);
+	histos[name+"_mettrk_ntuple_phi"]->Fill(MET_Track_phi,wgt);
+	histos[name+"_mettrk_tool_sumet"]->Fill(trackmet_sumet_uncalib,wgt);
+	histos[name+"_mettrk_ntuple_sumet"]->Fill(MET_Track_sumet,wgt);
+
+
+	//// comparison with truth
+	relDiff_et  = (trackmet_et_uncalib-MET_Truth_NonInt_et)/MET_Truth_NonInt_et;
+        relDiff_phi = (trackmet_phi_uncalib-MET_Truth_NonInt_phi)/MET_Truth_NonInt_phi;
+
+        histos[name+"_mettrk_toolVSntuptru_et_reldiff"]->Fill(relDiff_et,wgt);
+        histos[name+"_mettrk_toolVSntuptru_phi_reldiff"]->Fill(relDiff_phi,wgt);
+
+        histos[name+"_mettrk_ntuptru_et"]->Fill(MET_Truth_NonInt_et,wgt);
+        histos[name+"_mettrk_ntuptru_phi"]->Fill(MET_Truth_NonInt_phi,wgt);
+        histos[name+"_mettrk_ntuptru_sumet"]->Fill(MET_Truth_NonInt_sumet,wgt);
+
 	
 }
 
@@ -3631,6 +3707,7 @@ void fillFlatoutTree(vector<vertex>& vertices, int allPassing)
 		flatout_vfloats["vtx_dRmax"]     ->push_back(v.vtxDRmax());
 		flatout_vfloats["vtx_dRmin"]     ->push_back(v.vtxDRmin());
 		flatout_vints["vtx_pvNtrk"]      ->push_back(v.vtxPVntrk());
+		flatout_vints["vtx_nElectrons"]  ->push_back(v.vtxNelectrons());
 		
 		flatout_vfloats["vtx_isolation000"]->push_back(v.vtxIsolation(0));
 		flatout_vfloats["vtx_isolation001"]->push_back(v.vtxIsolation(1));
@@ -3694,6 +3771,40 @@ void fillFlatoutTree(vector<vertex>& vertices, int allPassing)
 
 		flatout_vfloats["met_track_mT_uncalib"]     ->push_back(v.metMt(METTRACK,NOJES));
 		flatout_vfloats["met_track_dPhi3mu_uncalib"]->push_back(v.metDphi3body(METTRACK,NOJES));
+		
+		flatout_vfloats["met_track_mT"]     ->push_back(v.metMt(METTRACK,NOMINAL));
+		flatout_vfloats["met_track_dPhi3mu"]->push_back(v.metDphi3body(METTRACK,NOMINAL));
+		
+		flatout_vfloats["met_track_mT_jes_up"]      ->push_back(v.metMt(METTRACK,JESUP));
+		flatout_vfloats["met_track_dPhi3mu_jes_up"] ->push_back(v.metDphi3body(METTRACK,JESUP));
+		flatout_vfloats["met_track_mT_jes_dwn"]     ->push_back(v.metMt(METTRACK,JESDWN));
+		flatout_vfloats["met_track_dPhi3mu_jes_dwn"]->push_back(v.metDphi3body(METTRACK,JESDWN));
+		
+		flatout_vfloats["met_track_mT_jer_up"]      ->push_back(v.metMt(METTRACK,JERUP));
+		flatout_vfloats["met_track_dPhi3mu_jer_up"] ->push_back(v.metDphi3body(METTRACK,JERUP));
+		flatout_vfloats["met_track_mT_jer_dwn"]     ->push_back(v.metMt(METTRACK,JERDWN));
+		flatout_vfloats["met_track_dPhi3mu_jer_dwn"]->push_back(v.metDphi3body(METTRACK,JERDWN));
+
+		flatout_vfloats["met_track_mT_jettrk_nom"]     ->push_back(v.metMt(METTRACK,JETTRKNOM));
+		flatout_vfloats["met_track_dPhi3mu_jettrk_nom"]->push_back(v.metDphi3body(METTRACK,JETTRKNOM));
+		flatout_vfloats["met_track_mT_jettrk_up"]     ->push_back(v.metMt(METTRACK,JETTRKUP));
+		flatout_vfloats["met_track_dPhi3mu_jettrk_up"]->push_back(v.metDphi3body(METTRACK,JETTRKUP));
+		flatout_vfloats["met_track_mT_jettrk_dwn"]     ->push_back(v.metMt(METTRACK,JETTRKDWN));
+		flatout_vfloats["met_track_dPhi3mu_jettrk_dwn"]->push_back(v.metDphi3body(METTRACK,JETTRKDWN));
+
+		flatout_vfloats["met_track_mT_softtrk_nom"]     ->push_back(v.metMt(METTRACK,SOFTTRKNOM));
+		flatout_vfloats["met_track_dPhi3mu_softtrk_nom"]->push_back(v.metDphi3body(METTRACK,SOFTTRKNOM));
+		flatout_vfloats["met_track_mT_softtrk_up"]     ->push_back(v.metMt(METTRACK,SOFTTRKUP));
+		flatout_vfloats["met_track_dPhi3mu_softtrk_up"]->push_back(v.metDphi3body(METTRACK,SOFTTRKUP));
+		flatout_vfloats["met_track_mT_softtrk_dwn"]     ->push_back(v.metMt(METTRACK,SOFTTRKDWN));
+		flatout_vfloats["met_track_dPhi3mu_softtrk_dwn"]->push_back(v.metDphi3body(METTRACK,SOFTTRKDWN));
+		
+		flatout_vfloats["met_track_mT_softtrkres_para"]     ->push_back(v.metMt(METTRACK,SOFTTRKRESPARA));
+		flatout_vfloats["met_track_dPhi3mu_softtrkres_para"]->push_back(v.metDphi3body(METTRACK,SOFTTRKRESPARA));
+		flatout_vfloats["met_track_mT_softtrkres_perp"]     ->push_back(v.metMt(METTRACK,SOFTTRKRESPERP));
+		flatout_vfloats["met_track_dPhi3mu_softtrkres_perp"]->push_back(v.metDphi3body(METTRACK,SOFTTRKRESPERP));
+		flatout_vfloats["met_track_mT_softtrkres_corr"]     ->push_back(v.metMt(METTRACK,SOFTTRKRESCORR));
+		flatout_vfloats["met_track_dPhi3mu_softtrkres_corr"]->push_back(v.metDphi3body(METTRACK,SOFTTRKRESCORR));
 	}
 	
 	_DEBUG("");
@@ -3749,6 +3860,28 @@ void fillFlatoutTree(vector<vertex>& vertices, int allPassing)
 	flatout_floats["met_track_phi_jer_up"]  = calibMETTRK_jer_up.phi();
 	flatout_floats["met_track_et_jer_dwn"]  = calibMETTRK_jer_dwn.et();
 	flatout_floats["met_track_phi_jer_dwn"] = calibMETTRK_jer_dwn.phi();
+
+
+	flatout_floats["met_track_et_jettrk_nom"]  = calibMETTRK_jettrk_nom.et();
+	flatout_floats["met_track_phi_jettrk_nom"] = calibMETTRK_jettrk_nom.phi();
+	flatout_floats["met_track_et_jettrk_up"]   = calibMETTRK_jettrk_up.et();
+	flatout_floats["met_track_phi_jettrk_up"]  = calibMETTRK_jettrk_up.phi();
+	flatout_floats["met_track_et_jettrk_dwn"]  = calibMETTRK_jettrk_dwn.et();
+	flatout_floats["met_track_phi_jettrk_dwn"] = calibMETTRK_jettrk_dwn.phi();
+
+	flatout_floats["met_track_et_softtrk_nom"]  = calibMETTRK_softtrk_nom.et();
+	flatout_floats["met_track_phi_softtrk_nom"] = calibMETTRK_softtrk_nom.phi();
+	flatout_floats["met_track_et_softtrk_up"]   = calibMETTRK_softtrk_up.et();
+	flatout_floats["met_track_phi_softtrk_up"]  = calibMETTRK_softtrk_up.phi();
+	flatout_floats["met_track_et_softtrk_dwn"]  = calibMETTRK_softtrk_dwn.et();
+	flatout_floats["met_track_phi_softtrk_dwn"] = calibMETTRK_softtrk_dwn.phi();
+
+	flatout_floats["met_track_et_softtrkres_para"]   = calibMETTRK_softtrkres_para.et();
+	flatout_floats["met_track_phi_softtrkres_para"]  = calibMETTRK_softtrkres_para.phi();
+	flatout_floats["met_track_et_softtrkres_perp"]   = calibMETTRK_softtrkres_perp.et();
+	flatout_floats["met_track_phi_softtrkres_perp"]  = calibMETTRK_softtrkres_perp.phi();
+	flatout_floats["met_track_et_softtrkres_corr"]   = calibMETTRK_softtrkres_corr.et();
+	flatout_floats["met_track_phi_softtrkres_corr"]  = calibMETTRK_softtrkres_corr.phi();
 
 	_DEBUG("");
 	
@@ -4723,6 +4856,7 @@ void setBranches(TString tType, TChain* t)
 		el_phi = 0;
 		el_cl_E = 0;
 		el_mediumPP = 0;
+		el_tightPP = 0;
 		el_author = 0;
 		el_tracketa = 0;
 		el_trackphi = 0;
@@ -4946,6 +5080,7 @@ void setBranches(TString tType, TChain* t)
 			t->SetBranchStatus("el_phi", 1);
 			t->SetBranchStatus("el_cl_E", 1);
 			t->SetBranchStatus("el_mediumPP", 1);
+			t->SetBranchStatus("el_tightPP", 1);
 			t->SetBranchStatus("el_author", 1);
 			t->SetBranchStatus("el_tracketa", 1);
 			t->SetBranchStatus("el_trackphi", 1);
@@ -5212,6 +5347,7 @@ void setBranches(TString tType, TChain* t)
 		t->SetBranchAddress("el_phi", &el_phi);
 		t->SetBranchAddress("el_cl_E", &el_cl_E);
 		t->SetBranchAddress("el_mediumPP", &el_mediumPP);
+		t->SetBranchAddress("el_tightPP", &el_tightPP);
 		t->SetBranchAddress("el_author", &el_author);
 		t->SetBranchAddress("el_tracketa", &el_tracketa);
 		t->SetBranchAddress("el_trackphi", &el_trackphi);
@@ -6542,7 +6678,7 @@ void addFriends(TChain* c, TMapTSP2TCHAIN& cfriends)
 		c->AddFriend(it->second);
 	}
 }
-void prepareChains(TString name, TString mastertree, TMapTSP2TCHAIN& chains, TMapTSP2TCHAIN& chainfriends, TFile* fout, TMapTSP2TTREE& otrees)
+void perpareChains(TString name, TString mastertree, TMapTSP2TCHAIN& chains, TMapTSP2TCHAIN& chainfriends, TFile* fout, TMapTSP2TTREE& otrees)
 {
 	TString mcdata = (isData(name)) ? "data" : "mc";
 	TString path = basepath+mcdata+"/"+mastername+"/"+name+"/";
@@ -8688,7 +8824,85 @@ void vertex::set(unsigned int vtx)
 		m_metPhi[METTRACK][JERDWN]       = calibMETTRK_jer_dwn.phi();
 		m_metDphi3body[METTRACK][JERDWN] = fabs(dPhi(calibMETTRK_jer_dwn.phi(),psum.Phi()));
 		m_metMt[METTRACK][JERDWN]        = mT(calibMETTRK_jer_dwn.et(),calibMETTRK_jer_dwn.phi(),psum.Pt(),psum.Phi());
+
+		m_met[METTRACK][JETTRKNOM]          = calibMETTRK_jettrk_nom.et();
+		m_metPhi[METTRACK][JETTRKNOM]       = calibMETTRK_jettrk_nom.phi();
+		m_metDphi3body[METTRACK][JETTRKNOM] = fabs(dPhi(calibMETTRK_jettrk_nom.phi(),psum.Phi()));
+		m_metMt[METTRACK][JETTRKNOM]        = mT(calibMETTRK_jettrk_nom.et(),calibMETTRK_jettrk_nom.phi(),psum.Pt(),psum.Phi());
+
+		m_met[METTRACK][JETTRKUP]          = calibMETTRK_jettrk_up.et();
+		m_metPhi[METTRACK][JETTRKUP]       = calibMETTRK_jettrk_up.phi();
+		m_metDphi3body[METTRACK][JETTRKUP] = fabs(dPhi(calibMETTRK_jettrk_up.phi(),psum.Phi()));
+		m_metMt[METTRACK][JETTRKUP]        = mT(calibMETTRK_jettrk_up.et(),calibMETTRK_jettrk_up.phi(),psum.Pt(),psum.Phi());
+
+		m_met[METTRACK][JETTRKDWN]          = calibMETTRK_jettrk_dwn.et();
+		m_metPhi[METTRACK][JETTRKDWN]       = calibMETTRK_jettrk_dwn.phi();
+		m_metDphi3body[METTRACK][JETTRKDWN] = fabs(dPhi(calibMETTRK_jettrk_dwn.phi(),psum.Phi()));
+		m_metMt[METTRACK][JETTRKDWN]        = mT(calibMETTRK_jettrk_dwn.et(),calibMETTRK_jettrk_dwn.phi(),psum.Pt(),psum.Phi());
+
+		m_met[METTRACK][SOFTTRKNOM]          = calibMETTRK_softtrk_nom.et();
+		m_metPhi[METTRACK][SOFTTRKNOM]       = calibMETTRK_softtrk_nom.phi();
+		m_metDphi3body[METTRACK][SOFTTRKNOM] = fabs(dPhi(calibMETTRK_softtrk_nom.phi(),psum.Phi()));
+		m_metMt[METTRACK][SOFTTRKNOM]        = mT(calibMETTRK_softtrk_nom.et(),calibMETTRK_softtrk_nom.phi(),psum.Pt(),psum.Phi());
+
+		m_met[METTRACK][SOFTTRKUP]          = calibMETTRK_softtrk_up.et();
+		m_metPhi[METTRACK][SOFTTRKUP]       = calibMETTRK_softtrk_up.phi();
+		m_metDphi3body[METTRACK][SOFTTRKUP] = fabs(dPhi(calibMETTRK_softtrk_up.phi(),psum.Phi()));
+		m_metMt[METTRACK][SOFTTRKUP]        = mT(calibMETTRK_softtrk_up.et(),calibMETTRK_softtrk_up.phi(),psum.Pt(),psum.Phi());
+
+		m_met[METTRACK][SOFTTRKDWN]          = calibMETTRK_softtrk_dwn.et();
+		m_metPhi[METTRACK][SOFTTRKDWN]       = calibMETTRK_softtrk_dwn.phi();
+		m_metDphi3body[METTRACK][SOFTTRKDWN] = fabs(dPhi(calibMETTRK_softtrk_dwn.phi(),psum.Phi()));
+		m_metMt[METTRACK][SOFTTRKDWN]        = mT(calibMETTRK_softtrk_dwn.et(),calibMETTRK_softtrk_dwn.phi(),psum.Pt(),psum.Phi());
+
+		m_met[METTRACK][SOFTTRKRESPARA]          = calibMETTRK_softtrkres_para.et();
+		m_metPhi[METTRACK][SOFTTRKRESPARA]       = calibMETTRK_softtrkres_para.phi();
+		m_metDphi3body[METTRACK][SOFTTRKRESPARA] = fabs(dPhi(calibMETTRK_softtrkres_para.phi(),psum.Phi()));
+		m_metMt[METTRACK][SOFTTRKRESPARA]        = mT(calibMETTRK_softtrkres_para.et(),calibMETTRK_softtrkres_para.phi(),psum.Pt(),psum.Phi());
+		
+		m_met[METTRACK][SOFTTRKRESPERP]          = calibMETTRK_softtrkres_perp.et();
+		m_metPhi[METTRACK][SOFTTRKRESPERP]       = calibMETTRK_softtrkres_perp.phi();
+		m_metDphi3body[METTRACK][SOFTTRKRESPERP] = fabs(dPhi(calibMETTRK_softtrkres_perp.phi(),psum.Phi()));
+		m_metMt[METTRACK][SOFTTRKRESPERP]        = mT(calibMETTRK_softtrkres_perp.et(),calibMETTRK_softtrkres_perp.phi(),psum.Pt(),psum.Phi());	
+
+		m_met[METTRACK][SOFTTRKRESCORR]          = calibMETTRK_softtrkres_corr.et();
+		m_metPhi[METTRACK][SOFTTRKRESCORR]       = calibMETTRK_softtrkres_corr.phi();
+		m_metDphi3body[METTRACK][SOFTTRKRESCORR] = fabs(dPhi(calibMETTRK_softtrkres_corr.phi(),psum.Phi()));
+		m_metMt[METTRACK][SOFTTRKRESCORR]        = mT(calibMETTRK_softtrkres_corr.et(),calibMETTRK_softtrkres_corr.phi(),psum.Pt(),psum.Phi());
+
 	}
+	
+	_DEBUG("");
+	
+	// electrons
+	float dR3bodyElecMin = 0.2;
+	float dRJetElecMin   = 0.2;
+	int nElectrons = 0;
+	for(int i=0 ; i<el_n ; i++)
+	{
+		if(fabs(el_eta->at(i))>2.47)                             continue;
+		if(fabs(el_eta->at(i))>1.37 && fabs(el_eta->at(i))<1.52) continue; // crack region
+		if(!el_tightPP->at(i))                                   continue;
+		if(el_author->at(i)!=1 && el_author->at(i)!=3)           continue;
+		
+		TLorentzVector elec; elec.SetPtEtaPhiE(el_pt->at(i), el_eta->at(i), el_phi->at(i), el_E->at(i)); // "good" electron
+		
+		bool isJetElecOverlap = false;
+		for(int j=0 ; j<AntiKt4LCTopoJets_n ; j++)
+		{
+			if(!isGoodJet(j,JetQuality)) continue;
+			TLorentzVector Jet; Jet.SetPtEtaPhiE(AntiKt4LCTopoJets_pt->at(j), AntiKt4LCTopoJets_eta->at(j), AntiKt4LCTopoJets_phi->at(j), AntiKt4LCTopoJets_E->at(j));
+			if(fabs(elec.DeltaR(Jet))<dRJetElecMin) // e-jet overlap removal
+			{
+				isJetElecOverlap = true;
+				break; // found an overlapping jet --> this "isn't an electron" --> flag to continue the electron loop
+			}
+		}
+		if(isJetElecOverlap)                       continue; // e-jet overlap removal
+		if(fabs(elec.DeltaR(psum))<dR3bodyElecMin) continue; // e-3body overlap removal
+		nElectrons++;
+	}
+	m_nElectrons = nElectrons;
 	
 	_DEBUG("");
 
@@ -10665,13 +10879,14 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 	if(skim && makepufile && name=="Wtaunu_3mu") initializePileup(); // for creating the pileup file
 	if(!skim)
 	{
-		initializePileup(); // PU tool is needed for BCH cleaning !
-		initBCH(isdata); // BCH cleaning should be used either for data or signal
+		initializePileup();        // PU tool is needed for BCH cleaning !
+		initBCH(isdata);           // BCH cleaning should be used either for data or signal
 		initJES(isdata,JESconfig); // Jet Energy Scale
-		initJER();       // Jet Energy Resolution
-		initJUN(JESconfig);       // Jet Energy Scale uncertainty
-		initMET();       // MET Utility
-		initMETTRK();    // MET Track tool
+		initJER();                 // Jet Energy Resolution
+		initJUN(JESconfig);        // Jet Energy Scale uncertainty
+		initMET();                 // MET Utility
+		initMETTRK();              // MET Track tool
+		initMETTRKU();             // MET Systematics (for Track MET only)
 	}
 
 	
@@ -10820,11 +11035,23 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 			setJetVectorPointers(jets_jer_up);       calibMET_jer_up  = getMETU(METSTACO); calibMUMET_jer_up  = getMETU(METMUONS); setMETTRK(); calibMETTRK_jer_up  = getMETTRK();
 			setJetVectorPointers(jets_jer_dwn);      calibMET_jer_dwn = getMETU(METSTACO); calibMUMET_jer_dwn = getMETU(METMUONS); setMETTRK(); calibMETTRK_jer_dwn = getMETTRK();
 			
-			// setJetVectorPointers(calibJets,calibJetsUnc,NOSHIFT);    calibMET_nominal = getMETU();
-			// setJetVectorPointers(calibJets,calibJetsUnc,SHIFTUP);    calibMET_jes_up  = getMETU();
-			// setJetVectorPointers(calibJets,calibJetsUnc,SHIFTDWN);   calibMET_jes_dwn = getMETU();
-			// setJetVectorPointers(calibJets,smearedJetsUnc,SHIFTUP);  calibMET_jer_up  = getMETU();
-			// setJetVectorPointers(calibJets,smearedJetsUnc,SHIFTDWN); calibMET_jer_dwn = getMETU();
+			
+			setJetVectorPointers(jets_jes_nominal); setMETTRK(); setMETTRKU(); // setup Track MET systematics with the nominally calibrated jets !!!
+			vector<const METTrack::Track*> jettracks = METTRK->getTermTracks(METTrack::TrkJet);
+			histos[name+"_jettracks"]->Fill(jettracks.size(),wgt);
+			
+			calibMETTRK_jettrk_nom = getMETTRKU(JETTRKNOM);
+			calibMETTRK_jettrk_up  = getMETTRKU(JETTRKUP);
+			calibMETTRK_jettrk_dwn = getMETTRKU(JETTRKDWN);
+			calibMETTRK_softtrk_nom = getMETTRKU(SOFTTRKNOM);
+			calibMETTRK_softtrk_up  = getMETTRKU(SOFTTRKUP);
+			calibMETTRK_softtrk_dwn = getMETTRKU(SOFTTRKDWN);
+			calibMETTRK_softtrkres_para = getMETTRKU(SOFTTRKRESPARA);
+			calibMETTRK_softtrkres_perp = getMETTRKU(SOFTTRKRESPERP);
+			calibMETTRK_softtrkres_corr = getMETTRKU(SOFTTRKRESCORR);
+			
+	
+
 			// cout << "MET:" << endl;
 			// cout << "  MET_RefFinal_et : " << MET_RefFinal_et << " -> " << calibMET_nominal.et() << ", JES+1sig:" << calibMET_jes_up.et() << ", JES-1sig:" << calibMET_jes_dwn.et() << ", JER+1sig:" << calibMET_jer_up.et() << ", JER-1sig:" << calibMET_jer_dwn.et() << endl;
 			// cout << "  MET_RefFinal_phi: " << MET_RefFinal_phi << " -> " << calibMET_nominal.phi() << ", JES+1sig:" << calibMET_jes_up.phi() << ", JES-1sig:" << calibMET_jes_dwn.phi() << ", JER+1sig:" << calibMET_jer_up.phi() << ", JER-1sig:" << calibMET_jer_dwn.phi() << endl;
@@ -10847,7 +11074,7 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 			// 	}
 			// }
 			
-			fillMETCalibrationHistos(calibMET_nominal, calibMETTRK_nominal, name, histos/*, histos2*/, wgt);
+			fillMETCalibrationHistos(calibMET_nominal, calibMETTRK_nominal, uncalibMETTRK, name, histos/*, histos2*/, wgt);
 		}
 
 
@@ -12152,17 +12379,16 @@ void NTUPmaker(TString runType, TString outDir, TString chnl, TString master, TS
 	// LUMINOSTIY SETUP //////////////////////////////////////////////	
 	//////////////////////////////////////////////////////////////////	
 	setLumis(); // fixed database ////////////////////////////////////
-	if(isAllData || chnl.Contains("periodA")) enablePeriod("A");
+	//if(isAllData || chnl.Contains("periodA")) enablePeriod("A");
 	if(isAllData || chnl.Contains("periodB")) enablePeriod("B");
 	if(isAllData || chnl.Contains("periodC")) enablePeriod("C");
 	if(isAllData || chnl.Contains("periodD")) enablePeriod("D");
 	if(isAllData || chnl.Contains("periodE")) enablePeriod("E");
 	if(isAllData || chnl.Contains("periodG")) enablePeriod("G");
 	if(isAllData || chnl.Contains("periodH")) enablePeriod("H");
-	if(isAllData || chnl.Contains("periodI")) enablePeriod("I");
-	if(isAllData || chnl.Contains("periodJ")) enablePeriod("J");
-	if(isAllData || chnl.Contains("periodL")) enablePeriod("L");
-	// if(isAllData || chnl.Contains("periodM")) enablePeriod("M");
+	//if(isAllData || chnl.Contains("periodI")) enablePeriod("I");
+	//if(isAllData || chnl.Contains("periodJ")) enablePeriod("J");
+	//if(isAllData || chnl.Contains("periodL")) enablePeriod("L");
 	totalLumi = (chnl.Contains("period")) ? getTotalLumi() : 1.; // inverse femtobarns
 	TString periods = "";
 	for(TMapTSb::iterator it=periodenable.begin() ; it!=periodenable.end() ; ++it) { periods += it->first; }
@@ -12200,7 +12426,7 @@ void NTUPmaker(TString runType, TString outDir, TString chnl, TString master, TS
 	// if(isAllMC || chnl.Contains("JZ0W")) enableBinnedMC("JZ0W");
 	// if(isAllMC || chnl.Contains("JZ1W")) enableBinnedMC("JZ1W");
 	if(isAllMC || chnl.Contains("JZ2W")) enableBinnedMC("JZ2W");
-	if(isAllMC || chnl.Contains("JZ3W")) enableBinnedMC("JZ3W");
+	//if(isAllMC || chnl.Contains("JZ3W")) enableBinnedMC("JZ3W");
 	//////////////////////////////////////////////////////////////////////
 	
 	
@@ -12323,6 +12549,25 @@ void NTUPmaker(TString runType, TString outDir, TString chnl, TString master, TS
 
 		addHist(histos,name,"mettrk_calibration_et_reldiff", ";Track MET E_{T}^{calib.}/E_{T}^{uncalib.}-1;Normalized", labels,100,-3.,3.);
 		addHist(histos,name,"mettrk_calibration_phi_reldiff", ";Track MET #phi^{calib.}/#phi^{uncalib.}-1;Normalized", labels,100,-3.,3.);
+
+		addHist(histos,name,"mettrk_toolVSntuple_et_reldiff", ";Track MET E_{T}^{tool}/E_{T}^{ntuple}-1;Normalized", labels,100,-3.,3.);
+		addHist(histos,name,"mettrk_toolVSntuple_phi_reldiff", ";Track MET #phi^{tool}/#phi^{ntuple}-1;Normalized", labels,100,-3.,3.);
+	
+		addHist(histos,name,"mettrk_toolVSntuptru_et_reldiff", ";Track MET E_{T}^{tool}/E_{T}^{ntuptru}-1;Normalized", labels,100,-3.,3.);
+		addHist(histos,name,"mettrk_toolVSntuptru_phi_reldiff", ";Track MET #phi^{tool}/#phi^{ntuptru}-1;Normalized", labels,100,-3.,3.);
+		
+		addHist(histos,name,"mettrk_tool_sumet",   ";Track #Sigma#it{E}_{T} [MeV] (tool);Normalized",labels,50,100.*GeV2MeV,400.*GeV2MeV);
+		addHist(histos,name,"mettrk_ntuple_sumet", ";Track #Sigma#it{E}_{T} [MeV] (ntuple);Normalized",labels,50,100.*GeV2MeV,400.*GeV2MeV);
+		addHist(histos,name,"mettrk_ntuptru_sumet",";Truth #Sigma#it{E}_{T} [MeV] (ntuptru);Normalized",labels,50,100.*GeV2MeV,400.*GeV2MeV);
+		addHist(histos,name,"mettrk_tool_et",      ";Track #it{E}_{T}^{miss} [MeV] (tool);Normalized",labels,50,0.,100.*GeV2MeV);
+		addHist(histos,name,"mettrk_ntuple_et",    ";Track #it{E}_{T}^{miss} [MeV] (ntuple);Normalized",labels,50,0.,100.*GeV2MeV);
+		addHist(histos,name,"mettrk_ntuptru_et",   ";Truth #it{E}_{T}^{miss} [MeV] (ntuptru);Normalized",labels,50,0.,100.*GeV2MeV);
+		addHist(histos,name,"mettrk_tool_phi",     ";Track #phi(#it{E}_{T}^{miss}) (tool);Normalized",labels,32,-TMath::Pi(),+TMath::Pi());
+		addHist(histos,name,"mettrk_ntuple_phi",   ";Track #phi(#it{E}_{T}^{miss}) (ntuple);Normalized",labels,32,-TMath::Pi(),+TMath::Pi());
+		addHist(histos,name,"mettrk_ntuptru_phi",  ";Truth #phi(#it{E}_{T}^{miss}) (ntuptru);Normalized",labels,32,-TMath::Pi(),+TMath::Pi());
+
+		addHist(histos,name,"jettracks", ";N track jets;Normalized", labels,10,0,10);
+		
 
 		addHist(histos,name,"jet_calibration_pt_reldiff", ";Jets p_{T}^{calib.}/p_{T}^{uncalib.}-1;Normalized", labels,100,-3.,3.);
 		addHist(histos,name,"jet_calibration_E_reldiff", ";Jets E^{calib.}/E^{uncalib.}-1;Normalized", labels,100,-3.,3.);
@@ -13097,7 +13342,7 @@ void NTUPmaker(TString runType, TString outDir, TString chnl, TString master, TS
 		TString mastertree = getMasterTreeName();
 		if(!isBinned(name)) 
 		{
-			prepareChains(name,mastertree,chains,chainfriends,fout,otrees);
+			perpareChains(name,mastertree,chains,chainfriends,fout,otrees);
 			if(isData(name)) analysis(name,chains,otrees,histos,histos2,nentriesMax); // limit chain only for data and only if nentriesMax!=0 (see up)
 			else             analysis(name,chains,otrees,histos,histos2,0);
 		}
@@ -13112,7 +13357,7 @@ void NTUPmaker(TString runType, TString outDir, TString chnl, TString master, TS
 					if(name.Contains("ZmumuNpX")  && !bname.Contains("ZmumuNp"))  continue;
 					if(name.Contains("WtaunuNpX") && !bname.Contains("WtaunuNp")) continue;
 					if(name.Contains("JZxW")      && !bname.Contains("JZ"))       continue;
-					prepareChains(bname,mastertree,chains,chainfriends,fout,otrees);
+					perpareChains(bname,mastertree,chains,chainfriends,fout,otrees);
 					analysis(bname,chains,otrees,histos,histos2,0);
 				}
 			}
@@ -13122,7 +13367,7 @@ void NTUPmaker(TString runType, TString outDir, TString chnl, TString master, TS
 				{
 					TString period = ip->first;
 					TString bname  = "period"+period;
-					prepareChains(bname,mastertree,chains,chainfriends,fout,otrees);
+					perpareChains(bname,mastertree,chains,chainfriends,fout,otrees);
 					analysis(bname,chains,otrees,histos,histos2,0);
 				}
 			}

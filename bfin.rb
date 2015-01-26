@@ -21,28 +21,27 @@ masters = ['muons']
 insets = Hash.new
 insets = {
   # 'periodA' =>     5, # nfiles=41
-  # 'periodB' =>    14, # nfiles=132 (133 with one corrupted, available in $EOSHOME/data/backup/user.hod.4143407.d3pdstream._000078.root)
-  # 'periodC' =>     6, # nfiles=52
-  # 'periodD' =>    11, # nfiles=104
-  # 'periodE' =>     7, # nfiles=64 (65 with one missing - try rucio-get again)
-  # 'periodG' =>     4, # nfiles=31
-  # 'periodH' =>     4, # nfiles=39
-  # 'periodI' =>     3, # nfiles=26
-  # 'periodJ' =>     6, # nfiles=51 (no missing files here but probably few lost in the grid - output is a bit too small - need to resubmit)
-  # 'periodL' =>     2, # nfiles=18
-  # 
-  # 'bb_mu4mu4'     => 5, # nfiles=46
-  # 'pp_Jpsimu4mu4' => 2, # nfiles=15
-  # 'bb_Jpsimu4mu4' => 3, # nfiles=21
-  # 'bbTomu15'      => 1, # nfiles=5
-  # 'ccTomu15'      => 1, # nfiles=4
-  # 
-  # 'JZ2W' => 1,  # nfiles=5
+  'periodB' =>      17, # nfiles=167
+  'periodC' =>       9, # nfiles=83
+  'periodD' =>      12, # nfiles=112
+  'periodE' =>       8, # nfiles=80
+  'periodG' =>       5, # nfiles=42
+  'periodH' =>       6, # nfiles=52
+  # 'periodI' =>     , # nfiles=
+  # 'periodJ' =>     , # nfiles=
+  # 'periodL' =>     , # nfiles=
+
+  'bb_mu4mu4'     => 3, # nfiles=27
+  'bb_Jpsimu4mu4' => 2, # nfiles=19
+  'bbTomu15'      => 1, # nfiles=6
+  'ccTomu15'      => 1, # nfiles=6
+
+  'JZ2W' => 1,  # nfiles=4
   # 'JZ3W' => 1,  # nfiles=4
-  # 
-  # 'bbTotau10_3mu' => 1, # nfiles=2
-  # 'ccTotau10_3mu' => 1, # nfiles=2
-  'Wtaunu_3mu'    => 1  # nfiles=3
+
+  'bbTotau10_3mu' => 1, # nfiles=2
+  'ccTotau10_3mu' => 1, # nfiles=2
+  'Wtaunu_3mu'    => 1  # nfiles=2
 
   # 'ZmumuNp0'  => 1,
   # 'ZmumuNp1'  => 1,

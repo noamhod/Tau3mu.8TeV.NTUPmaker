@@ -161,6 +161,7 @@ namespace
 		addBranch("vtx_dRmax",     order, VFLT);
 		addBranch("vtx_dRmin",     order, VFLT);
 		addBranch("vtx_pvNtrk",    order, VINT);
+		addBranch("vtx_nElectrons",   order, VINT);
 		addBranch("vtx_isolation000", order, VFLT);
 		addBranch("vtx_isolation001", order, VFLT);
 		addBranch("vtx_isolation002", order, VFLT);
@@ -251,29 +252,67 @@ namespace
 		addBranch("met_track_dPhi3mu_uncalib", order, VFLT);
 
 		addBranch("met_track_et",      order, FLT);
-                addBranch("met_track_phi",     order, FLT);
-                addBranch("met_track_mT",      order, VFLT);
-                addBranch("met_track_dPhi3mu", order, VFLT);
-
-                addBranch("met_track_et_jes_up",        order, FLT);
-                addBranch("met_track_phi_jes_up",       order, FLT);
-                addBranch("met_track_mT_jes_up",        order, VFLT);
-                addBranch("met_track_dPhi3mu_jes_up",   order, VFLT);
-                addBranch("met_track_et_jes_dwn",      order, FLT);
-                addBranch("met_track_phi_jes_dwn",     order, FLT);
-                addBranch("met_track_mT_jes_dwn",      order, VFLT);
-                addBranch("met_track_dPhi3mu_jes_dwn", order, VFLT);
-
-                addBranch("met_track_et_jer_up",        order, FLT);
-                addBranch("met_track_phi_jer_up",       order, FLT);
-                addBranch("met_track_mT_jer_up",        order, VFLT);
-                addBranch("met_track_dPhi3mu_jer_up",   order, VFLT);
-                addBranch("met_track_et_jer_dwn",      order, FLT);
-                addBranch("met_track_phi_jer_dwn",     order, FLT);
-                addBranch("met_track_mT_jer_dwn",      order, VFLT);
-                addBranch("met_track_dPhi3mu_jer_dwn", order, VFLT);
+		addBranch("met_track_phi",     order, FLT);
+		addBranch("met_track_mT",      order, VFLT);
+		addBranch("met_track_dPhi3mu", order, VFLT);
 		
+		addBranch("met_track_et_jes_up",        order, FLT);
+		addBranch("met_track_phi_jes_up",       order, FLT);
+		addBranch("met_track_mT_jes_up",        order, VFLT);
+		addBranch("met_track_dPhi3mu_jes_up",   order, VFLT);
+		addBranch("met_track_et_jes_dwn",      order, FLT);
+		addBranch("met_track_phi_jes_dwn",     order, FLT);
+		addBranch("met_track_mT_jes_dwn",      order, VFLT);
+		addBranch("met_track_dPhi3mu_jes_dwn", order, VFLT);
+		
+		addBranch("met_track_et_jer_up",        order, FLT);
+		addBranch("met_track_phi_jer_up",       order, FLT);
+		addBranch("met_track_mT_jer_up",        order, VFLT);
+		addBranch("met_track_dPhi3mu_jer_up",   order, VFLT);
+		addBranch("met_track_et_jer_dwn",      order, FLT);
+		addBranch("met_track_phi_jer_dwn",     order, FLT);
+		addBranch("met_track_mT_jer_dwn",      order, VFLT);
+		addBranch("met_track_dPhi3mu_jer_dwn", order, VFLT);
+		
+		
+		addBranch("met_track_et_jettrk_nom",        order, FLT);
+		addBranch("met_track_phi_jettrk_nom",       order, FLT);
+		addBranch("met_track_mT_jettrk_nom",        order, VFLT);
+		addBranch("met_track_dPhi3mu_jettrk_nom",   order, VFLT);
+		addBranch("met_track_et_jettrk_up",        order, FLT);
+		addBranch("met_track_phi_jettrk_up",       order, FLT);
+		addBranch("met_track_mT_jettrk_up",        order, VFLT);
+		addBranch("met_track_dPhi3mu_jettrk_up",   order, VFLT);
+		addBranch("met_track_et_jettrk_dwn",        order, FLT);
+		addBranch("met_track_phi_jettrk_dwn",       order, FLT);
+		addBranch("met_track_mT_jettrk_dwn",        order, VFLT);
+		addBranch("met_track_dPhi3mu_jettrk_dwn",   order, VFLT);
 
+		addBranch("met_track_et_softtrk_nom",        order, FLT);
+		addBranch("met_track_phi_softtrk_nom",       order, FLT);
+		addBranch("met_track_mT_softtrk_nom",        order, VFLT);
+		addBranch("met_track_dPhi3mu_softtrk_nom",   order, VFLT);
+		addBranch("met_track_et_softtrk_up",        order, FLT);
+		addBranch("met_track_phi_softtrk_up",       order, FLT);
+		addBranch("met_track_mT_softtrk_up",        order, VFLT);
+		addBranch("met_track_dPhi3mu_softtrk_up",   order, VFLT);
+		addBranch("met_track_et_softtrk_dwn",        order, FLT);
+		addBranch("met_track_phi_softtrk_dwn",       order, FLT);
+		addBranch("met_track_mT_softtrk_dwn",        order, VFLT);
+		addBranch("met_track_dPhi3mu_softtrk_dwn",   order, VFLT);
+		
+		addBranch("met_track_et_softtrkres_para",        order, FLT);
+		addBranch("met_track_phi_softtrkres_para",       order, FLT);
+		addBranch("met_track_mT_softtrkres_para",        order, VFLT);
+		addBranch("met_track_dPhi3mu_softtrkres_para",   order, VFLT);
+		addBranch("met_track_et_softtrkres_perp",        order, FLT);
+		addBranch("met_track_phi_softtrkres_perp",       order, FLT);
+		addBranch("met_track_mT_softtrkres_perp",        order, VFLT);
+		addBranch("met_track_dPhi3mu_softtrkres_perp",   order, VFLT);
+		addBranch("met_track_et_softtrkres_corr",        order, FLT);
+		addBranch("met_track_phi_softtrkres_corr",       order, FLT);
+		addBranch("met_track_mT_softtrkres_corr",        order, VFLT);
+		addBranch("met_track_dPhi3mu_softtrkres_corr",   order, VFLT);
 
 		// Muons
 		for(int i=1 ; i<=6 ; ++i) { TString x = _s((float)i,0); addBranch("mu_order"+x,          order, VINT); }
