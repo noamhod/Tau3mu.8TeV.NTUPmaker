@@ -20,47 +20,56 @@ masters = ['muons']
 
 insets = Hash.new
 insets = {
-  # 'periodA' =>     5, # nfiles=41
-  'periodB' =>      17, # nfiles=167
-  'periodC' =>       9, # nfiles=83
-  'periodD' =>      12, # nfiles=112
-  'periodE' =>       8, # nfiles=80
-  'periodG' =>       5, # nfiles=42
-  'periodH' =>       6, # nfiles=52
-  # 'periodI' =>     , # nfiles=
-  # 'periodJ' =>     , # nfiles=
-  # 'periodL' =>     , # nfiles=
+  # 'periodA' =>       22, # nfiles=44
+  # 'periodB' =>      17, # nfiles=167
+  # 'periodC' =>       9, # nfiles=83
+  # 'periodD' =>      12, # nfiles=112
+  # 'periodE' =>       8, # nfiles=80
+  # 'periodG' =>       5, # nfiles=42
+  # 'periodH' =>       6, # nfiles=52
+  # 'periodI' =>      50, # nfiles=99
+  # 'periodJ' =>      86, # nfiles=257
+  # 'periodL' =>        46 # nfiles=91
+  # 
+  # 'bb_mu4mu4'     => 3, # nfiles=27
+  # 'bb_Jpsimu4mu4' => 2, # nfiles=19
+  # 'bbTomu15'      => 1, # nfiles=6
+  # 'ccTomu15'      => 1, # nfiles=6
+  # 
+  # 'JZ2W' => 1,  # nfiles=4
+  # 'JZ3W' => 3,  # nfiles=11
+ 
+    #'WtaunuNp0' => 3, #nfiles=23
+    #'WtaunuNp1' => 2, #nfiles=16
+    'WtaunuNp2' => 3, #nfiles=25
+    #'WtaunuNp3' => 1, #nfiles=7
+    #'WtaunuNp4' => 1, #nfiles=4
+    #'WtaunuNp5' => 1, #nfiles=3
 
-  'bb_mu4mu4'     => 3, # nfiles=27
-  'bb_Jpsimu4mu4' => 2, # nfiles=19
-  'bbTomu15'      => 1, # nfiles=6
-  'ccTomu15'      => 1, # nfiles=6
+    #'WmunuNp0' => 3, #nfiles=21
+    #'WmunuNp1' => 2, #nfiles=17
+    #'WmunuNp2' => 3, #nfiles=23
+    #'WmunuNp3' => 1, #nfiles=5
+    #'WmunuNp4' => 1, #nfiles=6
+    'WmunuNp5' => 1, #nfiles=2
 
-  'JZ2W' => 1,  # nfiles=4
-  # 'JZ3W' => 1,  # nfiles=4
+    #'ZtautauNp0' => 4, #nfiles=40
+    ##'ZtautauNp1' => , #nfiles=
+    #'ZtautauNp2' => 1, #nfiles=4
+    #'ZtautauNp3' => 1, #nfiles=2
+    #'ZtautauNp4' => 1, #nfiles=2
+    #'ZtautauNp5' => 1, #nfiles=1
 
-  'bbTotau10_3mu' => 1, # nfiles=2
-  'ccTotau10_3mu' => 1, # nfiles=2
-  'Wtaunu_3mu'    => 1  # nfiles=2
-
-  # 'ZmumuNp0'  => 1,
-  # 'ZmumuNp1'  => 1,
-  # 'ZmumuNp2'  => 1,
-  # 'ZmumuNp3'  => 1,
-  # 'ZmumuNp4'  => 1,
-  # 'ZmumuNp5'  => 1,
-  # 'WmunuNp0'  => 1,
-  # 'WmunuNp1'  => 1,
-  # 'WmunuNp2'  => 1,
-  # 'WmunuNp3'  => 1,
-  # 'WmunuNp4'  => 1,
-  # 'WmunuNp5'  => 1,
-  # 'WtaunuNp0' => 1,
-  # 'WtaunuNp1' => 1,
-  # 'WtaunuNp2' => 1,
-  # 'WtaunuNp3' => 1,
-  # 'WtaunuNp4' => 1,
-  # 'WtaunuNp5' => 1
+    #'ZmumuNp0' => 4, #nfiles=39
+    #'ZmumuNp1' => 1, #nfiles=10
+    #'ZmumuNp2' => 1, #nfiles=5
+    ##'ZmumuNp3' => 1, #nfiles=2
+    #'ZmumuNp4' => 1, #nfiles=2
+    #'ZmumuNp5' => 1, #nfiles=1
+  
+  # 'bbTotau10_3mu' => 1, # nfiles=2
+  # 'ccTotau10_3mu' => 1, # nfiles=2
+  # 'Wtaunu_3mu'    => 1  # nfiles=2
 }
 
 fall=0

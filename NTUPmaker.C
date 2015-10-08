@@ -138,15 +138,12 @@ METUtil::METObject calibMETTRK_jes_up;
 METUtil::METObject calibMETTRK_jes_dwn;
 METUtil::METObject calibMETTRK_jer_up;
 METUtil::METObject calibMETTRK_jer_dwn;
-METUtil::METObject calibMETTRK_jettrk_nom;
 METUtil::METObject calibMETTRK_jettrk_up;
 METUtil::METObject calibMETTRK_jettrk_dwn;
-METUtil::METObject calibMETTRK_softtrk_nom;
 METUtil::METObject calibMETTRK_softtrk_up;
 METUtil::METObject calibMETTRK_softtrk_dwn;
 METUtil::METObject calibMETTRK_softtrkres_para;
 METUtil::METObject calibMETTRK_softtrkres_perp;
-METUtil::METObject calibMETTRK_softtrkres_corr;
 
 
 double isolation;
@@ -1174,7 +1171,7 @@ vector<float>* ftrk_qoverpCov = new vector<float>;
 //////////////////////////////////////////////////////////////////////
 
 Root::TPileupReweighting* pileupTool;
-void initializePileup()
+void initializePileup(TString name)
 {
 	pileupTool = new Root::TPileupReweighting("pileuptool");
 	if(makepufile)
@@ -1185,7 +1182,7 @@ void initializePileup()
 	else
 	{
 		_INFO("reading pileup file");
-		pileupTool->AddConfigFile("Wtaunu_3mu.prw.root");
+		pileupTool->AddConfigFile(name+".prw.root");
 		pileupTool->AddLumiCalcFile("ilumicalc_histograms_None_200842-215643.root");
 	}
 	pileupTool->Initialize();
@@ -1208,10 +1205,10 @@ float getPileupWeight()
 	else           pileup_weight = pileupTool->GetCombinedWeight(phys_RunNumber,phys_mc_channel_number,averageIntPerXing_fixed);
 	return pileup_weight;
 }
-void finalizePileup()
+void finalizePileup(TString name)
 {
 	if(!makepufile) return;
-	pileupTool->WriteToFile("Wtaunu_3mu.prw.root");
+	pileupTool->WriteToFile(name+".prw.root");
 }
 
 
@@ -1652,22 +1649,32 @@ TLorentzVector getJER(TLorentzVector Jet, double& shift)
 
 
 METUtility *METU;
+METUtility *METUfortrk;
 void initMET()
 {
 	if(METU) delete METU;
+	if(METUfortrk) delete METUfortrk;
 
 	METU = new METUtility;
+	METUfortrk = new METUtility;
 	
 	METU->configMissingET(true,false);
+	METUfortrk->configMissingET(true,false);
+
+	METUfortrk->configMETSyst("METTrack_2012.config");
 	
 	// METU->setVerbosity(isVerbose);
+	// METUfortrk->setVerbosity(isVerbose);
 	// METU->setSoftJetCut(20); // soft jet cut
+	// METUfortrk->setSoftJetCut(20); // soft jet cut
 	
 	// // set pre-defined regions as above
-	// m_util->setCaloRegion(region);
+	// METU->setCaloRegion(region);
+	// METUfortrk->setCaloRegion(region);
 	// // region = METUtil::Central, METUtil::EndCap or METUtil::Forward
 	// // or set eta cuts explicitly
-	// m_util->setObjectEtaCut(etaLow, etaHigh);
+	// METU->setObjectEtaCut(etaLow, etaHigh);
+	// METUfortrk->setObjectEtaCut(etaLow, etaHigh);
 
 	if(akt4lc_jet_pt)  akt4lc_jet_pt->clear();  else akt4lc_jet_pt  = new vector<float>;
 	if(akt4lc_jet_E)   akt4lc_jet_E->clear();   else akt4lc_jet_E   = new vector<float>;
@@ -1874,38 +1881,56 @@ METUtil::METObject getMETTRK()
 	return METTRK->getTrackMET();
 }
 
-METSyst::METSystTool* METTRKU;
-void initMETTRKU()
-{
-	METTRKU = new METSyst::METSystTool();
-	// METTRKU->initialise("/afs/cern.ch/user/h/hod/METSystematics/data/METTrack_2012.config");	
-	METTRKU->initialise("METTrack_2012.config");	
-}
+//METSyst::METSystTool* METTRKU;
+METUtil::METObject METTRKU;
+//void initMETTRKU()
+//{
+//	METTRKU = new METSyst::METSystTool();
+//	METTRKU->initialise("METTrack_2012.config");	
+//}
 void setMETTRKU()
 {
 	_DEBUG("");
-	METUtil::METObject softTerms = METU->getMissingET(METUtil::SoftTerms);
-	METUtil::METObject hardTerms = METU->getMissingET(METUtil::HardTerms);
-	METUtil::METObject truth     = METU->getMissingET(METUtil::Truth);
-	METTRKU->setupMET(softTerms,hardTerms,truth);
+
+	METUfortrk->reset();
+
+	METUfortrk->setMETTerm(METUtil::RefJet,METTRK->getTrackMET(METTrack::TrkJet).etx(),METTRK->getTrackMET(METTrack::TrkJet).ety(),METTRK->getTrackMET(METTrack::TrkJet).sumet());
+	METUfortrk->setMETTerm(METUtil::RefEle,METTRK->getTrackMET(METTrack::TrkEle).etx(),METTRK->getTrackMET(METTrack::TrkEle).ety(),METTRK->getTrackMET(METTrack::TrkEle).sumet());
+	METUfortrk->setMETTerm(METUtil::MuonTotal,METTRK->getTrackMET(METTrack::TrkMu).etx(),METTRK->getTrackMET(METTrack::TrkMu).ety(),METTRK->getTrackMET(METTrack::TrkMu).sumet());
+	METUfortrk->setMETTerm(METUtil::SoftTerms,METTRK->getTrackMET(METTrack::TrkSoft).etx(),METTRK->getTrackMET(METTrack::TrkSoft).ety(),METTRK->getTrackMET(METTrack::TrkSoft).sumet());
 
 	vector<const METTrack::Track*> jettracks = METTRK->getTermTracks(METTrack::TrkJet);
-	// cout << "jettracks.size()=" << jettracks.size() << endl;
-	METTRKU->setJetTracks(akt4lc_jet_pt,akt4lc_jet_eta,jettracks);
+	METUfortrk->setJetTracks(akt4lc_jet_pt,akt4lc_jet_eta,jettracks);
+
+	METUfortrk->setAverageIntPerXing(phys_averageIntPerXing);
+	if(glob_isMC) METUfortrk->setMETTerm(METUtil::Truth, MET_Truth_NonInt_etx, MET_Truth_NonInt_ety, MET_Truth_NonInt_sumet);
+
+	METTRKU = METUfortrk->getMissingET(METUtil::RefFinal);
+	//cout << "METTRKU.et()=" << METTRKU.et() << ", METTRK->getTrackMET().et()=" << METTRK->getTrackMET().et() << endl;
 }
 METUtil::METObject getMETTRKU(int syst)
 {
 	_DEBUG("");
+
 	METUtil::METObject mettrk_syst;
-	if     (syst==JETTRKNOM)      mettrk_syst = METTRKU->getJetTrackMET(METSyst::JetTrk_Nom);
-	else if(syst==JETTRKUP)       mettrk_syst = METTRKU->getJetTrackMET(METSyst::JetTrk_Up);
-	else if(syst==JETTRKDWN)      mettrk_syst = METTRKU->getJetTrackMET(METSyst::JetTrk_Down);
-	else if(syst==SOFTTRKNOM)     mettrk_syst = METTRKU->getSoftTerms(METSyst::SoftTrk_Nom);
-	else if(syst==SOFTTRKUP)      mettrk_syst = METTRKU->getSoftTerms(METSyst::SoftTrk_ScaleUp);
-	else if(syst==SOFTTRKDWN)     mettrk_syst = METTRKU->getSoftTerms(METSyst::SoftTrk_ScaleDown);
-	else if(syst==SOFTTRKRESPARA) mettrk_syst = METTRKU->getSoftTerms(METSyst::SoftTrk_ResoPara);
-	else if(syst==SOFTTRKRESPERP) mettrk_syst = METTRKU->getSoftTerms(METSyst::SoftTrk_ResoPerp);
-	else if(syst==SOFTTRKRESCORR) mettrk_syst = METTRKU->getSoftTerms(METSyst::SoftTrk_ResoCorr);
+	METUtil::METObject jettrkUP = METUfortrk->getJetTrackMET(METSyst::JetTrk_Up);
+	METUtil::METObject jettrkDN = METUfortrk->getJetTrackMET(METSyst::JetTrk_Down);
+
+	if     (syst==-1)             mettrk_syst = METUfortrk->getMissingET(METUtil::RefFinal);
+	else if(syst==SOFTTRKUP)      mettrk_syst = METUfortrk->getMissingET(METUtil::RefFinal, METUtil::SoftTrackScaleUp);
+	else if(syst==SOFTTRKDWN)     mettrk_syst = METUfortrk->getMissingET(METUtil::RefFinal, METUtil::SoftTrackScaleDown);
+	else if(syst==SOFTTRKRESPARA) mettrk_syst = METUfortrk->getMissingET(METUtil::RefFinal, METUtil::SoftTrackResoPara);
+	else if(syst==SOFTTRKRESPERP) mettrk_syst = METUfortrk->getMissingET(METUtil::RefFinal, METUtil::SoftTrackResoPerp);
+	else if(syst==JETTRKUP)
+	{
+		METUfortrk->setMETTerm(METUtil::RefJet,jettrkUP.etx(),jettrkUP.ety(),jettrkUP.sumet());
+		mettrk_syst = METUfortrk->getMissingET(METUtil::RefFinal);
+	}
+        else if(syst==JETTRKDWN)
+	{
+		METUfortrk->setMETTerm(METUtil::RefJet,jettrkDN.etx(),jettrkDN.ety(),jettrkDN.sumet());
+		mettrk_syst = METUfortrk->getMissingET(METUtil::RefFinal);
+	}
 	else _FATAL("Unknown enum for systematic in TrackMET");
 	return mettrk_syst;
 }
@@ -3862,15 +3887,15 @@ void fillFlatoutTree(vector<vertex>& vertices, int allPassing)
 	flatout_floats["met_track_phi_jer_dwn"] = calibMETTRK_jer_dwn.phi();
 
 
-	flatout_floats["met_track_et_jettrk_nom"]  = calibMETTRK_jettrk_nom.et();
-	flatout_floats["met_track_phi_jettrk_nom"] = calibMETTRK_jettrk_nom.phi();
+	flatout_floats["met_track_et_jettrk_nom"]  = -1; // calibMETTRK_jettrk_nom.et();
+	flatout_floats["met_track_phi_jettrk_nom"] = -1; //calibMETTRK_jettrk_nom.phi();
 	flatout_floats["met_track_et_jettrk_up"]   = calibMETTRK_jettrk_up.et();
 	flatout_floats["met_track_phi_jettrk_up"]  = calibMETTRK_jettrk_up.phi();
 	flatout_floats["met_track_et_jettrk_dwn"]  = calibMETTRK_jettrk_dwn.et();
 	flatout_floats["met_track_phi_jettrk_dwn"] = calibMETTRK_jettrk_dwn.phi();
 
-	flatout_floats["met_track_et_softtrk_nom"]  = calibMETTRK_softtrk_nom.et();
-	flatout_floats["met_track_phi_softtrk_nom"] = calibMETTRK_softtrk_nom.phi();
+	flatout_floats["met_track_et_softtrk_nom"]  = -1; // calibMETTRK_softtrk_nom.et();
+	flatout_floats["met_track_phi_softtrk_nom"] = -1; // calibMETTRK_softtrk_nom.phi();
 	flatout_floats["met_track_et_softtrk_up"]   = calibMETTRK_softtrk_up.et();
 	flatout_floats["met_track_phi_softtrk_up"]  = calibMETTRK_softtrk_up.phi();
 	flatout_floats["met_track_et_softtrk_dwn"]  = calibMETTRK_softtrk_dwn.et();
@@ -3880,8 +3905,8 @@ void fillFlatoutTree(vector<vertex>& vertices, int allPassing)
 	flatout_floats["met_track_phi_softtrkres_para"]  = calibMETTRK_softtrkres_para.phi();
 	flatout_floats["met_track_et_softtrkres_perp"]   = calibMETTRK_softtrkres_perp.et();
 	flatout_floats["met_track_phi_softtrkres_perp"]  = calibMETTRK_softtrkres_perp.phi();
-	flatout_floats["met_track_et_softtrkres_corr"]   = calibMETTRK_softtrkres_corr.et();
-	flatout_floats["met_track_phi_softtrkres_corr"]  = calibMETTRK_softtrkres_corr.phi();
+	flatout_floats["met_track_et_softtrkres_corr"]   = -1; // calibMETTRK_softtrkres_corr.et();
+	flatout_floats["met_track_phi_softtrkres_corr"]  = -1; // calibMETTRK_softtrkres_corr.phi();
 
 	_DEBUG("");
 	
@@ -4042,7 +4067,7 @@ void properties(TString channel,
 }
 bool isWsignal(TString name)
 {
-	if(name=="Wtaunu_3mu") return true;
+	if(name.Contains("Wtaunu") && name.Contains("3mu")) return true;
 	return false;
 }
 bool isSignal(TString name)
@@ -4093,6 +4118,11 @@ TString getUnbinnedName(TString name)
 		bindex.ReplaceAll("WtaunuNp","");
 		name.ReplaceAll(bindex,"X");
 	}
+	else if(name.Contains("ZtautauNp"))
+        {
+                bindex.ReplaceAll("ZtautauNp","");
+                name.ReplaceAll(bindex,"X");
+        }
 	else if(name.Contains("JZ"))
 	{
 		bindex.ReplaceAll("JZ","");
@@ -4626,11 +4656,11 @@ double getHFnormalization(TMapuiTS& channels, TMapTSP2TH1& histos, double xmin, 
 }
 double getKfactorWeight(TString name)
 {
-	if(!name.Contains("WmunuNp") && !name.Contains("ZmumuNp"))
+	if(!name.Contains("WmunuNp") && !name.Contains("ZmumuNp") && !name.Contains("WtaunuNp") && !name.Contains("ZtautauNp"))
 	{
-		_FATAL("K factor weight can be used either with WmunuNpX or with ZmumuNpX !");
+		_FATAL("K factor weight for EW error !");
 	}
-	return (name.Contains("WmunuNp")) ? 1.19 : 1.23;
+	return (name.Contains("W")) ? 1.19 : 1.24;
 }
 double getDijetWeight(TString name)
 {
@@ -4645,25 +4675,43 @@ double getSampleWeight(TString name)
 {
 	double sigma,Nevents,genEff;
 	double sigmaSM=-1.;
-	if     (name.Contains("Wtaunu_3mu"))    { sigma=9.5753E+00*nb2fb; Nevents=100000.;   genEff=1.0000E+00; sigmaSM=9.1081E+00*nb2fb; }
-	else if(name.Contains("bbTotau10_3mu")) { sigma=3.5388E+02*nb2fb; Nevents=100000.;   genEff=1.0000E+00; sigmaSM=3.5388E+02*nb2fb; }
-	else if(name.Contains("ccTotau10_3mu")) { sigma=2.9674E+02*nb2fb; Nevents=100000.;   genEff=1.0000E+00; sigmaSM=2.9674E+02*nb2fb; }
-	else if(name.Contains("bb_mu4mu4"))     { sigma=1.1464E+02*nb2fb; Nevents=19980978.; genEff=1.0000E+00;}
-	else if(name.Contains("bbTomu15"))      { sigma=1.9898E+02*nb2fb; Nevents=4998088.;  genEff=1.0000E+00;}
-	else if(name.Contains("ccTomu15"))      { sigma=8.0088E+01*nb2fb; Nevents=4998690.;  genEff=1.0000E+00;}
-	else if(name.Contains("bb_Jpsimu4mu4")) { sigma=2.0874E+02*nb2fb; Nevents=9969994.;  genEff=1.0000E+00;} // cross section is wrong !
-	else if(name.Contains("WmunuNp0"))      { sigma=8.0463E+00*nb2fb; Nevents=3469591.;  genEff=1.0000E+00;}
-	else if(name.Contains("WmunuNp1"))      { sigma=1.5812E+00*nb2fb; Nevents=2499893.;  genEff=1.0000E+00;}
-	else if(name.Contains("WmunuNp2"))      { sigma=4.7741E-01*nb2fb; Nevents=3769890.;  genEff=1.0000E+00;}
-	else if(name.Contains("WmunuNp3"))      { sigma=1.3391E-01*nb2fb; Nevents=1009896.;  genEff=1.0000E+00;}
-	else if(name.Contains("WmunuNp4"))      { sigma=3.5982E-02*nb2fb; Nevents=255000.;   genEff=1.0000E+00;}
-	else if(name.Contains("WmunuNp5"))      { sigma=1.0409E-02*nb2fb; Nevents=20000.;    genEff=1.0000E+00;}
-	else if(name.Contains("ZmumuNp0"))      { sigma=7.1211E-01*nb2fb; Nevents=6609982.;  genEff=1.0000E+00;}
-	else if(name.Contains("ZmumuNp1"))      { sigma=1.5477E-01*nb2fb; Nevents=1334897.;  genEff=1.0000E+00;}
-	else if(name.Contains("ZmumuNp2"))      { sigma=4.8912E-02*nb2fb; Nevents=404897.;   genEff=1.0000E+00;}
-	else if(name.Contains("ZmumuNp3"))      { sigma=1.4226E-02*nb2fb; Nevents=110000.;   genEff=1.0000E+00;}
-	else if(name.Contains("ZmumuNp4"))      { sigma=3.7838E-03*nb2fb; Nevents=29999.;    genEff=1.0000E+00;}
-	else if(name.Contains("ZmumuNp5"))      { sigma=1.1148E-03*nb2fb; Nevents=10000.;    genEff=1.0000E+00;}
+	if     (name.Contains("Wtaunu_3mu"))     { sigma=9.5753E+00*nb2fb; Nevents=100000.;   genEff=1.0000E+00; sigmaSM=9.1081E+00*nb2fb; }
+	else if(name.Contains("Wtaunu_200k_3mu")){ sigma=9.5753E+00*nb2fb; Nevents=200000.;   genEff=1.0000E+00; sigmaSM=9.1081E+00*nb2fb; }
+	else if(name.Contains("bbTotau10_3mu"))  { sigma=3.5388E+02*nb2fb; Nevents=100000.;   genEff=1.0000E+00; sigmaSM=3.5388E+02*nb2fb; }
+	else if(name.Contains("ccTotau10_3mu"))  { sigma=2.9674E+02*nb2fb; Nevents=100000.;   genEff=1.0000E+00; sigmaSM=2.9674E+02*nb2fb; }
+	else if(name.Contains("bb_mu4mu4"))      { sigma=1.1464E+02*nb2fb; Nevents=19980978.; genEff=1.0000E+00;}
+	else if(name.Contains("bbTomu15"))       { sigma=1.9898E+02*nb2fb; Nevents=4998088.;  genEff=1.0000E+00;}
+	else if(name.Contains("ccTomu15"))       { sigma=8.0088E+01*nb2fb; Nevents=4998690.;  genEff=1.0000E+00;}
+	else if(name.Contains("bb_Jpsimu4mu4"))  { sigma=2.0874E+02*nb2fb; Nevents=9969994.;  genEff=1.0000E+00;} // cross section is wrong !
+
+	else if(name.Contains("WmunuNp0"))      { sigma=8.03135E+00*nb2fb; Nevents=3469591.;  genEff=1.0000E+00;}
+	else if(name.Contains("WmunuNp1"))      { sigma=1.58358E+00*nb2fb; Nevents=2499893.;  genEff=1.0000E+00;}
+	else if(name.Contains("WmunuNp2"))      { sigma=4.80668E-01*nb2fb; Nevents=3769890.;  genEff=1.0000E+00;}
+	else if(name.Contains("WmunuNp3"))      { sigma=1.33657E-01*nb2fb; Nevents=1009896.;  genEff=1.0000E+00;}
+	else if(name.Contains("WmunuNp4"))      { sigma=3.57460E-02*nb2fb; Nevents=255000.;   genEff=1.0000E+00;}
+	else if(name.Contains("WmunuNp5"))      { sigma=1.05518E-02*nb2fb; Nevents=20000.;    genEff=1.0000E+00;}
+
+	else if(name.Contains("ZmumuNp0"))      { sigma=7.09421E-01*nb2fb; Nevents=6619489.;  genEff=1.0000E+00;}
+	else if(name.Contains("ZmumuNp1"))      { sigma=1.53982E-01*nb2fb; Nevents=1334706.;  genEff=1.0000E+00;}
+	else if(name.Contains("ZmumuNp2"))      { sigma=4.89215E-02*nb2fb; Nevents=404997.;   genEff=1.0000E+00;}
+	else if(name.Contains("ZmumuNp3"))      { sigma=1.41532E-02*nb2fb; Nevents=110000.;   genEff=1.0000E+00;}
+	else if(name.Contains("ZmumuNp4"))      { sigma=3.80883E-03*nb2fb; Nevents=30000.;    genEff=1.0000E+00;}
+	else if(name.Contains("ZmumuNp5"))      { sigma=1.10938E-03*nb2fb; Nevents=10000.;    genEff=1.0000E+00;}
+
+	else if(name.Contains("WtaunuNp0"))      { sigma=8.0362E+00*nb2fb; Nevents=3364789.;  genEff=1.0000E+00;}
+        else if(name.Contains("WtaunuNp1"))      { sigma=1.5787E+00*nb2fb; Nevents=2449991.;  genEff=1.0000E+00;}
+        else if(name.Contains("WtaunuNp2"))      { sigma=4.7780E-01*nb2fb; Nevents=3719888.;  genEff=1.0000E+00;}
+        else if(name.Contains("WtaunuNp3"))      { sigma=1.3401E-01*nb2fb; Nevents=1009993.;  genEff=1.0000E+00;}
+        else if(name.Contains("WtaunuNp4"))      { sigma=3.5258E-02*nb2fb; Nevents=249898.;   genEff=1.0000E+00;}
+        else if(name.Contains("WtaunuNp5"))      { sigma=1.0646E-02*nb2fb; Nevents=65000.;    genEff=1.0000E+00;}
+
+	else if(name.Contains("ZtautauNp0"))     { sigma=7.102515E-01*nb2fb; Nevents=6619683.;  genEff=1.0000E+00;}
+        else if(name.Contains("ZtautauNp1"))     { sigma=1.558205E-01*nb2fb; Nevents=1334996.;  genEff=1.0000E+00;}
+        else if(name.Contains("ZtautauNp2"))     { sigma=4.890875E-02*nb2fb; Nevents=404997.;   genEff=1.0000E+00;}
+        else if(name.Contains("ZtautauNp3"))     { sigma=1.409320E-02*nb2fb; Nevents=110000.;   genEff=1.0000E+00;}
+        else if(name.Contains("ZtautauNp4"))     { sigma=3.769315E-03*nb2fb; Nevents=30000.;    genEff=1.0000E+00;}
+        else if(name.Contains("ZtautauNp5"))     { sigma=1.112190E-03*nb2fb; Nevents=10000.;    genEff=1.0000E+00;}
+
 	else if(name.Contains("JZ0W"))          { sigma=7.2850E+07*nb2fb; Nevents=3998693.;  genEff=4.2413E-04;}
 	else if(name.Contains("JZ1W"))          { sigma=4.1440E+06*nb2fb; Nevents=1999694.;  genEff=3.4217E-05;}
 	else if(name.Contains("JZ2W"))          { sigma=5.0147E+03*nb2fb; Nevents=2499692.;  genEff=7.0769E-04;}
@@ -5041,6 +5089,7 @@ void setBranches(TString tType, TChain* t)
 			t->SetBranchStatus("mu_id_theta_exPV", 1);
 			t->SetBranchStatus("mu_id_phi_exPV", 1);
 			
+			/*
 			t->SetBranchStatus("mu_staco_n", 1);
 			t->SetBranchStatus("mu_staco_E", 1);
 			t->SetBranchStatus("mu_staco_pt", 1);
@@ -5070,7 +5119,8 @@ void setBranches(TString tType, TChain* t)
 			t->SetBranchStatus("mu_muid_id_qoverp_exPV", 1);
 			t->SetBranchStatus("mu_muid_id_theta_exPV", 1);
 			t->SetBranchStatus("mu_muid_id_phi_exPV", 1);
-			
+			*/			
+
 			t->SetBranchStatus("el_n",  1);
 			t->SetBranchStatus("el_E",  1);
 			t->SetBranchStatus("el_Et", 1);
@@ -5307,7 +5357,8 @@ void setBranches(TString tType, TChain* t)
 		t->SetBranchAddress("mu_id_qoverp_exPV", &mu_muons_id_qoverp_exPV);
 		t->SetBranchAddress("mu_id_theta_exPV", &mu_muons_id_theta_exPV);
 		t->SetBranchAddress("mu_id_phi_exPV", &mu_muons_id_phi_exPV);
-        
+       
+		/* 
 		t->SetBranchAddress("mu_staco_n", &mu_staco_n);
 		t->SetBranchAddress("mu_staco_E", &mu_staco_E);
 		t->SetBranchAddress("mu_staco_pt", &mu_staco_pt);
@@ -5337,7 +5388,8 @@ void setBranches(TString tType, TChain* t)
 		t->SetBranchAddress("mu_muid_id_qoverp_exPV", &mu_muid_id_qoverp_exPV);
 		t->SetBranchAddress("mu_muid_id_theta_exPV", &mu_muid_id_theta_exPV);
 		t->SetBranchAddress("mu_muid_id_phi_exPV", &mu_muid_id_phi_exPV);
-        
+        	*/
+
 		t->SetBranchAddress("el_n", &el_n);
 		t->SetBranchAddress("el_E", &el_E);
 		t->SetBranchAddress("el_Et", &el_Et);
@@ -8825,10 +8877,10 @@ void vertex::set(unsigned int vtx)
 		m_metDphi3body[METTRACK][JERDWN] = fabs(dPhi(calibMETTRK_jer_dwn.phi(),psum.Phi()));
 		m_metMt[METTRACK][JERDWN]        = mT(calibMETTRK_jer_dwn.et(),calibMETTRK_jer_dwn.phi(),psum.Pt(),psum.Phi());
 
-		m_met[METTRACK][JETTRKNOM]          = calibMETTRK_jettrk_nom.et();
-		m_metPhi[METTRACK][JETTRKNOM]       = calibMETTRK_jettrk_nom.phi();
-		m_metDphi3body[METTRACK][JETTRKNOM] = fabs(dPhi(calibMETTRK_jettrk_nom.phi(),psum.Phi()));
-		m_metMt[METTRACK][JETTRKNOM]        = mT(calibMETTRK_jettrk_nom.et(),calibMETTRK_jettrk_nom.phi(),psum.Pt(),psum.Phi());
+		m_met[METTRACK][JETTRKNOM]          = -1; // calibMETTRK_jettrk_nom.et();
+		m_metPhi[METTRACK][JETTRKNOM]       = -1; // calibMETTRK_jettrk_nom.phi();
+		m_metDphi3body[METTRACK][JETTRKNOM] = -1; // fabs(dPhi(calibMETTRK_jettrk_nom.phi(),psum.Phi()));
+		m_metMt[METTRACK][JETTRKNOM]        = -1; // mT(calibMETTRK_jettrk_nom.et(),calibMETTRK_jettrk_nom.phi(),psum.Pt(),psum.Phi());
 
 		m_met[METTRACK][JETTRKUP]          = calibMETTRK_jettrk_up.et();
 		m_metPhi[METTRACK][JETTRKUP]       = calibMETTRK_jettrk_up.phi();
@@ -8840,10 +8892,10 @@ void vertex::set(unsigned int vtx)
 		m_metDphi3body[METTRACK][JETTRKDWN] = fabs(dPhi(calibMETTRK_jettrk_dwn.phi(),psum.Phi()));
 		m_metMt[METTRACK][JETTRKDWN]        = mT(calibMETTRK_jettrk_dwn.et(),calibMETTRK_jettrk_dwn.phi(),psum.Pt(),psum.Phi());
 
-		m_met[METTRACK][SOFTTRKNOM]          = calibMETTRK_softtrk_nom.et();
-		m_metPhi[METTRACK][SOFTTRKNOM]       = calibMETTRK_softtrk_nom.phi();
-		m_metDphi3body[METTRACK][SOFTTRKNOM] = fabs(dPhi(calibMETTRK_softtrk_nom.phi(),psum.Phi()));
-		m_metMt[METTRACK][SOFTTRKNOM]        = mT(calibMETTRK_softtrk_nom.et(),calibMETTRK_softtrk_nom.phi(),psum.Pt(),psum.Phi());
+		m_met[METTRACK][SOFTTRKNOM]          = -1; // calibMETTRK_softtrk_nom.et();
+		m_metPhi[METTRACK][SOFTTRKNOM]       = -1; // calibMETTRK_softtrk_nom.phi();
+		m_metDphi3body[METTRACK][SOFTTRKNOM] = -1; // fabs(dPhi(calibMETTRK_softtrk_nom.phi(),psum.Phi()));
+		m_metMt[METTRACK][SOFTTRKNOM]        = -1; // mT(calibMETTRK_softtrk_nom.et(),calibMETTRK_softtrk_nom.phi(),psum.Pt(),psum.Phi());
 
 		m_met[METTRACK][SOFTTRKUP]          = calibMETTRK_softtrk_up.et();
 		m_metPhi[METTRACK][SOFTTRKUP]       = calibMETTRK_softtrk_up.phi();
@@ -8865,10 +8917,10 @@ void vertex::set(unsigned int vtx)
 		m_metDphi3body[METTRACK][SOFTTRKRESPERP] = fabs(dPhi(calibMETTRK_softtrkres_perp.phi(),psum.Phi()));
 		m_metMt[METTRACK][SOFTTRKRESPERP]        = mT(calibMETTRK_softtrkres_perp.et(),calibMETTRK_softtrkres_perp.phi(),psum.Pt(),psum.Phi());	
 
-		m_met[METTRACK][SOFTTRKRESCORR]          = calibMETTRK_softtrkres_corr.et();
-		m_metPhi[METTRACK][SOFTTRKRESCORR]       = calibMETTRK_softtrkres_corr.phi();
-		m_metDphi3body[METTRACK][SOFTTRKRESCORR] = fabs(dPhi(calibMETTRK_softtrkres_corr.phi(),psum.Phi()));
-		m_metMt[METTRACK][SOFTTRKRESCORR]        = mT(calibMETTRK_softtrkres_corr.et(),calibMETTRK_softtrkres_corr.phi(),psum.Pt(),psum.Phi());
+		m_met[METTRACK][SOFTTRKRESCORR]          = -1; // calibMETTRK_softtrkres_corr.et();
+		m_metPhi[METTRACK][SOFTTRKRESCORR]       = -1; // calibMETTRK_softtrkres_corr.phi();
+		m_metDphi3body[METTRACK][SOFTTRKRESCORR] = -1; // fabs(dPhi(calibMETTRK_softtrkres_corr.phi(),psum.Phi()));
+		m_metMt[METTRACK][SOFTTRKRESCORR]        = -1; // mT(calibMETTRK_softtrkres_corr.et(),calibMETTRK_softtrkres_corr.phi(),psum.Pt(),psum.Phi());
 
 	}
 	
@@ -10876,17 +10928,17 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 	mBlindMaxGlob = mBlindMaxInitial;
 	
 	
-	if(skim && makepufile && name=="Wtaunu_3mu") initializePileup(); // for creating the pileup file
+	if(skim && makepufile && (name=="Wtaunu_3mu" || name=="Wtaunu_200k_3mu")) initializePileup(name); // for creating the pileup file
 	if(!skim)
 	{
-		initializePileup();        // PU tool is needed for BCH cleaning !
+		initializePileup("Wtaunu_3mu"); // PU tool is needed for BCH cleaning !
 		initBCH(isdata);           // BCH cleaning should be used either for data or signal
 		initJES(isdata,JESconfig); // Jet Energy Scale
 		initJER();                 // Jet Energy Resolution
 		initJUN(JESconfig);        // Jet Energy Scale uncertainty
 		initMET();                 // MET Utility
 		initMETTRK();              // MET Track tool
-		initMETTRKU();             // MET Systematics (for Track MET only)
+		//initMETTRKU();             // MET Systematics (for Track MET only)
 	}
 
 	
@@ -10929,12 +10981,12 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 
 		// weights
 		double wgt         = 1.;
-		double wFONLLshape = (name.Contains("bbTomu15") || name.Contains("ccTomu15")) ? getFONLLShapeWeight(name) : 1.;
-		double wFONLLflat  = (name.Contains("bbTomu15") || name.Contains("ccTomu15")) ? getFONLLFlatWeight(name)  : 1.;
-		double wLumi       = (!isdata)                                                ? getSampleWeight(bname)    : 1.;
-		double wKfac       = (name.Contains("NpX"))                                   ? getKfactorWeight(name)    : 1.;
-		double wDijet      = (name.Contains("JZ"))                                    ? getDijetWeight(name)      : 1.;
-		double wPileup     = (!skim && name=="Wtaunu_3mu")                            ? getPileupWeight()         : 1.;
+		double wFONLLshape = (name.Contains("bbTomu15") || name.Contains("ccTomu15"))   ? getFONLLShapeWeight(name) : 1.;
+		double wFONLLflat  = (name.Contains("bbTomu15") || name.Contains("ccTomu15"))   ? getFONLLFlatWeight(name)  : 1.;
+		double wLumi       = (!isdata)                                                  ? getSampleWeight(bname)    : 1.;
+		double wKfac       = (name.Contains("NpX"))                                     ? getKfactorWeight(name)    : 1.;
+		double wDijet      = (name.Contains("JZ"))                                      ? getDijetWeight(name)      : 1.;
+		double wPileup     = (!skim && (name=="Wtaunu_3mu" || name=="Wtaunu_200k_3mu")) ? getPileupWeight()         : 1.;
 		wgt *= wFONLLshape;
 		wgt *= wFONLLflat;
 		wgt *= wLumi;
@@ -10965,7 +11017,7 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 		
 		_DEBUG("");
 
-		// if(!skim && (isdata || name=="Wtaunu_3mu"))
+		// if(!skim && (isdata || name=="Wtaunu_3mu" || name=="Wtaunu_200k_3mu"))
 		if(!skim)
 		{	
 			seedJER();
@@ -11040,17 +11092,13 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 			vector<const METTrack::Track*> jettracks = METTRK->getTermTracks(METTrack::TrkJet);
 			histos[name+"_jettracks"]->Fill(jettracks.size(),wgt);
 			
-			calibMETTRK_jettrk_nom = getMETTRKU(JETTRKNOM);
-			calibMETTRK_jettrk_up  = getMETTRKU(JETTRKUP);
-			calibMETTRK_jettrk_dwn = getMETTRKU(JETTRKDWN);
-			calibMETTRK_softtrk_nom = getMETTRKU(SOFTTRKNOM);
 			calibMETTRK_softtrk_up  = getMETTRKU(SOFTTRKUP);
 			calibMETTRK_softtrk_dwn = getMETTRKU(SOFTTRKDWN);
 			calibMETTRK_softtrkres_para = getMETTRKU(SOFTTRKRESPARA);
 			calibMETTRK_softtrkres_perp = getMETTRKU(SOFTTRKRESPERP);
-			calibMETTRK_softtrkres_corr = getMETTRKU(SOFTTRKRESCORR);
-			
-	
+			calibMETTRK_jettrk_up  = getMETTRKU(JETTRKUP);
+			calibMETTRK_jettrk_dwn = getMETTRKU(JETTRKDWN);
+		
 
 			// cout << "MET:" << endl;
 			// cout << "  MET_RefFinal_et : " << MET_RefFinal_et << " -> " << calibMET_nominal.et() << ", JES+1sig:" << calibMET_jes_up.et() << ", JES-1sig:" << calibMET_jes_dwn.et() << ", JER+1sig:" << calibMET_jer_up.et() << ", JER-1sig:" << calibMET_jer_dwn.et() << endl;
@@ -11152,7 +11200,7 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 		
 		
 		// truth matching - signal only
-		if(!skim && name=="Wtaunu_3mu")
+		if(!skim && (name=="Wtaunu_3mu" || name=="Wtaunu_200k_3mu"))
 		{
 			clearTruth();
 			getMC(mc_pdgId,mc_status,mc_barcode,mc_children,mc_parents,mc_pt,mc_eta,mc_phi);
@@ -11533,7 +11581,7 @@ void analysis(TString name, TMapTSP2TCHAIN& chains, TMapTSP2TTREE& otrees, TMapT
 	writeCoutners(ftxtname,scounters);
 	writeCoutners(ftxtname,"\n\n"); // add 2 blanc lines at the end
 
-	if(!skim && makepufile && name=="Wtaunu_3mu") finalizePileup();
+	if(skim && makepufile && (name=="Wtaunu_3mu" || name=="Wtaunu_200k_3mu")) finalizePileup(name);
 }
 
 // ///////////////////////////////////////////
@@ -12240,7 +12288,7 @@ void NTUPmaker(TString runType, TString outDir, TString chnl, TString master, TS
 		re.Split(splitstr);
 		nChunks = re[0].Atoi(); // there are N chunks (nChunks), where each core takes one chunk
 		iChunk  = re[1].Atoi(); // now you are processing the i'th chunk (iChunk)
-		nChunksMax = 50;
+		nChunksMax = 99;
 		
 		cout << "--------------------- splitter --------------------" << endl;
 		re.Print("all");
@@ -12263,7 +12311,7 @@ void NTUPmaker(TString runType, TString outDir, TString chnl, TString master, TS
 	{
 		nChunks=0;
 		iChunk=0;
-		nChunksMax = 50;
+		nChunksMax = 99;
 		
 		cout << "--------------------- splitter --------------------" << endl;
 		re.Print("all");
@@ -12362,7 +12410,7 @@ void NTUPmaker(TString runType, TString outDir, TString chnl, TString master, TS
 	bool isAllData    = (chnl.Contains("periodall")); //////////////////////////////////////////
 	bool isAllMC      = (chnl.Contains("MC")); /////////////////////////////////////////////////
 	bool isSignalMC   = (chnl.Contains("_3mu")); ///////////////////////////////////////////////
-	bool isWSignalMC  = (chnl=="Wtaunu_3mu"); //////////////////////////////////////////////////
+	bool isWSignalMC  = (chnl=="Wtaunu_3mu" || chnl=="Wtaunu_200k_3mu"); ///////////////////////
 	bool isBkgroundMC = (!isAllMC && (!isSignalMC && !chnl.Contains("period"))); ///////////////
 	cout << "-------------------------- 1 channel flags ---------------------------" << endl;
 	cout << "is all data:      " << isAllData << endl;
@@ -12379,16 +12427,16 @@ void NTUPmaker(TString runType, TString outDir, TString chnl, TString master, TS
 	// LUMINOSTIY SETUP //////////////////////////////////////////////	
 	//////////////////////////////////////////////////////////////////	
 	setLumis(); // fixed database ////////////////////////////////////
-	//if(isAllData || chnl.Contains("periodA")) enablePeriod("A");
+	if(isAllData || chnl.Contains("periodA")) enablePeriod("A");
 	if(isAllData || chnl.Contains("periodB")) enablePeriod("B");
 	if(isAllData || chnl.Contains("periodC")) enablePeriod("C");
 	if(isAllData || chnl.Contains("periodD")) enablePeriod("D");
 	if(isAllData || chnl.Contains("periodE")) enablePeriod("E");
 	if(isAllData || chnl.Contains("periodG")) enablePeriod("G");
 	if(isAllData || chnl.Contains("periodH")) enablePeriod("H");
-	//if(isAllData || chnl.Contains("periodI")) enablePeriod("I");
-	//if(isAllData || chnl.Contains("periodJ")) enablePeriod("J");
-	//if(isAllData || chnl.Contains("periodL")) enablePeriod("L");
+	if(isAllData || chnl.Contains("periodI")) enablePeriod("I");
+	if(isAllData || chnl.Contains("periodJ")) enablePeriod("J");
+	if(isAllData || chnl.Contains("periodL")) enablePeriod("L");
 	totalLumi = (chnl.Contains("period")) ? getTotalLumi() : 1.; // inverse femtobarns
 	TString periods = "";
 	for(TMapTSb::iterator it=periodenable.begin() ; it!=periodenable.end() ; ++it) { periods += it->first; }
@@ -12398,35 +12446,42 @@ void NTUPmaker(TString runType, TString outDir, TString chnl, TString master, TS
 	
 	
 	
-	// //////////////////////////////////////////////////////////////////////
-	// // Binned MC SETUP ///////////////////////////////////////////////////
-	// //////////////////////////////////////////////////////////////////////
-	// //////////////////////////////////////////////////////////////////////
-	// if(isAllMC || chnl.Contains("WtaunuNp0")) enableBinnedMC("WtaunuNp0");
-	// if(isAllMC || chnl.Contains("WtaunuNp1")) enableBinnedMC("WtaunuNp1");
-	// if(isAllMC || chnl.Contains("WtaunuNp2")) enableBinnedMC("WtaunuNp2");
-	// if(isAllMC || chnl.Contains("WtaunuNp3")) enableBinnedMC("WtaunuNp3");
-	// if(isAllMC || chnl.Contains("WtaunuNp4")) enableBinnedMC("WtaunuNp4");
-	// if(isAllMC || chnl.Contains("WtaunuNp5")) enableBinnedMC("WtaunuNp5");
-	// //////////////////////////////////////////////////////////////////////
-	// if(isAllMC || chnl.Contains("WmunuNp0")) enableBinnedMC("WmunuNp0");
-	// if(isAllMC || chnl.Contains("WmunuNp1")) enableBinnedMC("WmunuNp1");
-	// if(isAllMC || chnl.Contains("WmunuNp2")) enableBinnedMC("WmunuNp2");
-	// if(isAllMC || chnl.Contains("WmunuNp3")) enableBinnedMC("WmunuNp3");
-	// if(isAllMC || chnl.Contains("WmunuNp4")) enableBinnedMC("WmunuNp4");
-	// if(isAllMC || chnl.Contains("WmunuNp5")) enableBinnedMC("WmunuNp5");
-	// //////////////////////////////////////////////////////////////////////
-	// if(isAllMC || chnl.Contains("ZmumuNp0")) enableBinnedMC("ZmumuNp0");
-	// if(isAllMC || chnl.Contains("ZmumuNp1")) enableBinnedMC("ZmumuNp1");
-	// if(isAllMC || chnl.Contains("ZmumuNp2")) enableBinnedMC("ZmumuNp2");
-	// if(isAllMC || chnl.Contains("ZmumuNp3")) enableBinnedMC("ZmumuNp3");
-	// if(isAllMC || chnl.Contains("ZmumuNp4")) enableBinnedMC("ZmumuNp4");
-	// if(isAllMC || chnl.Contains("ZmumuNp5")) enableBinnedMC("ZmumuNp5");
-	// //////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////
+	// Binned MC SETUP ///////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////
+	if(isAllMC || chnl.Contains("WtaunuNp0")) enableBinnedMC("WtaunuNp0");
+	if(isAllMC || chnl.Contains("WtaunuNp1")) enableBinnedMC("WtaunuNp1");
+	if(isAllMC || chnl.Contains("WtaunuNp2")) enableBinnedMC("WtaunuNp2");
+	if(isAllMC || chnl.Contains("WtaunuNp3")) enableBinnedMC("WtaunuNp3");
+	if(isAllMC || chnl.Contains("WtaunuNp4")) enableBinnedMC("WtaunuNp4");
+	if(isAllMC || chnl.Contains("WtaunuNp5")) enableBinnedMC("WtaunuNp5");
+	//////////////////////////////////////////////////////////////////////
+	if(isAllMC || chnl.Contains("WmunuNp0")) enableBinnedMC("WmunuNp0");
+	if(isAllMC || chnl.Contains("WmunuNp1")) enableBinnedMC("WmunuNp1");
+	if(isAllMC || chnl.Contains("WmunuNp2")) enableBinnedMC("WmunuNp2");
+	if(isAllMC || chnl.Contains("WmunuNp3")) enableBinnedMC("WmunuNp3");
+	if(isAllMC || chnl.Contains("WmunuNp4")) enableBinnedMC("WmunuNp4");
+	if(isAllMC || chnl.Contains("WmunuNp5")) enableBinnedMC("WmunuNp5");
+	//////////////////////////////////////////////////////////////////////
+	if(isAllMC || chnl.Contains("ZmumuNp0")) enableBinnedMC("ZmumuNp0");
+	if(isAllMC || chnl.Contains("ZmumuNp1")) enableBinnedMC("ZmumuNp1");
+	if(isAllMC || chnl.Contains("ZmumuNp2")) enableBinnedMC("ZmumuNp2");
+	if(isAllMC || chnl.Contains("ZmumuNp3")) enableBinnedMC("ZmumuNp3");
+	if(isAllMC || chnl.Contains("ZmumuNp4")) enableBinnedMC("ZmumuNp4");
+	if(isAllMC || chnl.Contains("ZmumuNp5")) enableBinnedMC("ZmumuNp5");
+	//////////////////////////////////////////////////////////////////////
+	if(isAllMC || chnl.Contains("ZtautauNp0")) enableBinnedMC("ZtautauNp0");
+	if(isAllMC || chnl.Contains("ZtautauNp1")) enableBinnedMC("ZtautauNp1");
+	if(isAllMC || chnl.Contains("ZtautauNp2")) enableBinnedMC("ZtautauNp2");
+	if(isAllMC || chnl.Contains("ZtautauNp3")) enableBinnedMC("ZtautauNp3");
+	if(isAllMC || chnl.Contains("ZtautauNp4")) enableBinnedMC("ZtautauNp4");
+	if(isAllMC || chnl.Contains("ZtautauNp5")) enableBinnedMC("ZtautauNp5");
+	//////////////////////////////////////////////////////////////////////
 	// if(isAllMC || chnl.Contains("JZ0W")) enableBinnedMC("JZ0W");
 	// if(isAllMC || chnl.Contains("JZ1W")) enableBinnedMC("JZ1W");
 	if(isAllMC || chnl.Contains("JZ2W")) enableBinnedMC("JZ2W");
-	//if(isAllMC || chnl.Contains("JZ3W")) enableBinnedMC("JZ3W");
+	if(isAllMC || chnl.Contains("JZ3W")) enableBinnedMC("JZ3W");
 	//////////////////////////////////////////////////////////////////////
 	
 	
@@ -12438,20 +12493,22 @@ void NTUPmaker(TString runType, TString outDir, TString chnl, TString master, TS
 	// also the inclusion or removal of certain channels  ////
 	//////////////////////////////////////////////////////////
 	int counter = 0;
-	if(isAllMC ||  chnl.Contains("bbTomu15"))        channels.insert(make_pair(increment(counter),"bbTomu15"));  // either that or bb_mu4mu4
-	if(isAllMC ||  chnl.Contains("bb_mu4mu4"))       channels.insert(make_pair(increment(counter),"bb_mu4mu4")); // either that or bbTomu15
-	if(isAllMC ||  chnl.Contains("ccTomu15"))        channels.insert(make_pair(increment(counter),"ccTomu15"));
-	if(isAllMC ||  chnl.Contains("JZ"))              channels.insert(make_pair(increment(counter),"JZxW"));
-	if(isAllMC ||  chnl.Contains("bb_Jpsimu4mu4"))   channels.insert(make_pair(increment(counter),"bb_Jpsimu4mu4"));
-	// if(isAllMC  ||  chnl.Contains("ZmumuNp"))     channels.insert(make_pair(increment(counter),"ZmumuNpX"));
-	// if(isAllMC  ||  chnl.Contains("WmunuNp"))     channels.insert(make_pair(increment(counter),"WmunuNpX"));
-	// if(isAllMC  ||  chnl.Contains("WtaunuNp"))    channels.insert(make_pair(increment(counter),"WtaunuNpX"));
-	if(isAllMC  ||  chnl.Contains("bbTotau10_3mu"))  channels.insert(make_pair(increment(counter),"bbTotau10_3mu"));
-	if(isAllMC  ||  chnl.Contains("ccTotau10_3mu"))  channels.insert(make_pair(increment(counter),"ccTotau10_3mu"));
-	if(isAllMC  ||  chnl.Contains("Wtaunu_3mu"))     channels.insert(make_pair(increment(counter),"Wtaunu_3mu"));
-	if(isAllMC  ||  chnl.Contains("period"))         channels.insert(make_pair(increment(counter),"Data"));
-	if(isAllMC  ||  isSignalMC)                      channels.insert(make_pair(increment(counter),"Signals"));
-	if(isAllMC  ||  isBkgroundMC)                    channels.insert(make_pair(increment(counter),"Backgrounds"));
+	if(isAllMC ||  chnl.Contains("bbTomu15"))       channels.insert(make_pair(increment(counter),"bbTomu15"));  // either that or bb_mu4mu4
+	if(isAllMC ||  chnl.Contains("bb_mu4mu4"))      channels.insert(make_pair(increment(counter),"bb_mu4mu4")); // either that or bbTomu15
+	if(isAllMC ||  chnl.Contains("ccTomu15"))       channels.insert(make_pair(increment(counter),"ccTomu15"));
+	if(isAllMC ||  chnl.Contains("JZ"))             channels.insert(make_pair(increment(counter),"JZxW"));
+	if(isAllMC ||  chnl.Contains("bb_Jpsimu4mu4"))  channels.insert(make_pair(increment(counter),"bb_Jpsimu4mu4"));
+	if(isAllMC ||  chnl.Contains("ZmumuNp"))        channels.insert(make_pair(increment(counter),"ZmumuNpX"));
+	if(isAllMC ||  chnl.Contains("WmunuNp"))        channels.insert(make_pair(increment(counter),"WmunuNpX"));
+	if(isAllMC ||  chnl.Contains("ZtautauNp"))      channels.insert(make_pair(increment(counter),"ZtautauNpX"));
+	if(isAllMC ||  chnl.Contains("WtaunuNp"))       channels.insert(make_pair(increment(counter),"WtaunuNpX"));
+	if(isAllMC ||  chnl.Contains("bbTotau10_3mu"))  channels.insert(make_pair(increment(counter),"bbTotau10_3mu"));
+	if(isAllMC ||  chnl.Contains("ccTotau10_3mu"))  channels.insert(make_pair(increment(counter),"ccTotau10_3mu"));
+	if(isAllMC ||  chnl.Contains("Wtaunu_3mu"))     channels.insert(make_pair(increment(counter),"Wtaunu_3mu"));
+	if(isAllMC ||  chnl.Contains("Wtaunu_200k_3mu"))channels.insert(make_pair(increment(counter),"Wtaunu_200k_3mu"));
+	if(isAllMC ||  chnl.Contains("period"))         channels.insert(make_pair(increment(counter),"Data"));
+	if(isAllMC ||  isSignalMC)                      channels.insert(make_pair(increment(counter),"Signals"));
+	if(isAllMC ||  isBkgroundMC)                    channels.insert(make_pair(increment(counter),"Backgrounds"));
 	
 	
 	
@@ -12470,6 +12527,7 @@ void NTUPmaker(TString runType, TString outDir, TString chnl, TString master, TS
 	
 	
 	nevents.insert(make_pair("Wtaunu_3mu",          0));
+	nevents.insert(make_pair("Wtaunu_200k_3mu",     0));
 	nevents.insert(make_pair("bbTotau10_3mu",       0));
 	nevents.insert(make_pair("ccTotau10_3mu",       0));
 	nevents.insert(make_pair("bb_Jpsimu4mu4",       0));
@@ -12480,12 +12538,14 @@ void NTUPmaker(TString runType, TString outDir, TString chnl, TString master, TS
 	nevents.insert(make_pair("WmunuNpX",            0));
 	nevents.insert(make_pair("ZmumuNpX",            0));
 	nevents.insert(make_pair("WtaunuNpX",           0));
+	nevents.insert(make_pair("ZtautauNpX",          0));
 	nevents.insert(make_pair("Data",                0));
 	nevents.insert(make_pair("Backgrounds",         0));
 	nevents.insert(make_pair("Signals",             0));	
 	
 	
 	types.insert(make_pair("Wtaunu_3mu",          "3mu"));
+	types.insert(make_pair("Wtaunu_200k_3mu",     "3mu"));
 	types.insert(make_pair("bbTotau10_3mu",       "3mu"));
 	types.insert(make_pair("ccTotau10_3mu",       "3mu"));
 	types.insert(make_pair("bb_Jpsimu4mu4",       "3mu"));
@@ -12496,6 +12556,7 @@ void NTUPmaker(TString runType, TString outDir, TString chnl, TString master, TS
 	types.insert(make_pair("WmunuNpX",            "3mu"));
 	types.insert(make_pair("ZmumuNpX",            "3mu"));
 	types.insert(make_pair("WtaunuNpX",           "3mu"));
+	types.insert(make_pair("ZtautauNpX",          "3mu"));
 	types.insert(make_pair("Data",                "3mu"));
 	types.insert(make_pair("Backgrounds",         "3mu"));
 	types.insert(make_pair("Signals",             "3mu"));
@@ -12504,6 +12565,7 @@ void NTUPmaker(TString runType, TString outDir, TString chnl, TString master, TS
 	// rest of the maps shoud include all channels,
 	// wheather or not they are switched on.
 	properties("Wtaunu_3mu",          "#it{W#rightarrow#nu#tau#rightarrow3#mu}#times"+sBRf,  kBlue,     3001,"f",1, labels,colors,patterns,legoptions);
+	properties("Wtaunu_200k_3mu",     "#it{W#rightarrow#nu#tau#rightarrow3#mu}#times"+sBRf,  kBlue,     3001,"f",1, labels,colors,patterns,legoptions);
 	properties("bbTotau10_3mu",       "#it{bb#rightarrow#tau10#rightarrow3#mu}#times"+sBRf,  kGreen+2,  3001,"f",1, labels,colors,patterns,legoptions);
 	properties("ccTotau10_3mu",       "#it{cc#rightarrow#tau10#rightarrow3#mu}#times"+sBRf,  kGreen-6,  3001,"f",1, labels,colors,patterns,legoptions);
 	properties("bb_Jpsimu4mu4",       "#it{J/#psi#rightarrow#mu4#mu4}",                      kRed-9,    3015,"f",0, labels,colors,patterns,legoptions);
@@ -12514,6 +12576,7 @@ void NTUPmaker(TString runType, TString outDir, TString chnl, TString master, TS
 	properties("WmunuNpX",            "#it{W#rightarrow#mu#nu+jets}",                        kViolet+5, 3022,"f",0, labels,colors,patterns,legoptions);
 	properties("ZmumuNpX",            "#it{Z#rightarrow#mu#mu+jets}",                        kViolet+7, 3023,"f",0, labels,colors,patterns,legoptions);
 	properties("WtaunuNpX",           "#it{W#rightarrow#tau#nu+jets}",                       kAzure,    3011,"f",0, labels,colors,patterns,legoptions);
+	properties("ZtautauNpX",          "#it{Z#rightarrow#tau#tau+jets}",                      kAzure,    3011,"f",0, labels,colors,patterns,legoptions);
 	properties("Data",                "Data "+slumi,                                         kBlack,    3004,"p",1, labels,colors,patterns,legoptions);
 	properties("Backgrounds",         "#SigmaBg",                                            kRed-3,    3005,"f",1, labels,colors,patterns,legoptions);
 	properties("Signals",             "#SigmaSig",                                           kGreen+2,  3001,"f",1, labels,colors,patterns,legoptions);
@@ -13353,10 +13416,11 @@ void NTUPmaker(TString runType, TString outDir, TString chnl, TString master, TS
 				for(TMapTSb::iterator imc=binnedmcenable.begin() ; imc!=binnedmcenable.end() ; ++imc)
 				{
 					TString bname = imc->first;
-					if(name.Contains("WmunuNpX")  && !bname.Contains("WmunuNp"))  continue;
-					if(name.Contains("ZmumuNpX")  && !bname.Contains("ZmumuNp"))  continue;
-					if(name.Contains("WtaunuNpX") && !bname.Contains("WtaunuNp")) continue;
-					if(name.Contains("JZxW")      && !bname.Contains("JZ"))       continue;
+					if(name.Contains("WmunuNpX")   && !bname.Contains("WmunuNp"))   continue;
+					if(name.Contains("ZmumuNpX")   && !bname.Contains("ZmumuNp"))   continue;
+					if(name.Contains("WtaunuNpX")  && !bname.Contains("WtaunuNp"))  continue;
+					if(name.Contains("ZtautauNpX") && !bname.Contains("ZtautauNp")) continue;
+					if(name.Contains("JZxW")       && !bname.Contains("JZ"))        continue;
 					perpareChains(bname,mastertree,chains,chainfriends,fout,otrees);
 					analysis(bname,chains,otrees,histos,histos2,0);
 				}

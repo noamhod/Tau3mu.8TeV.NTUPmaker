@@ -20,27 +20,27 @@ build="#{script} build #{code} #{type} #{outdir} Wtaunu_3mu #{source} #{version}
 
 procs = Hash.new
 procs = {
-	'Wtaunu_3mu'    => "#{script} #{mode} #{code} #{type} #{outdir} Wtaunu_3mu    #{source} #{version} #{split}",
-	'bbTotau10_3mu' => "#{script} #{mode} #{code} #{type} #{outdir} bbTotau10_3mu #{source} #{version} #{split}",
-	'ccTotau10_3mu' => "#{script} #{mode} #{code} #{type} #{outdir} ccTotau10_3mu #{source} #{version} #{split}",
+	'Wtaunu_3mu'    => "#{script} #{mode} #{code} #{type} #{outdir} Wtaunu_3mu    #{source} #{version} #{split}  >  #{outdir}Wtaunu_3mu.log 2>&1",
+	'bbTotau10_3mu' => "#{script} #{mode} #{code} #{type} #{outdir} bbTotau10_3mu #{source} #{version} #{split}  >  #{outdir}bbTotau10_3mu.log 2>&1",
+	'ccTotau10_3mu' => "#{script} #{mode} #{code} #{type} #{outdir} ccTotau10_3mu #{source} #{version} #{split}  >  #{outdir}ccTotau10_3mu.log 2>&1",
 
-	'bbTomu15'      => "#{script} #{mode} #{code} #{type} #{outdir} bbTomu15      #{source} #{version} #{split}",
-	'ccTomu15'      => "#{script} #{mode} #{code} #{type} #{outdir} ccTomu15      #{source} #{version} #{split}",
-	'bb_mu4mu4'     => "#{script} #{mode} #{code} #{type} #{outdir} bb_mu4mu4     #{source} #{version} #{split}",
-	'bb_Jpsimu4mu4' => "#{script} #{mode} #{code} #{type} #{outdir} bb_Jpsimu4mu4 #{source} #{version} #{split}",
-	'JZ2W'          => "#{script} #{mode} #{code} #{type} #{outdir} JZ2W          #{source} #{version} #{split}",
-	#'JZ3W'          => "#{script} #{mode} #{code} #{type} #{outdir} JZ3W          #{source} #{version} #{split}",
+	'bbTomu15'      => "#{script} #{mode} #{code} #{type} #{outdir} bbTomu15      #{source} #{version} #{split}  >  #{outdir}bbTomu15.log 2>&1",
+	'ccTomu15'      => "#{script} #{mode} #{code} #{type} #{outdir} ccTomu15      #{source} #{version} #{split}  >  #{outdir}ccTomu15.log 2>&1",
+	'bb_mu4mu4'     => "#{script} #{mode} #{code} #{type} #{outdir} bb_mu4mu4     #{source} #{version} #{split}  >  #{outdir}bb_mu4mu4.log 2>&1",
+	'bb_Jpsimu4mu4' => "#{script} #{mode} #{code} #{type} #{outdir} bb_Jpsimu4mu4 #{source} #{version} #{split}  >  #{outdir}bb_Jpsimu4mu4.log 2>&1",
+	'JZ2W'          => "#{script} #{mode} #{code} #{type} #{outdir} JZ2W          #{source} #{version} #{split}  >  #{outdir}JZ2W.log 2>&1",
+	#'JZ3W'          => "#{script} #{mode} #{code} #{type} #{outdir} JZ3W          #{source} #{version} #{split}  >  #{outdir}JZ3W.log 2>&1",
 
-	#'periodA'       => "#{script} #{mode} #{code} #{type} #{outdir} periodA       #{source} #{version} #{split}",
-	'periodB'       => "#{script} #{mode} #{code} #{type} #{outdir} periodB       #{source} #{version} #{split}",
-	'periodC'       => "#{script} #{mode} #{code} #{type} #{outdir} periodC       #{source} #{version} #{split}",
-	'periodD'       => "#{script} #{mode} #{code} #{type} #{outdir} periodD       #{source} #{version} #{split}",
-	'periodE'       => "#{script} #{mode} #{code} #{type} #{outdir} periodE       #{source} #{version} #{split}",
-	'periodG'       => "#{script} #{mode} #{code} #{type} #{outdir} periodG       #{source} #{version} #{split}",
-	'periodH'       => "#{script} #{mode} #{code} #{type} #{outdir} periodH       #{source} #{version} #{split}",
-	#'periodI'       => "#{script} #{mode} #{code} #{type} #{outdir} periodI       #{source} #{version} #{split}",
-	#'periodJ'       => "#{script} #{mode} #{code} #{type} #{outdir} periodJ       #{source} #{version} #{split}",
-	#'periodL'       => "#{script} #{mode} #{code} #{type} #{outdir} periodL       #{source} #{version} #{split}",
+	#'periodA'       => "#{script} #{mode} #{code} #{type} #{outdir} periodA       #{source} #{version} #{split}  >  #{outdir}periodA.log 2>&1",
+	'periodB'       => "#{script} #{mode} #{code} #{type} #{outdir} periodB       #{source} #{version} #{split}  >  #{outdir}periodB.log 2>&1",
+	'periodC'       => "#{script} #{mode} #{code} #{type} #{outdir} periodC       #{source} #{version} #{split}  >  #{outdir}periodC.log 2>&1",
+	'periodD'       => "#{script} #{mode} #{code} #{type} #{outdir} periodD       #{source} #{version} #{split}  >  #{outdir}periodD.log 2>&1",
+	'periodE'       => "#{script} #{mode} #{code} #{type} #{outdir} periodE       #{source} #{version} #{split}  >  #{outdir}periodE.log 2>&1",
+	'periodG'       => "#{script} #{mode} #{code} #{type} #{outdir} periodG       #{source} #{version} #{split}  >  #{outdir}periodG.log 2>&1",
+	'periodH'       => "#{script} #{mode} #{code} #{type} #{outdir} periodH       #{source} #{version} #{split}  >  #{outdir}periodH.log 2>&1",
+	#'periodI'       => "#{script} #{mode} #{code} #{type} #{outdir} periodI       #{source} #{version} #{split}  >  #{outdir}periodI.log 2>&1",
+	#'periodJ'       => "#{script} #{mode} #{code} #{type} #{outdir} periodJ       #{source} #{version} #{split}  >  #{outdir}periodJ.log 2>&1",
+	#'periodL'       => "#{script} #{mode} #{code} #{type} #{outdir} periodL       #{source} #{version} #{split}  >  #{outdir}periodL.log 2>&1",
 }
 
 def runproc(command)
@@ -74,4 +74,6 @@ procs.each{|key,val|
 	hadd = hadd + " flatout.#{procname}.muons.cuts.analysis.n0.j0.root"
 }
 puts "\n\n#{hadd}"
-#system(hadd)
+%x("cd #{outdir}")
+system(hadd)
+%x("cd -")
